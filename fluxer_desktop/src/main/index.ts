@@ -76,7 +76,7 @@ import {
 	setQuitting,
 	showWindow,
 } from '@electron/main/Window';
-import {initializeWindowsVulkanGameCaptureLayer} from '@electron/main/WindowsVulkanGameCaptureLayer';
+import {startWindowsStartupMaintenance} from '@electron/main/WindowsStartupMaintenance';
 import {app, dialog, netLog} from 'electron';
 import log from 'electron-log';
 
@@ -330,11 +330,6 @@ if (launchConfigurationError) {
 					log.error('[Init] Failed to initialize deep links:', error);
 				}
 				try {
-					runStartupPhase('jump-list', initializeJumpList);
-				} catch (error) {
-					log.error('[Init] Failed to initialize JumpList:', error);
-				}
-				try {
 					runStartupPhase('dock-menu', initializeDockMenu);
 				} catch (error) {
 					log.error('[Init] Failed to initialize macOS dock menu:', error);
@@ -376,11 +371,6 @@ if (launchConfigurationError) {
 					log.error('[Init] Failed to register native audio handlers:', error);
 				}
 				try {
-					runStartupPhase('vulkan-game-capture-layer', initializeWindowsVulkanGameCaptureLayer);
-				} catch (error: unknown) {
-					log.error('[Init] Failed to initialize Vulkan game capture layer:', error);
-				}
-				try {
 					runStartupPhase('native-screen-capture-handlers', registerNativeScreenCaptureHandlers);
 				} catch (error: unknown) {
 					log.error('[Init] Failed to register native screen capture handlers:', error);
@@ -398,6 +388,24 @@ if (launchConfigurationError) {
 				runStartupPhase('create-window', () => {
 					createWindow({startHidden: shouldStartHiddenAtLogin()});
 				});
+				const startupWindow = getMainWindow();
+				let windowsStartupMaintenanceScheduled = false;
+				const scheduleWindowsStartupMaintenance = () => {
+					if (windowsStartupMaintenanceScheduled) return;
+					windowsStartupMaintenanceScheduled = true;
+					clearTimeout(windowsStartupMaintenanceFallback);
+					try {
+						runStartupPhase('jump-list', initializeJumpList);
+					} catch (error) {
+						log.error('[Init] Failed to initialize JumpList:', error);
+					}
+					void startWindowsStartupMaintenance().catch((error) => {
+						log.error('[Init] Failed to schedule Windows startup maintenance:', error);
+					});
+				};
+				const windowsStartupMaintenanceFallback = setTimeout(scheduleWindowsStartupMaintenance, 5_000);
+				windowsStartupMaintenanceFallback.unref();
+				startupWindow?.webContents.once('did-finish-load', scheduleWindowsStartupMaintenance);
 				const initialTask = consumeInitialJumpListTask();
 				if (initialTask) {
 					const mainWindow = getMainWindow();
