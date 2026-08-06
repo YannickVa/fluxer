@@ -178,11 +178,9 @@ async function repairWindowsShortcutsAsync(repairPaths: WindowsShortcutRepairPat
 	}
 }
 
-export function repairWindowsShortcuts(): void {
+export async function repairWindowsShortcuts(): Promise<void> {
 	if (process.platform !== 'win32') return;
 	const repairPaths = getWindowsShortcutRepairPaths();
 	if (!repairPaths) return;
-	repairWindowsShortcutsAsync(repairPaths).catch((error) => {
-		console.warn('[WindowsShortcuts] Failed to repair Fluxer shortcuts', error);
-	});
+	await repairWindowsShortcutsAsync(repairPaths);
 }

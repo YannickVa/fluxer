@@ -10,7 +10,8 @@ use windows::Graphics::DirectX::DirectXPixelFormat;
 use windows::Graphics::SizeInt32;
 use windows::Win32::Foundation::{HWND, LPARAM, RECT, RPC_E_CHANGED_MODE};
 use windows::Win32::Graphics::Direct3D11::{
-    D3D11_BIND_SHADER_RESOURCE, D3D11_BOX, D3D11_TEXTURE2D_DESC, D3D11_USAGE_DEFAULT, ID3D11Device,
+    D3D11_BIND_SHADER_RESOURCE, D3D11_BOX, D3D11_CPU_ACCESS_READ, D3D11_MAPPED_SUBRESOURCE,
+    D3D11_MAP_READ, D3D11_TEXTURE2D_DESC, D3D11_USAGE_DEFAULT, D3D11_USAGE_STAGING, ID3D11Device,
     ID3D11DeviceContext, ID3D11Resource, ID3D11Texture2D,
 };
 use windows::Win32::Graphics::Dxgi::Common::{
@@ -26,14 +27,11 @@ use windows::Win32::System::WinRT::{RO_INIT_MULTITHREADED, RoInitialize};
 use windows::Win32::UI::WindowsAndMessaging::IsWindow;
 use windows::core::{BOOL, Interface};
 
-use crate::dxgi_capture::{
-    SharedTextureOutput, capture_timestamp_us, create_shared_output_texture,
-    pacing_sleep_and_next_deadline, resolve_output_size,
-};
+use crate::dxgi_capture::{capture_timestamp_us, pacing_sleep_and_next_deadline, resolve_output_size};
 use crate::nv12_gpu::Nv12GpuConverter;
 use crate::{
-    CaptureInner, emit_lifecycle, emit_shared_texture_frame, note_media_frame_without_sink,
-    resolve_frame_sink,
+    CaptureInner, emit_bgra_frame, emit_lifecycle, emit_shared_texture_frame,
+    note_media_frame_without_sink, resolve_frame_sink,
 };
 
 const WGC_FRAME_POOL_BUFFERS: i32 = 2;
@@ -266,8 +264,14 @@ struct WgcNv12Pipeline {
     converter: Nv12GpuConverter,
 }
 
+struct WgcBgraPipeline {
+    staging_resource: ID3D11Resource,
+    width: u32,
+    height: u32,
+}
+
 enum WgcOutputPipeline {
-    Bgra(SharedTextureOutput),
+    Bgra(WgcBgraPipeline),
     Nv12(WgcNv12Pipeline),
 }
 
@@ -604,24 +608,51 @@ fn create_wgc_output_pipeline(
         .map(WgcOutputPipeline::Nv12)
         .map(Some);
     }
-    if out_w != content_width || out_h != content_height {
-        return create_wgc_nv12_pipeline(
-            ctx,
-            DXGI_FORMAT_B8G8R8A8_UNORM,
-            content_width,
-            content_height,
-            out_w,
-            out_h,
-            crate::hdr::SourceFormat::Bgra8,
-        )
-        .map(WgcOutputPipeline::Nv12)
-        .map(Some);
-    }
-    Ok(
-        create_shared_output_texture(&ctx.device, content_width, content_height)
-            .ok()
-            .map(WgcOutputPipeline::Bgra),
-    )
+    // Windows' native WebRTC bridge currently cannot encode D3D11 textures directly. Read SDR
+    // WGC frames back through a staging texture and let the sender's copied-BGRA path convert and
+    // adapt them. This also avoids the WGC NV12 converter dependency when the requested publish
+    // size differs from the monitor/window size (a common HAGS failure mode).
+    let _ = (out_w, out_h);
+    create_wgc_bgra_pipeline(ctx, content_width, content_height)
+        .map(WgcOutputPipeline::Bgra)
+        .map(Some)
+}
+
+fn create_wgc_bgra_pipeline(
+    ctx: &WgcLoopContext,
+    width: u32,
+    height: u32,
+) -> Result<WgcBgraPipeline, String> {
+    assert!(width > 0, "WGC BGRA input width positive");
+    assert!(height > 0, "WGC BGRA input height positive");
+    let desc = D3D11_TEXTURE2D_DESC {
+        Width: width,
+        Height: height,
+        MipLevels: 1,
+        ArraySize: 1,
+        Format: DXGI_FORMAT_B8G8R8A8_UNORM,
+        SampleDesc: DXGI_SAMPLE_DESC {
+            Count: 1,
+            Quality: 0,
+        },
+        Usage: D3D11_USAGE_STAGING,
+        BindFlags: 0,
+        CPUAccessFlags: D3D11_CPU_ACCESS_READ.0 as u32,
+        MiscFlags: 0,
+    };
+    let mut staging = None;
+    unsafe { ctx.device.CreateTexture2D(&desc, None, Some(&mut staging)) }
+        .map_err(|e| format!("CreateTexture2D WGC BGRA staging: {e}"))?;
+    let staging =
+        staging.ok_or_else(|| "CreateTexture2D WGC BGRA staging returned null".to_string())?;
+    let staging_resource = staging
+        .cast()
+        .map_err(|e| format!("ID3D11Resource WGC BGRA staging cast: {e}"))?;
+    Ok(WgcBgraPipeline {
+        staging_resource,
+        width,
+        height,
+    })
 }
 
 fn create_wgc_nv12_pipeline(
@@ -756,14 +787,14 @@ fn emit_wgc_frame(
     };
     let timestamp_us = capture_timestamp_us(capture_start);
     let Some(output_pipeline) = state.output_pipeline.as_mut() else {
-        return WgcFrameResult::Error("WGC shared texture output unavailable".into());
+        return WgcFrameResult::Error("WGC output pipeline unavailable".into());
     };
     match output_pipeline {
-        WgcOutputPipeline::Bgra(shared_output) => emit_wgc_bgra_frame(
+        WgcOutputPipeline::Bgra(pipeline) => emit_wgc_bgra_frame(
             inner,
             context,
             &frame_sink,
-            shared_output,
+            pipeline,
             &source_resource,
             content_width,
             content_height,
@@ -787,23 +818,17 @@ fn emit_wgc_bgra_frame(
     inner: &Arc<CaptureInner>,
     context: &ID3D11DeviceContext,
     frame_sink: &crate::FrameSinkRef,
-    shared_output: &mut SharedTextureOutput,
+    pipeline: &mut WgcBgraPipeline,
     source_resource: &ID3D11Resource,
     content_width: u32,
     content_height: u32,
     timestamp_us: i64,
 ) -> WgcFrameResult {
-    if shared_output.width != content_width || shared_output.height != content_height {
+    if pipeline.width != content_width || pipeline.height != content_height {
         return WgcFrameResult::Error(
-            "WGC BGRA shared output size does not match content size".into(),
+            "WGC BGRA staging texture size does not match content size".into(),
         );
     }
-    let slot_index = shared_output.next_slot_index();
-    let slot = &shared_output.slots[slot_index];
-    let output_resource: ID3D11Resource = match slot.texture.cast() {
-        Ok(resource) => resource,
-        Err(e) => return WgcFrameResult::Error(format!("ID3D11Resource shared output cast: {e}")),
-    };
     let src_box = D3D11_BOX {
         left: 0,
         top: 0,
@@ -814,7 +839,7 @@ fn emit_wgc_bgra_frame(
     };
     unsafe {
         context.CopySubresourceRegion(
-            &output_resource,
+            &pipeline.staging_resource,
             0,
             0,
             0,
@@ -823,15 +848,48 @@ fn emit_wgc_bgra_frame(
             0,
             Some(&src_box),
         );
-        context.Flush();
     }
-    let _ = emit_shared_texture_frame(
+    let mut mapped = D3D11_MAPPED_SUBRESOURCE::default();
+    if unsafe {
+        context.Map(
+            &pipeline.staging_resource,
+            0,
+            D3D11_MAP_READ,
+            0,
+            Some(&mut mapped),
+        )
+    }
+    .is_err()
+    {
+        return WgcFrameResult::Error("Map WGC BGRA staging texture failed".into());
+    }
+    let output_width = content_width & !1;
+    let output_height = content_height & !1;
+    if output_width < 2 || output_height < 2 {
+        unsafe { context.Unmap(&pipeline.staging_resource, 0) };
+        return WgcFrameResult::Error("WGC BGRA frame is too small after even cropping".into());
+    }
+    let row_bytes = (output_width as usize) * 4;
+    let source_stride = mapped.RowPitch as usize;
+    if mapped.pData.is_null() || source_stride < row_bytes {
+        unsafe { context.Unmap(&pipeline.staging_resource, 0) };
+        return WgcFrameResult::Error("WGC BGRA staging map returned invalid data".into());
+    }
+    let mut data = vec![0u8; row_bytes * output_height as usize];
+    for row in 0..output_height as usize {
+        let source = unsafe {
+            std::slice::from_raw_parts((mapped.pData as *const u8).add(row * source_stride), row_bytes)
+        };
+        data[row * row_bytes..(row + 1) * row_bytes].copy_from_slice(source);
+    }
+    unsafe { context.Unmap(&pipeline.staging_resource, 0) };
+    let _ = emit_bgra_frame(
         inner,
         frame_sink,
-        slot.handle,
-        shared_output.width,
-        shared_output.height,
-        shared_output.dxgi_format,
+        data,
+        output_width,
+        output_height,
+        row_bytes as u32,
         timestamp_us,
     );
     WgcFrameResult::Ok

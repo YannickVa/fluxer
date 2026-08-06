@@ -151,14 +151,6 @@ function getVulkanLayerRegistrationState(root = nativeRoot) {
 	}
 }
 
-if (process.platform === 'win32' && binding) {
-	try {
-		registerVulkanLayerManifest();
-	} catch (error) {
-		console.warn('[win-game-capture] registerVulkanLayerManifest failed:', error?.message || error);
-	}
-}
-
 class ScreenCapture extends EventEmitter {
 	constructor(options = {}) {
 		super();

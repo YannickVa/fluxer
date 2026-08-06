@@ -365,6 +365,37 @@ pub(crate) fn emit_shared_texture_frame(
 }
 
 #[cfg(target_os = "windows")]
+pub(crate) fn emit_bgra_frame(
+    inner: &CaptureInner,
+    sink: &FrameSinkRef,
+    data: Vec<u8>,
+    width: u32,
+    height: u32,
+    stride: u32,
+    timestamp_us: i64,
+) -> bool {
+    assert!(width > 0, "BGRA frame width is positive");
+    assert!(height > 0, "BGRA frame height is positive");
+    assert!(stride >= width.saturating_mul(4), "BGRA stride covers a row");
+    let outcome = match sink {
+        FrameSinkRef::Native(sink) => {
+            sink.enqueue_bgra_copy(&data, width, height, stride, timestamp_us)
+        }
+        FrameSinkRef::Bus(sink) => sink.enqueue(fluxer_screen_frame_bus::ScreenFrame::Bgra(
+            fluxer_screen_frame_bus::BgraFrame {
+                data,
+                width,
+                height,
+                stride,
+                timestamp_us,
+            },
+        )),
+    };
+    record_frame_sink_outcome(inner, outcome);
+    frame_sink_outcome_delivered(outcome)
+}
+
+#[cfg(target_os = "windows")]
 fn frame_sink_outcome_delivered(outcome: EnqueueOutcome) -> bool {
     !matches!(outcome, EnqueueOutcome::Rejected)
 }
@@ -379,14 +410,14 @@ fn record_frame_sink_outcome(inner: &CaptureInner, outcome: EnqueueOutcome) {
             inner.frame_sink_coalesced.fetch_add(1, Ordering::AcqRel);
             emit_frame_sink_backpressure_once(
                 inner,
-                "Windows shared texture frame coalesced by native frame sink",
+                "Windows video frame coalesced by native frame sink",
             );
         }
         EnqueueOutcome::Rejected => {
             inner.frame_sink_rejected.fetch_add(1, Ordering::AcqRel);
             emit_frame_sink_backpressure_once(
                 inner,
-                "Windows shared texture frame rejected by native frame sink",
+                "Windows video frame rejected by native frame sink",
             );
         }
     }

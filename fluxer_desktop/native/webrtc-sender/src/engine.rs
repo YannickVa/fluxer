@@ -1390,7 +1390,23 @@ impl ScreenFrameSink for BusSenderSink {
     fn enqueue(&self, frame: BusScreenFrame) -> EnqueueOutcome {
         let timestamp_us = frame.timestamp_us();
         let pending = match frame {
-            BusScreenFrame::Nv12(_) | BusScreenFrame::Bgra(_) => return EnqueueOutcome::Rejected,
+            BusScreenFrame::Nv12(frame) => PendingVideoFrame::Nv12 {
+                data: frame.data.into_vec(),
+                width: frame.width,
+                height: frame.height,
+                stride_y: frame.stride_y,
+                stride_uv: frame.stride_uv,
+                timestamp_us,
+                enqueued_at: Instant::now(),
+            },
+            BusScreenFrame::Bgra(frame) => PendingVideoFrame::Bgra {
+                data: frame.data,
+                width: frame.width,
+                height: frame.height,
+                stride: frame.stride,
+                timestamp_us,
+                enqueued_at: Instant::now(),
+            },
             #[cfg(target_os = "macos")]
             BusScreenFrame::MacCvPixelBuffer(mac_frame) => {
                 let raw = mac_frame.into_raw_pixel_buffer();
@@ -1528,6 +1544,87 @@ fn bus_sender_sink_from_context<'a>(context: *const c_void) -> Option<&'a BusSen
         return None;
     }
     Some(unsafe { &*(context as *const BusSenderSink) })
+}
+
+unsafe extern "C" fn enqueue_native_nv12(
+    context: *const c_void,
+    data: *const u8,
+    data_len: usize,
+    width: u32,
+    height: u32,
+    stride_y: u32,
+    stride_uv: u32,
+    timestamp_us: i64,
+) -> u32 {
+    let Some(sink) = bus_sender_sink_from_context(context) else {
+        return frame_bus::NATIVE_SCREEN_FRAME_SINK_REJECTED;
+    };
+    if data.is_null()
+        || !valid_even_video_dims(width, height)
+        || stride_y < width
+        || stride_uv < width
+    {
+        return frame_bus::NATIVE_SCREEN_FRAME_SINK_REJECTED;
+    }
+    let Some(y_len) = (stride_y as usize).checked_mul(height as usize) else {
+        return frame_bus::NATIVE_SCREEN_FRAME_SINK_REJECTED;
+    };
+    let Some(uv_len) = (stride_uv as usize).checked_mul((height / 2) as usize) else {
+        return frame_bus::NATIVE_SCREEN_FRAME_SINK_REJECTED;
+    };
+    let Some(required_len) = y_len.checked_add(uv_len) else {
+        return frame_bus::NATIVE_SCREEN_FRAME_SINK_REJECTED;
+    };
+    if data_len < required_len {
+        return frame_bus::NATIVE_SCREEN_FRAME_SINK_REJECTED;
+    }
+    let frame = frame_bus::Nv12Frame {
+        data: unsafe { std::slice::from_raw_parts(data, required_len) }
+            .to_vec()
+            .into(),
+        width,
+        height,
+        stride_y,
+        stride_uv,
+        timestamp_us,
+    };
+    NativeScreenFrameSinkHandle::native_outcome(sink.enqueue(BusScreenFrame::Nv12(frame)))
+}
+
+unsafe extern "C" fn enqueue_native_bgra(
+    context: *const c_void,
+    data: *const u8,
+    data_len: usize,
+    width: u32,
+    height: u32,
+    stride: u32,
+    timestamp_us: i64,
+) -> u32 {
+    let Some(sink) = bus_sender_sink_from_context(context) else {
+        return frame_bus::NATIVE_SCREEN_FRAME_SINK_REJECTED;
+    };
+    let Some(min_stride) = width.checked_mul(4) else {
+        return frame_bus::NATIVE_SCREEN_FRAME_SINK_REJECTED;
+    };
+    if data.is_null() || !valid_even_video_dims(width, height) || stride < min_stride {
+        return frame_bus::NATIVE_SCREEN_FRAME_SINK_REJECTED;
+    }
+    let Some(required_len) = (stride as usize).checked_mul(height as usize) else {
+        return frame_bus::NATIVE_SCREEN_FRAME_SINK_REJECTED;
+    };
+    if data_len < required_len {
+        return frame_bus::NATIVE_SCREEN_FRAME_SINK_REJECTED;
+    }
+    let frame = frame_bus::BgraFrame {
+        data: unsafe { std::slice::from_raw_parts(data, required_len) }
+            .to_vec()
+            .into(),
+        width,
+        height,
+        stride,
+        timestamp_us,
+    };
+    NativeScreenFrameSinkHandle::native_outcome(sink.enqueue(BusScreenFrame::Bgra(frame)))
 }
 
 #[cfg(target_os = "macos")]
@@ -1672,8 +1769,8 @@ fn create_native_screen_frame_sink_handle(sink: Arc<BusSenderSink>) -> NativeScr
         retain: retain_bus_sender_sink,
         release: release_bus_sender_sink,
         enqueue_screen_audio: None,
-        enqueue_nv12: None,
-        enqueue_bgra: None,
+        enqueue_nv12: Some(enqueue_native_nv12),
+        enqueue_bgra: Some(enqueue_native_bgra),
         #[cfg(target_os = "macos")]
         enqueue_mac_cv_pixel_buffer: Some(enqueue_native_mac_cv_pixel_buffer),
         #[cfg(not(target_os = "macos"))]
@@ -5228,10 +5325,8 @@ fn texture_capability_for_screen_codec(codec: &str) -> TextureCapability {
     if !texture_source::codec_allows_native_gpu(codec) {
         return TextureCapability::for_screen_codec(codec, false);
     }
-    TextureCapability::for_screen_codec(
-        codec,
-        crate::hardware_encoder::hardware_encoder_capability().available,
-    )
+    let encoder = crate::hardware_encoder::hardware_encoder_capability();
+    TextureCapability::for_screen_codec(codec, encoder.zero_copy)
 }
 
 fn build_microphone_publish_options(opts: &MicrophoneOptions) -> napi::Result<TrackPublishOptions> {
@@ -6193,7 +6288,7 @@ mod tests {
     }
 
     #[test]
-    fn bus_sender_sink_rejects_copied_nv12_frames() {
+    fn bus_sender_sink_accepts_copied_nv12_frames() {
         let (sender, _stats) = sender_for_tests();
         let sink = BusSenderSink {
             sender: sender.clone(),
@@ -6209,12 +6304,12 @@ mod tests {
             stride_uv: 8,
             timestamp_us: 1234,
         });
-        assert_eq!(sink.enqueue(frame), EnqueueOutcome::Rejected);
-        assert_eq!(sender.pending.len(), 0);
+        assert_eq!(sink.enqueue(frame), EnqueueOutcome::Accepted);
+        assert_eq!(sender.pending.len(), 1);
     }
 
     #[test]
-    fn bus_sender_sink_rejects_copied_bgra_frames() {
+    fn bus_sender_sink_accepts_copied_bgra_frames() {
         let (sender, _stats) = sender_for_tests();
         let sink = BusSenderSink {
             sender: sender.clone(),
@@ -6229,12 +6324,12 @@ mod tests {
             stride: 32,
             timestamp_us: 5678,
         });
-        assert_eq!(sink.enqueue(frame), EnqueueOutcome::Rejected);
-        assert_eq!(sender.pending.len(), 0);
+        assert_eq!(sink.enqueue(frame), EnqueueOutcome::Accepted);
+        assert_eq!(sender.pending.len(), 1);
     }
 
     #[test]
-    fn native_screen_frame_sink_handle_omits_copied_frame_callbacks() {
+    fn native_screen_frame_sink_handle_exposes_copied_frame_callbacks() {
         let (sender, _stats) = sender_for_tests();
         let sink = BusSenderSink {
             sender: sender.clone(),
@@ -6244,8 +6339,8 @@ mod tests {
         };
         let handle = create_native_screen_frame_sink_handle(Arc::new(sink));
         assert!(handle.is_valid());
-        assert!(handle.enqueue_nv12.is_none());
-        assert!(handle.enqueue_bgra.is_none());
+        assert!(handle.enqueue_nv12.is_some());
+        assert!(handle.enqueue_bgra.is_some());
         assert!(handle.enqueue_screen_audio.is_none());
         unsafe { (handle.release)(handle.context) };
     }

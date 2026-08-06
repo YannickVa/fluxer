@@ -611,6 +611,25 @@ async function buildMain() {
 				js: `import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);`,
 			},
 		}),
+		esbuild.build({
+			entryPoints: [path.join(SRC_DIR, 'main', 'WindowsStartupMaintenanceWorker.ts')],
+			bundle: true,
+			platform: 'node',
+			target: 'node20',
+			format: 'esm',
+			outfile: path.join(DIST_DIR, 'main', 'WindowsStartupMaintenanceWorker.js'),
+			minify: isProduction,
+			sourcemap: true,
+			external: electronExternals,
+			plugins: [pathAliasPlugin],
+			define: {
+				'process.env.NODE_ENV': JSON.stringify(isProduction ? 'production' : 'development'),
+				...publicBuildDefines,
+			},
+			banner: {
+				js: `import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);`,
+			},
+		}),
 	]);
 	console.log('Main process build complete.');
 }
