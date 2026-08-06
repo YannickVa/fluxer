@@ -10,7 +10,7 @@ interface WorkerResult {
 
 function taskFromArgv(): WindowsStartupMaintenanceTask | null {
 	const task = process.argv[2];
-	return task === 'shortcuts' || task === 'vulkan' ? task : null;
+	return task === 'vulkan' ? task : null;
 }
 
 function report(result: WorkerResult): void {
@@ -18,27 +18,27 @@ function report(result: WorkerResult): void {
 }
 
 async function run(task: WindowsStartupMaintenanceTask): Promise<void> {
-	if (task === 'shortcuts') {
-		const {repairWindowsShortcuts} = await import('@electron/main/WindowsShortcuts');
-		await repairWindowsShortcuts();
-		return;
-	}
 	const {initializeWindowsVulkanGameCaptureLayer} = await import('@electron/main/WindowsVulkanGameCaptureLayer');
 	initializeWindowsVulkanGameCaptureLayer();
 }
 
+function exitAfterReport(code: number): void {
+	setImmediate(() => process.exit(code));
+}
+
 const task = taskFromArgv();
 if (!task) {
-	console.error('[WindowsStartupMaintenanceWorker] Expected shortcuts or vulkan task');
-	process.exitCode = 2;
+	console.error('[WindowsStartupMaintenanceWorker] Expected vulkan task');
+	exitAfterReport(2);
 } else {
 	try {
 		await run(task);
 		report({ok: true, task});
+		exitAfterReport(0);
 	} catch (error) {
 		const message = error instanceof Error ? (error.stack ?? error.message) : String(error);
 		console.error('[WindowsStartupMaintenanceWorker] Task failed', {task, error: message});
 		report({ok: false, task, error: message});
-		process.exitCode = 1;
+		exitAfterReport(1);
 	}
 }
