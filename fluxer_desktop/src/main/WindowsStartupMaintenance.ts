@@ -12,6 +12,7 @@ import {
 	type WindowsStartupMaintenanceTaskState,
 	withWindowsStartupMaintenanceTaskState,
 } from '@electron/main/WindowsStartupMaintenancePolicy';
+import {repairWindowsShortcuts} from '@electron/main/WindowsShortcuts';
 import {app, utilityProcess} from 'electron';
 import log from 'electron-log';
 
@@ -74,7 +75,32 @@ function collectWorkerOutput(
 	});
 }
 
-async function runTask(task: WindowsStartupMaintenanceTask, appVersion: string): Promise<void> {
+async function runMainProcessTask(task: 'shortcuts', appVersion: string): Promise<void> {
+	const attemptedAt = new Date().toISOString();
+	persistTaskState(task, {appVersion, status: 'running', attemptedAt});
+	try {
+		await repairWindowsShortcuts();
+		persistTaskState(task, {
+			appVersion,
+			status: 'succeeded',
+			attemptedAt,
+			completedAt: new Date().toISOString(),
+		});
+		log.info('[WindowsStartupMaintenance] Task completed', {task, appVersion});
+	} catch (error) {
+		const reason = error instanceof Error ? (error.stack ?? error.message) : String(error);
+		persistTaskState(task, {
+			appVersion,
+			status: 'failed',
+			attemptedAt,
+			completedAt: new Date().toISOString(),
+			reason,
+		});
+		log.warn('[WindowsStartupMaintenance] Main-process task failed safely', {task, appVersion, error});
+	}
+}
+
+async function runWorkerTask(task: 'vulkan', appVersion: string): Promise<void> {
 	const attemptedAt = new Date().toISOString();
 	persistTaskState(task, {appVersion, status: 'running', attemptedAt});
 
@@ -143,6 +169,14 @@ async function runTask(task: WindowsStartupMaintenanceTask, appVersion: string):
 			resolve();
 		});
 	});
+}
+
+async function runTask(task: WindowsStartupMaintenanceTask, appVersion: string): Promise<void> {
+	if (task === 'shortcuts') {
+		await runMainProcessTask(task, appVersion);
+		return;
+	}
+	await runWorkerTask(task, appVersion);
 }
 
 export async function startWindowsStartupMaintenance(): Promise<void> {
