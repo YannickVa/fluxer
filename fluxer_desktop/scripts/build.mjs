@@ -18,6 +18,8 @@ const isProduction =
 const skipNative = process.env.FLUXER_SKIP_NATIVE === 'true';
 const embeddedBuildVersion = process.env.PUBLIC_BUILD_VERSION || process.env.BUILD_VERSION || '';
 const embeddedReleaseChannel = process.env.PUBLIC_RELEASE_CHANNEL || process.env.RELEASE_CHANNEL || '';
+const embeddedDesktopUpdateBaseUrl = process.env.PUBLIC_DESKTOP_UPDATE_BASE_URL || '';
+const embeddedDesktopDownloadUrl = process.env.PUBLIC_DESKTOP_DOWNLOAD_URL || '';
 const requestedDesktopBuildVariant = process.env.FLUXER_DESKTOP_BUILD_VARIANT || process.env.DESKTOP_VARIANT || '';
 const windowsGameCaptureModuleEnabled =
 	requestedDesktopBuildVariant === 'windows-game-capture' ||
@@ -28,6 +30,8 @@ const publicBuildDefines = {
 	'process.env.BUILD_VERSION': JSON.stringify(embeddedBuildVersion),
 	'process.env.PUBLIC_RELEASE_CHANNEL': JSON.stringify(embeddedReleaseChannel),
 	'process.env.RELEASE_CHANNEL': JSON.stringify(embeddedReleaseChannel),
+	'process.env.PUBLIC_DESKTOP_UPDATE_BASE_URL': JSON.stringify(embeddedDesktopUpdateBaseUrl),
+	'process.env.PUBLIC_DESKTOP_DOWNLOAD_URL': JSON.stringify(embeddedDesktopDownloadUrl),
 	'process.env.FLUXER_DESKTOP_BUILD_VARIANT': JSON.stringify(embeddedDesktopBuildVariant),
 	'process.env.FLUXER_WINDOWS_GAME_CAPTURE_MODULE_ENABLED': JSON.stringify(
 		windowsGameCaptureModuleEnabled ? 'true' : 'false',

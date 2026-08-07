@@ -4,6 +4,7 @@ import {createRequire} from 'node:module';
 import {BUILD_CHANNEL} from '@electron/common/BuildChannel';
 import {DESKTOP_BUILD_VARIANT} from '@electron/common/BuildVariant';
 import {isPortableMode} from '@electron/common/UserDataPath';
+import {resolveDesktopUpdateEndpoints} from '@electron/main/DesktopUpdateEndpoints';
 import {destroyDesktopTray} from '@electron/main/DesktopTray';
 import {isFlatpakRuntime} from '@electron/main/LinuxSandbox';
 import {setQuitting} from '@electron/main/Window';
@@ -71,12 +72,14 @@ function getDesktopDownloadArch(arch: NodeJS.Architecture): DesktopDownloadArch 
 }
 
 const DESKTOP_DOWNLOAD_ARCH = getDesktopDownloadArch(process.arch);
-const UPDATE_API_ENDPOINT = BUILD_CHANNEL === 'canary' ? 'https://api.canary.fluxer.app' : 'https://api.fluxer.app';
-const UPDATE_VARIANT_SEGMENT =
-	process.platform === 'win32' && DESKTOP_BUILD_VARIANT !== 'default' ? `/${DESKTOP_BUILD_VARIANT}` : '';
-const UPDATE_BASE_URL = `${UPDATE_API_ENDPOINT}/dl/desktop/${BUILD_CHANNEL}/${process.platform}/${DESKTOP_DOWNLOAD_ARCH}${UPDATE_VARIANT_SEGMENT}`;
-const DOWNLOAD_PAGE_URL =
-	BUILD_CHANNEL === 'canary' ? 'https://canary.fluxer.app/download' : 'https://fluxer.app/download';
+const {updateBaseUrl: UPDATE_BASE_URL, downloadPageUrl: DOWNLOAD_PAGE_URL} = resolveDesktopUpdateEndpoints({
+	channel: BUILD_CHANNEL,
+	platform: process.platform,
+	arch: DESKTOP_DOWNLOAD_ARCH,
+	variant: DESKTOP_BUILD_VARIANT,
+	updateBaseUrlOverride: process.env.PUBLIC_DESKTOP_UPDATE_BASE_URL,
+	downloadPageUrlOverride: process.env.PUBLIC_DESKTOP_DOWNLOAD_URL,
+});
 
 let lastContext: UpdaterContext = 'background';
 let pendingVelopackUpdate: UpdateInfo | null = null;
