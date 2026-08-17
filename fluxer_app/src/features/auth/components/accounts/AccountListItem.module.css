@@ -120,13 +120,7 @@
 }
 
 .accountItem.current .accountMeta {
-	color: var(--surface-interactive-selected-color);
-	opacity: 0.8;
-}
-
-.instanceLabel {
-	font-size: 0.6875rem;
-	color: var(--text-primary-muted);
+	color: color-mix(in srgb, var(--surface-interactive-selected-color) 80%, transparent);
 }
 
 .badge {

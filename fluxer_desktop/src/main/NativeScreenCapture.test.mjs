@@ -86,18 +86,11 @@ function makeNativeAddon({
 	};
 }
 
-function loadNativeScreenCapture({
-	platform = 'linux',
-	addon,
-	tccStatus = 'not-determined',
-	frameSinkHandle = null,
-	windowsGameCaptureModuleEnabled = false,
-} = {}) {
+function loadNativeScreenCapture({platform = 'linux', addon, tccStatus = 'not-determined'} = {}) {
 	const handlers = new Map();
 	const calls = {
 		logs: {debug: [], warn: []},
 		nativeModuleImports: [],
-		windowsGameCapturePolicyEnableCalls: 0,
 	};
 	let uuidCounter = 0;
 
@@ -151,26 +144,10 @@ function loadNativeScreenCapture({
 		if (specifier === './MacTcc') {
 			return {getTccStatus: () => tccStatus};
 		}
-		if (specifier === './NativeVoiceEngine') {
-			return {
-				createNativeVoiceEngineScreenFrameSinkHandle: (captureId) =>
-					typeof frameSinkHandle === 'function' ? frameSinkHandle(captureId) : frameSinkHandle,
-			};
-		}
 		if (specifier === './NativeScreenCaptureValidation') {
 			return {
 				isValidStartOptions: () => true,
 				normalizeScreenCaptureDimension: (value) => value,
-			};
-		}
-		if (specifier === './WindowsGameCapturePolicy') {
-			return {
-				WINDOWS_GAME_CAPTURE_DISABLED_DETAIL: 'windows-game-capture-disabled-until-code-signed',
-				WINDOWS_GAME_CAPTURE_DISABLED_REASON: 'disabled-by-launch',
-				WINDOWS_GAME_CAPTURE_MODULE_ENABLED: windowsGameCaptureModuleEnabled,
-				enableWindowsGameCaptureModuleForCurrentProcess: () => {
-					calls.windowsGameCapturePolicyEnableCalls += 1;
-				},
 			};
 		}
 		throw new Error(`Unexpected import: ${specifier}`);
@@ -180,6 +157,7 @@ function loadNativeScreenCapture({
 	const context = vm.createContext({
 		Buffer,
 		ArrayBuffer,
+		Error,
 		console,
 		clearTimeout,
 		exports: module.exports,
@@ -253,15 +231,10 @@ describe('NativeScreenCapture source identity and capability reporting', () => {
 	});
 
 	test('starts display and window captures with exact source id and kind and reports diagnostics', async () => {
-		const frameSinkHandles = {
-			'capture-1': {native: true, captureId: 'capture-1'},
-			'capture-2': {native: true, captureId: 'capture-2'},
-		};
 		const {addon, captures} = makeNativeAddon();
 		const harness = loadNativeScreenCapture({
 			platform: 'linux',
 			addon,
-			frameSinkHandle: (captureId) => frameSinkHandles[captureId] ?? null,
 		});
 		const {sender, sent} = makeSender();
 		harness.module.registerNativeScreenCaptureHandlers();
@@ -307,7 +280,6 @@ describe('NativeScreenCapture source identity and capability reporting', () => {
 				showCursorClicks: true,
 				captureRect: {x: 10, y: 20, width: 300, height: 200},
 				nativeFrameSinkRequired: true,
-				frameSinkHandle: frameSinkHandles['capture-1'],
 			},
 			{
 				sourceId: 'window:4242',
@@ -322,7 +294,6 @@ describe('NativeScreenCapture source identity and capability reporting', () => {
 				showCursorClicks: false,
 				captureRect: undefined,
 				nativeFrameSinkRequired: true,
-				frameSinkHandle: frameSinkHandles['capture-2'],
 			},
 		]);
 		assert.equal(displayResult.captureId, 'capture-1');
@@ -353,37 +324,11 @@ describe('NativeScreenCapture source identity and capability reporting', () => {
 		assert.equal(captures[1].stopCount, 1);
 	});
 
-	test('fails fast when native frame sink is required but unavailable', async () => {
-		const {addon, captures} = makeNativeAddon();
-		const harness = loadNativeScreenCapture({platform: 'linux', addon});
-		const {sender} = makeSender();
-		harness.module.registerNativeScreenCaptureHandlers();
-
-		await assert.rejects(
-			() =>
-				harness.handlers.get('native-screen-capture:start')(
-					{sender},
-					{
-						sourceId: 'window:4242',
-						sourceKind: 'window',
-						width: 1280,
-						height: 720,
-						captureId: 'preselected-capture-id',
-						nativeFrameSinkRequired: true,
-					},
-				),
-			/requires a native frame sink handle/,
-		);
-		assert.equal(captures.length, 0);
-	});
-
-	test('passes caller-provided capture id and native sink handle to the platform wrapper', async () => {
-		const frameSinkHandle = {native: true};
+	test('passes caller-provided capture id to the platform wrapper', async () => {
 		const {addon, captures} = makeNativeAddon();
 		const harness = loadNativeScreenCapture({
 			platform: 'linux',
 			addon,
-			frameSinkHandle: (captureId) => (captureId === 'preselected-capture-id' ? frameSinkHandle : null),
 		});
 		const {sender, sent} = makeSender();
 		harness.module.registerNativeScreenCaptureHandlers();
@@ -414,7 +359,6 @@ describe('NativeScreenCapture source identity and capability reporting', () => {
 			showCursorClicks: false,
 			captureRect: undefined,
 			nativeFrameSinkRequired: true,
-			frameSinkHandle,
 		});
 		assert.deepEqual(sent, []);
 	});
@@ -457,7 +401,7 @@ describe('NativeScreenCapture source identity and capability reporting', () => {
 		});
 	});
 
-	test('reports Windows native game capture disabled before loading the addon', async () => {
+	test('reports a Windows native game capture load failure when requiring the addon throws', async () => {
 		const harness = loadNativeScreenCapture({platform: 'win32'});
 		harness.module.registerNativeScreenCaptureHandlers();
 
@@ -465,24 +409,50 @@ describe('NativeScreenCapture source identity and capability reporting', () => {
 		assert.deepEqual(plain(availability), {
 			available: false,
 			backend: 'windows-game-capture',
-			reason: 'disabled-by-launch',
-			detail: 'windows-game-capture-disabled-until-code-signed',
-			capabilities: {hidesCursor: true, screens: false, windows: false},
+			reason: 'load-failed',
+			detail: 'No fake addon configured for @fluxer/win-game-capture',
 			windowsHagsState: 'enabled',
 			windowsHagsDetail: 'HwSchMode=2',
 		});
-		assert.deepEqual(harness.calls.nativeModuleImports, []);
-		assert.equal(harness.calls.windowsGameCapturePolicyEnableCalls, 0);
+		assert.deepEqual(harness.calls.nativeModuleImports, ['@fluxer/win-game-capture']);
+		assert.equal(harness.calls.logs.warn[0][0], 'Failed to load Windows native screen capture addon');
 	});
 
-	test('loads Windows native game capture only for the game capture build variant', async () => {
+	test('reports a Windows native game capture load failure surfaced by the addon loadError', async () => {
+		const {addon} = makeNativeAddon();
+		const loadError = new Error(
+			'@fluxer/win-game-capture native module failed to load.\nmodule=@fluxer/win-game-capture\nreason=native binary not found',
+		);
+		loadError.name = 'NativeModuleLoadError';
+		loadError.nativeDiagnostics = {
+			schemaVersion: 1,
+			moduleName: '@fluxer/win-game-capture',
+			reason: 'native binary not found',
+		};
+		addon.loadError = loadError;
+		const harness = loadNativeScreenCapture({platform: 'win32', addon});
+		harness.module.registerNativeScreenCaptureHandlers();
+
+		const availability = await harness.handlers.get('native-screen-capture:get-availability')();
+
+		assert.deepEqual(plain(availability), {
+			available: false,
+			backend: 'windows-game-capture',
+			reason: 'load-failed',
+			detail:
+				'@fluxer/win-game-capture native module failed to load.\nmodule=@fluxer/win-game-capture\nreason=native binary not found',
+			windowsHagsState: 'enabled',
+			windowsHagsDetail: 'HwSchMode=2',
+		});
+		assert.deepEqual(harness.calls.nativeModuleImports, ['@fluxer/win-game-capture']);
+		assert.equal(harness.calls.logs.warn[0][0], 'Windows native screen capture addon reported load error');
+		assert.equal(harness.calls.logs.warn[0][1], loadError);
+	});
+
+	test('loads Windows native game capture and reports its backend capabilities', async () => {
 		const {addon} = makeNativeAddon();
 		addon.getAvailability = () => ({available: true, backend: 'windows-game-capture'});
-		const harness = loadNativeScreenCapture({
-			platform: 'win32',
-			addon,
-			windowsGameCaptureModuleEnabled: true,
-		});
+		const harness = loadNativeScreenCapture({platform: 'win32', addon});
 		harness.module.registerNativeScreenCaptureHandlers();
 
 		const availability = await harness.handlers.get('native-screen-capture:get-availability')();
@@ -495,7 +465,6 @@ describe('NativeScreenCapture source identity and capability reporting', () => {
 			capabilities: {hidesCursor: false, screens: true, windows: true},
 		});
 		assert.deepEqual(harness.calls.nativeModuleImports, ['@fluxer/win-game-capture']);
-		assert.equal(harness.calls.windowsGameCapturePolicyEnableCalls, 1);
 	});
 
 	test('routes Windows display sources through the native screen path without remapping to game', async () => {
@@ -504,8 +473,6 @@ describe('NativeScreenCapture source identity and capability reporting', () => {
 		const harness = loadNativeScreenCapture({
 			platform: 'win32',
 			addon,
-			windowsGameCaptureModuleEnabled: true,
-			frameSinkHandle: (captureId) => ({native: true, captureId}),
 		});
 		harness.module.registerNativeScreenCaptureHandlers();
 		const {sender} = makeSender();

@@ -9,7 +9,6 @@ import ScreenReader from '@app/features/accessibility/state/ScreenReader';
 import {DndContext} from '@app/features/app/components/layout/DndContext';
 import GlobalOverlays from '@app/features/app/components/layout/GlobalOverlays';
 import {NativeTitlebar} from '@app/features/app/components/layout/NativeTitlebar';
-import {NativeTrafficLightsBackdrop} from '@app/features/app/components/layout/NativeTrafficLightsBackdrop';
 import {useDesktopAllowTransparency} from '@app/features/app/hooks/useDesktopAllowTransparency';
 import {useDesktopElectronBridges} from '@app/features/app/hooks/useDesktopElectronBridges';
 import {useDocumentClassToggle} from '@app/features/app/hooks/useDocumentClassToggle';
@@ -20,13 +19,11 @@ import {useNativePlatform} from '@app/features/app/hooks/useNativePlatform';
 import {usePlatformClasses} from '@app/features/app/hooks/usePlatformClasses';
 import {useServiceWorkerBadge} from '@app/features/app/hooks/useServiceWorkerBadge';
 import {useTabKeyFocusGuard} from '@app/features/app/hooks/useTabKeyFocusGuard';
-import Initialization from '@app/features/app/state/Initialization';
 import {type LayoutVariant, LayoutVariantProvider} from '@app/features/app/state/LayoutVariantContext';
 import RuntimeCrash from '@app/features/app/state/RuntimeCrash';
-import Authentication from '@app/features/auth/state/Authentication';
-import DeveloperOptions from '@app/features/devtools/state/DeveloperOptions';
 import {showMyselfTypingHelper} from '@app/features/devtools/utils/ShowMyselfTypingHelper';
 import GatewayConnection from '@app/features/gateway/transport/GatewayConnection';
+import MemberSidebar from '@app/features/member/state/MemberSidebar';
 import {startDeepLinkHandling} from '@app/features/navigation/utils/DeepLinkUtils';
 import {Outlet, RouterProvider} from '@app/features/platform/components/router/RouterReact';
 import {ensureAutostartDefaultEnabled} from '@app/features/platform/utils/Autostart';
@@ -35,6 +32,7 @@ import {startDesktopLocaleBridge} from '@app/features/platform/utils/DesktopLoca
 import {PremiumCheckoutReturnWatcher} from '@app/features/premium/components/PremiumCheckoutReturnWatcher';
 import {QUICK_SWITCHER_PORTAL_ID} from '@app/features/search/components/quick_switcher/QuickSwitcherConstants';
 import {useCustomThemeStyle} from '@app/features/theme/hooks/useCustomThemeStyle';
+import {useRemScaleTracking} from '@app/features/theme/hooks/useRemScaleTracking';
 import {useThemeCssVariables} from '@app/features/theme/hooks/useThemeCssVariables';
 import Theme from '@app/features/theme/state/Theme';
 import ThemeLibrary from '@app/features/theme/state/ThemeLibrary';
@@ -62,7 +60,6 @@ import {VoiceLiveKitRoot} from '@app/features/voice/components/VoiceLiveKitRoot'
 import MediaEngine from '@app/features/voice/engine/MediaEngineFacade';
 import {useElectronScreenSharePicker} from '@app/features/voice/hooks/useElectronScreenSharePicker';
 import {startScreenSharePiPController} from '@app/features/voice/state/ScreenSharePiPController';
-import VoiceCallFullscreen from '@app/features/voice/state/VoiceCallFullscreen';
 import {startMediaDeviceStartupPreload} from '@app/features/voice/utils/MediaDeviceStartupPreload';
 import {useNativeTitleBar} from '@app/features/window/hooks/useNativeTitleBar';
 import {useStopFlashFrameOnFocus} from '@app/features/window/hooks/useStopFlashFrameOnFocus';
@@ -72,6 +69,7 @@ import {msg} from '@lingui/core/macro';
 import {I18nProvider} from '@lingui/react';
 import {useLingui} from '@lingui/react/macro';
 import {IconContext} from '@phosphor-icons/react';
+import {reaction} from 'mobx';
 import {observer} from 'mobx-react-lite';
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
@@ -89,10 +87,9 @@ export const AppWrapper = observer(({children}: AppWrapperProps) => {
 	const reducedMotion = Accessibility.useReducedMotion;
 	const stayInteractiveWhenUnfocused = Accessibility.stayInteractiveWhenUnfocused;
 	const firstClickPassThroughWhenUnfocused = Accessibility.firstClickPassThroughWhenUnfocused;
-	const {platform, isNative, isMacOS} = useNativePlatform();
+	const {platform, isNative} = useNativePlatform();
 	const useSystemTitleBar = useNativeTitleBar();
 	const messageDisplayCompact = UserSettings.getMessageDisplayCompact();
-	const isVoiceCallFullscreenActive = VoiceCallFullscreen.isActive;
 	const isRootDocumentFullscreen = useIsRootDocumentFullscreen();
 	const [layoutVariant, setLayoutVariant] = useState<LayoutVariant>('app');
 	const layoutVariantContextValue = useMemo(
@@ -128,16 +125,20 @@ export const AppWrapper = observer(({children}: AppWrapperProps) => {
 		}, []),
 	);
 	const handleSkipLinkFocus = useTabKeyFocusGuard();
-	const isSplashScreenActive =
-		Authentication.isAuthenticated &&
-		!DeveloperOptions.bypassSplashScreen &&
-		(GatewayConnection.isConnectionInterrupted || !Initialization.canNavigateToProtectedRoutes);
 	useInertBackground(ringsContainerRef, hasBlockingModal || topPopoutRequiresBackdrop);
-	useInertBackground(overlayScopeRef, isSplashScreenActive);
 	useEffect(() => {
 		showMyselfTypingHelper.start();
 		return () => showMyselfTypingHelper.stop();
 	}, []);
+	useEffect(
+		() =>
+			reaction(
+				() => GatewayConnection.sessionId,
+				(sessionId) => MemberSidebar.synchronizeGatewaySession(sessionId),
+				{fireImmediately: true},
+			),
+		[],
+	);
 	useEffect(() => {
 		const clearForeignPortalHost = (): void => {
 			const activePortalHost = getActivePortalHost();
@@ -169,6 +170,7 @@ export const AppWrapper = observer(({children}: AppWrapperProps) => {
 	}, [isNative, firstClickPassThroughWhenUnfocused]);
 	useDesktopAllowTransparency(isNative);
 	useWindowEventListeners({preventDocumentScroll: !isNative});
+	useRemScaleTracking();
 	usePlatformClasses(platform, isNative);
 	useThemeCssVariables({
 		effectiveTheme: Theme.effectiveTheme,
@@ -202,12 +204,7 @@ export const AppWrapper = observer(({children}: AppWrapperProps) => {
 						>
 							{i18n._(SKIP_TO_CONTENT_DESCRIPTOR)}
 						</a>
-						<NativeTrafficLightsBackdrop
-							variant={layoutVariant}
-							hidden={isVoiceCallFullscreenActive}
-							data-flx="app.app.app-wrapper.native-traffic-lights-backdrop"
-						/>
-						{isNative && !isMacOS && !useSystemTitleBar && !isRootDocumentFullscreen && (
+						{isNative && !useSystemTitleBar && !isRootDocumentFullscreen && (
 							<NativeTitlebar platform={platform} data-flx="app.app.app-wrapper.native-titlebar" />
 						)}
 						{children}

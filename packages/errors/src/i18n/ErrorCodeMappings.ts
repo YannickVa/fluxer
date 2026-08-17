@@ -93,7 +93,6 @@ export const ErrorCodeToI18nKey = {
 	[APIErrorCodes.DISCRIMINATOR_REQUIRED]: 'usernames_and_tags.discriminator_required',
 	[APIErrorCodes.EMAIL_SERVICE_NOT_TESTABLE]: 'email.email_service_not_testable',
 	[APIErrorCodes.EMAIL_VERIFICATION_REQUIRED]: 'account.email_verification_required',
-	[APIErrorCodes.CANARY_TESTER_EMAIL_VERIFICATION_REQUIRED]: 'account.email_verification_required',
 	[APIErrorCodes.DIRECT_MESSAGE_EMAIL_VERIFICATION_REQUIRED]: 'account.email_verification_required',
 	[APIErrorCodes.FRIEND_REQUEST_EMAIL_VERIFICATION_REQUIRED]: 'account.email_verification_required',
 	[APIErrorCodes.GUILD_CREATION_EMAIL_VERIFICATION_REQUIRED]: 'account.email_verification_required',
@@ -440,6 +439,7 @@ export const ErrorCodeToI18nKey = {
 	[ValidationErrorCodes.UNRESOLVED_ATTACHMENT_URL]: 'attachments_and_uploads.unresolved_attachment_url',
 	[ValidationErrorCodes.UPLOADED_ATTACHMENT_NOT_FOUND]: 'attachments_and_uploads.uploaded_attachment_not_found',
 	[ValidationErrorCodes.URL_LENGTH_INVALID]: 'urls.url_length_invalid',
+	[ValidationErrorCodes.URL_NOT_PUBLICLY_ROUTABLE]: 'urls.url_not_publicly_routable',
 	[ValidationErrorCodes.ACCENT_COLOR_CHANGED_TOO_MANY_TIMES]: 'rate_limits.accent_color_changed_too_often',
 	[ValidationErrorCodes.AVATAR_CHANGED_TOO_MANY_TIMES]: 'rate_limits.avatar_changed_too_often',
 	[ValidationErrorCodes.BANNER_CHANGED_TOO_MANY_TIMES]: 'rate_limits.banner_changed_too_often',
@@ -467,6 +467,7 @@ export const ErrorCodeToI18nKey = {
 		'premium_and_plans.visionary_required_for_bot_discriminator',
 	[ValidationErrorCodes.VISIONARY_REQUIRED_FOR_DISCRIMINATOR]: 'premium_and_plans.visionary_required_for_discriminator',
 	[ValidationErrorCodes.BOT_DISCRIMINATOR_CANNOT_BE_CHANGED]: 'bots.bot_discriminator_cannot_be_changed',
+	[ValidationErrorCodes.BOT_SEARCH_SCOPE_UNAVAILABLE]: 'bots.search_scope_unavailable',
 	[ValidationErrorCodes.USER_MUST_BE_A_BOT_TO_BE_MARKED_AS_A_SYSTEM_USER]:
 		'admin_and_system.user_must_be_bot_for_system_user',
 	[ValidationErrorCodes.USER_IS_NOT_BANNED]: 'moderation_and_reports.user_is_not_banned',

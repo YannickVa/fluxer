@@ -17,7 +17,7 @@ function report(result: WorkerResult): void {
 	process.parentPort?.postMessage(result);
 }
 
-async function run(task: WindowsStartupMaintenanceTask): Promise<void> {
+async function run(): Promise<void> {
 	const {initializeWindowsVulkanGameCaptureLayer} = await import('@electron/main/WindowsVulkanGameCaptureLayer');
 	initializeWindowsVulkanGameCaptureLayer();
 }
@@ -32,7 +32,7 @@ if (!task) {
 	exitAfterReport(2);
 } else {
 	try {
-		await run(task);
+		await run();
 		report({ok: true, task});
 		exitAfterReport(0);
 	} catch (error) {

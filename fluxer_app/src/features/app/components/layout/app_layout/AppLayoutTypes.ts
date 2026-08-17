@@ -3,6 +3,8 @@
 import type {ValueOf} from '@fluxer/constants/src/ValueOf';
 
 export const NagbarType = {
+	BUILD_ENVIRONMENT: 'build-environment',
+	CONNECTION: 'connection',
 	CORRUPTED_INSTALLATION: 'corrupted-installation',
 	SCHEDULED_MAINTENANCE: 'scheduled-maintenance',
 	UNCLAIMED_ACCOUNT: 'unclaimed-account',
@@ -17,7 +19,6 @@ export const NagbarType = {
 	VISIONARY_MFA: 'visionary-mfa',
 	VOICE_SESSION_RESTORE: 'voice-session-restore',
 	TERMS_ACCEPTANCE: 'terms-acceptance',
-	CANARY_TESTER_CTA: 'canary-tester-cta',
 	LINUX_INPUT_ACCESS: 'linux-input-access',
 	SOFTWARE_ENCODER: 'software-encoder',
 	STREAMER_MODE: 'streamer-mode',
@@ -37,6 +38,8 @@ export interface AppLayoutState {
 }
 
 export interface NagbarConditions {
+	canShowBuildEnvironment: boolean;
+	canShowConnection: boolean;
 	canShowCorruptedInstallation: boolean;
 	canShowScheduledMaintenance: boolean;
 	userIsUnclaimed: boolean;
@@ -51,7 +54,6 @@ export interface NagbarConditions {
 	canShowVisionaryMfa: boolean;
 	canShowVoiceSessionRestore: boolean;
 	needsTermsAcceptance: boolean;
-	canShowCanaryTesterCta: boolean;
 	canShowLinuxInputAccess: boolean;
 	canShowSoftwareEncoder: boolean;
 	canShowStreamerMode: boolean;
