@@ -497,7 +497,7 @@ function useAvatarStatusAnimationProgress({target, enabled}: {target: number; en
 
 		const startedAt = performance.now();
 		const step = (timestamp: number) => {
-			const elapsed = Math.min(1, (timestamp - startedAt) / STATUS_TRANSITION_DURATION_MS);
+			const elapsed = Math.max(0, Math.min(1, (timestamp - startedAt) / STATUS_TRANSITION_DURATION_MS));
 			const nextProgress = interpolate(from, target, easeOutCubic(elapsed));
 			progressRef.current = nextProgress;
 			setProgress(nextProgress);
