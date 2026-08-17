@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import type {BuildChannel} from '@electron/common/BuildChannel';
-import type {DesktopBuildVariant} from '@electron/common/Types';
 
 type DesktopUpdateEndpointOptions = {
 	channel: BuildChannel;
 	platform: NodeJS.Platform;
 	arch: 'x64' | 'arm64';
-	variant: DesktopBuildVariant;
 	updateBaseUrlOverride?: string;
 	downloadPageUrlOverride?: string;
 };
@@ -27,8 +25,7 @@ export function resolveDesktopUpdateEndpoints(options: DesktopUpdateEndpointOpti
 	downloadPageUrl: string;
 } {
 	const apiEndpoint = options.channel === 'canary' ? 'https://api.canary.fluxer.app' : 'https://api.fluxer.app';
-	const variantSegment = options.platform === 'win32' && options.variant !== 'default' ? `/${options.variant}` : '';
-	const defaultUpdateBaseUrl = `${apiEndpoint}/dl/desktop/${options.channel}/${options.platform}/${options.arch}${variantSegment}`;
+	const defaultUpdateBaseUrl = `${apiEndpoint}/dl/desktop/${options.channel}/${options.platform}/${options.arch}`;
 	const defaultDownloadPageUrl =
 		options.channel === 'canary' ? 'https://canary.fluxer.app/download' : 'https://fluxer.app/download';
 

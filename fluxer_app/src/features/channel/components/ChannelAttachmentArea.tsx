@@ -5,7 +5,7 @@ import {computeHorizontalDropPosition} from '@app/features/app/components/layout
 import {
 	type AttachmentDragItem,
 	type AttachmentDropResult,
-	DND_TYPES,
+	DragItemType,
 } from '@app/features/app/components/layout/types/DndTypes';
 import styles from '@app/features/channel/components/ChannelAttachmentArea.module.css';
 import EmbedVideo from '@app/features/channel/components/embeds/media/EmbedVideo';
@@ -19,8 +19,9 @@ import {ComponentDispatch} from '@app/features/platform/utils/ComponentBus';
 import * as MediaViewerCommands from '@app/features/ui/commands/MediaViewerCommands';
 import * as ModalCommands from '@app/features/ui/commands/ModalCommands';
 import {modal} from '@app/features/ui/commands/ModalCommands';
-import {Scroller} from '@app/features/ui/components/Scroller';
+import {Scroller, type ScrollerHandle} from '@app/features/ui/components/Scroller';
 import FocusRing from '@app/features/ui/focus_ring/FocusRing';
+import {useDragAutoScroll} from '@app/features/ui/hooks/useDragAutoScroll';
 import MobileLayout from '@app/features/ui/state/MobileLayout';
 import {Tooltip} from '@app/features/ui/tooltip/Tooltip';
 import {MessageAttachmentFlags} from '@fluxer/constants/src/ChannelConstants';
@@ -212,7 +213,7 @@ const SortableAttachmentItem = observer(
 		const isSpoiler = (attachment.flags & MessageAttachmentFlags.IS_SPOILER) !== 0;
 		const dragItemData = useMemo<AttachmentDragItem>(
 			() => ({
-				type: DND_TYPES.ATTACHMENT,
+				type: DragItemType.ATTACHMENT,
 				id: attachment.id,
 				channelId,
 			}),
@@ -243,7 +244,7 @@ const SortableAttachmentItem = observer(
 		}, []);
 		const [{isDragging}, dragRef, preview] = useDrag(
 			() => ({
-				type: DND_TYPES.ATTACHMENT,
+				type: DragItemType.ATTACHMENT,
 				item: () => {
 					onDragStateChange?.(dragItemData);
 					return dragItemData;
@@ -259,7 +260,7 @@ const SortableAttachmentItem = observer(
 		);
 		const [{isOver}, dropRef] = useDrop(
 			() => ({
-				accept: DND_TYPES.ATTACHMENT,
+				accept: DragItemType.ATTACHMENT,
 				canDrop: (item: AttachmentDragItem) => item.id !== attachment.id,
 				hover: (item: AttachmentDragItem, monitor) => {
 					if (item.id === attachment.id) {
@@ -592,6 +593,13 @@ export const ChannelAttachmentArea = observer(({channelId}: {channelId: string})
 	const forceJumpFrameRef = useRef<number | null>(null);
 	const channelIdRef = useRef(channelId);
 	const [isDragging, setIsDragging] = useState(false);
+	const scrollerRef = useRef<ScrollerHandle>(null);
+	const getScrollElement = useCallback(() => {
+		const scroller = scrollerRef.current;
+		if (scroller == null) return null;
+		return scroller.getScrollerNode();
+	}, []);
+	useDragAutoScroll({active: isDragging, axis: 'horizontal', getScrollElement});
 	channelIdRef.current = channelId;
 	const handleAttachmentDrop = useCallback(
 		(item: AttachmentDragItem, result: AttachmentDropResult) => {
@@ -683,6 +691,7 @@ export const ChannelAttachmentArea = observer(({channelId}: {channelId: string})
 	return (
 		<>
 			<Scroller
+				ref={scrollerRef}
 				key="channel-attachment-scroller"
 				orientation="horizontal"
 				fade={false}

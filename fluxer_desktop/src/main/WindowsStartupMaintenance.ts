@@ -3,6 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {repairWindowsShortcuts} from '@electron/main/WindowsShortcuts';
 import {
 	emptyWindowsStartupMaintenanceState,
 	shouldRunWindowsStartupMaintenanceTask,
@@ -12,7 +13,6 @@ import {
 	type WindowsStartupMaintenanceTaskState,
 	withWindowsStartupMaintenanceTaskState,
 } from '@electron/main/WindowsStartupMaintenancePolicy';
-import {repairWindowsShortcuts} from '@electron/main/WindowsShortcuts';
 import {app, utilityProcess} from 'electron';
 import log from 'electron-log';
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 use crate::bootstrap::{build_bootstrap_script, inject_bootstrap};
-use crate::csp::{RuntimeCspSources, build_csp, generate_nonce};
+use crate::csp::{RuntimeCspSources, build_csp, generate_nonce, http_origin};
 use crate::discovery_cache::DiscoveryResponse;
 use crate::geoip::build_geoip_response;
 use crate::invite_meta::{
@@ -19,12 +19,11 @@ use axum::{
 use std::path::Path;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use super::spa_static::{guess_mime, is_hashed_asset, is_static_asset};
+use super::spa_static::{CORS_ALLOW_ANY_VALUE, guess_mime, is_font_mime, is_hashed_asset};
 
 const ACCEPT_CH_VALUE: &str = "DPR, Sec-CH-DPR, Sec-CH-Width, Save-Data, ECT, Downlink";
 const CRITICAL_CH_VALUE: &str = "Sec-CH-DPR, Sec-CH-Width, Save-Data";
 const DEV_NO_STORE_CACHE_CONTROL: &str = "no-store, no-cache, must-revalidate, max-age=0";
-const CORS_ALLOW_ANY_VALUE: &str = "*";
 
 pub async fn spa_catch_all(
     State(state): State<AppState>,
@@ -33,11 +32,19 @@ pub async fn spa_catch_all(
 ) -> Response {
     let request_path = request.uri().path();
 
-    if is_static_asset(request_path) {
+    if is_static_root_file(request_path) {
         return serve_static_file(&state.config.static_dir, request_path).await;
     }
 
     serve_spa_index(&state, &headers, request_path).await
+}
+
+const STATIC_ROOT_FILES: &[&str] = &["/robots.txt"];
+
+fn is_static_root_file(request_path: &str) -> bool {
+    STATIC_ROOT_FILES
+        .iter()
+        .any(|candidate| request_path.eq_ignore_ascii_case(candidate))
 }
 
 async fn serve_static_file(static_dir: &str, request_path: &str) -> Response {
@@ -89,13 +96,6 @@ async fn serve_static_file(static_dir: &str, request_path: &str) -> Response {
         HeaderValue::from_static(cache_control),
     );
     response
-}
-
-fn is_font_mime(mime_type: &str) -> bool {
-    matches!(
-        mime_type,
-        "font/woff" | "font/woff2" | "font/ttf" | "font/otf" | "application/vnd.ms-fontobject"
-    )
 }
 
 async fn serve_spa_index(state: &AppState, headers: &HeaderMap, request_path: &str) -> Response {
@@ -192,7 +192,40 @@ fn build_runtime_csp_sources(state: &AppState, discovery: &DiscoveryResponse) ->
         media_endpoint: discovery_endpoint(discovery, "media"),
         s3_public_endpoint: state.config.s3_public_endpoint.clone(),
         s3_uploads_bucket: Some(state.config.s3_uploads_bucket.clone()),
+        branding_image_origins: branding_image_origins(discovery),
     }
+}
+
+const BRANDING_IMAGE_KEYS: &[&str] = &[
+    "icon_url",
+    "symbol_url",
+    "logo_url",
+    "wordmark_url",
+    "favicon_url",
+];
+
+fn branding_image_origins(discovery: &DiscoveryResponse) -> Vec<String> {
+    let Some(branding) = discovery
+        .data
+        .get("app_public")
+        .and_then(|app_public| app_public.get("branding"))
+    else {
+        return Vec::new();
+    };
+    let mut origins: Vec<String> = Vec::new();
+    for key in BRANDING_IMAGE_KEYS {
+        let Some(origin) = branding
+            .get(*key)
+            .and_then(|value| value.as_str())
+            .and_then(http_origin)
+        else {
+            continue;
+        };
+        if !origins.contains(&origin) {
+            origins.push(origin);
+        }
+    }
+    origins
 }
 
 fn discovery_endpoint(discovery: &DiscoveryResponse, key: &str) -> Option<String> {
@@ -474,6 +507,20 @@ mod tests {
         assert!(should_cache_bust_asset_url(
             "https://example.test/web/favicon-32x32.png"
         ));
+    }
+
+    #[test]
+    fn only_declared_static_root_files_bypass_the_spa_document() {
+        assert!(is_static_root_file("/robots.txt"));
+        assert!(!is_static_root_file("/index.html"));
+        assert!(!is_static_root_file("/channels/@me"));
+    }
+
+    #[test]
+    fn spa_routes_containing_a_dot_still_render_the_document() {
+        assert!(!is_static_root_file("/theme/my.custom.theme"));
+        assert!(!is_static_root_file("/invite/abc.def"));
+        assert!(!is_static_root_file("/users/1.2.3"));
     }
 
     #[test]

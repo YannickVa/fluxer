@@ -6,6 +6,7 @@ import {
 	getMessageGroupSpacingForDisplayMode,
 	migrateLegacyMessageGroupSpacing,
 } from '@app/features/accessibility/state/MessageGroupSpacing';
+import {DEFAULT_MESSAGE_GUTTER_PX} from '@app/features/accessibility/state/MessagePresentationDefaults';
 import type {AnimatedMediaKind} from '@app/features/accessibility/state/MotionPreferencesMachine';
 import {
 	AuthSessionStorageKey,
@@ -667,7 +668,7 @@ class Accessibility {
 	keepStickerAnimationUnderReducedMotion = false;
 	messageGroupSpacing = COMFY_MESSAGE_GROUP_SPACING_DEFAULT;
 	compactMessageGroupSpacing = COMPACT_MESSAGE_GROUP_SPACING_DEFAULT;
-	messageGutter = 16;
+	messageGutter = DEFAULT_MESSAGE_GUTTER_PX;
 	fontSize = 16;
 	showUserAvatarsInCompactMode = false;
 	mobileStickerAnimationOverridden = false;
@@ -1319,8 +1320,7 @@ class Accessibility {
 			this.firstClickPassThroughWhenUnfocused = validated.firstClickPassThroughWhenUnfocused;
 		if (validated.scrollToBottomOnMessageSend !== undefined)
 			this.scrollToBottomOnMessageSend = validated.scrollToBottomOnMessageSend;
-		if (validated.sequentialFileSend !== undefined)
-			this.sequentialFileSend = validated.sequentialFileSend;
+		if (validated.sequentialFileSend !== undefined) this.sequentialFileSend = validated.sequentialFileSend;
 		if (validated.showNeko !== undefined && validated.showNeko !== this.showNeko) {
 			this.showNeko = validated.showNeko;
 			persistLocalShowNeko(validated.showNeko);
@@ -1463,14 +1463,7 @@ class Accessibility {
 
 	async applyZoom(level: number): Promise<void> {
 		const zoomLevel = clampZoomLevel(level);
-		const electronApi = (
-			window as {
-				electron?: {
-					setZoomFactor?: (factor: number) => void;
-				};
-			}
-		).electron;
-		applyAppZoomToDocument(zoomLevel * 100, electronApi);
+		applyAppZoomToDocument(zoomLevel * 100, window.electron);
 	}
 
 	async applyStoredZoom(): Promise<void> {

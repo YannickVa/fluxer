@@ -4,13 +4,12 @@ import {useContextMenuHoverState} from '@app/features/app/hooks/useContextMenuHo
 import {getAccountAvatarUrl, getAccountDisplayName} from '@app/features/auth/components/accounts/AccountListItem';
 import styles from '@app/features/auth/components/accounts/AccountRow.module.css';
 import type {Account} from '@app/features/platform/state/AuthSession';
-import {Logger} from '@app/features/platform/utils/AppLogger';
+import {remFromPx} from '@app/features/theme/layout/RemFromPx';
 import {MockAvatar} from '@app/features/ui/components/MockAvatar';
 import FocusRing from '@app/features/ui/focus_ring/FocusRing';
-import {Tooltip} from '@app/features/ui/tooltip/Tooltip';
 import {msg} from '@lingui/core/macro';
 import {Trans, useLingui} from '@lingui/react/macro';
-import {CaretRightIcon, CheckIcon, DotsThreeIcon, GlobeIcon} from '@phosphor-icons/react';
+import {CaretRightIcon, CheckIcon, DotsThreeIcon} from '@phosphor-icons/react';
 import clsx from 'clsx';
 import {observer} from 'mobx-react-lite';
 import type React from 'react';
@@ -24,26 +23,6 @@ const MORE_DESCRIPTOR = msg({
 	message: 'More',
 	comment: 'Short label in the authentication account row. Keep the tone plain and specific.',
 });
-const STANDARD_INSTANCES = new Set(['web.fluxer.app', 'web.canary.fluxer.app']);
-const logger = new Logger('AccountRow');
-
-function getInstanceHost(account: Account): string | null {
-	const endpoint = account.instance?.apiEndpoint;
-	if (!endpoint) {
-		return null;
-	}
-	try {
-		return new URL(endpoint).hostname;
-	} catch (error) {
-		logger.error('Failed to parse instance host:', error);
-		return null;
-	}
-}
-
-function getInstanceEndpoint(account: Account): string | null {
-	return account.instance?.apiEndpoint ?? null;
-}
-
 type AccountRowVariant = 'default' | 'manage' | 'compact';
 
 interface AccountRowProps {
@@ -51,7 +30,6 @@ interface AccountRowProps {
 	variant?: AccountRowVariant;
 	isCurrent?: boolean;
 	isExpired?: boolean;
-	showInstance?: boolean;
 	onMenuClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 	onClick?: () => void;
 	showCaretIndicator?: boolean;
@@ -65,7 +43,6 @@ export const AccountRow = observer(
 		variant = 'default',
 		isCurrent = false,
 		isExpired = false,
-		showInstance = false,
 		onMenuClick,
 		onClick,
 		showCaretIndicator = false,
@@ -76,9 +53,6 @@ export const AccountRow = observer(
 		const avatarUrl = getAccountAvatarUrl(account);
 		const displayName = getAccountDisplayName(account, '???');
 		const discriminator = account.userData?.discriminator ?? '0000';
-		const instanceHost = showInstance ? getInstanceHost(account) : null;
-		const instanceEndpoint = showInstance ? getInstanceEndpoint(account) : null;
-		const shouldShowInstance = typeof instanceHost === 'string' && !STANDARD_INSTANCES.has(instanceHost);
 		const menuButtonRef = useRef<HTMLButtonElement | null>(null);
 		const isContextMenuOpen = useContextMenuHoverState(menuButtonRef, Boolean(onMenuClick));
 		const handleMenuClick = useCallback(
@@ -125,16 +99,6 @@ export const AccountRow = observer(
 										#{discriminator}
 									</span>
 								</span>
-								{shouldShowInstance && instanceEndpoint ? (
-									<Tooltip text={instanceEndpoint} position="right" data-flx="auth.accounts.account-row.tooltip">
-										<span
-											className={styles.globeButtonCompact}
-											data-flx="auth.accounts.account-row.globe-button-compact"
-										>
-											<GlobeIcon size={12} weight="bold" data-flx="auth.accounts.account-row.globe-icon" />
-										</span>
-									</Tooltip>
-								) : null}
 							</div>
 						) : (
 							<>
@@ -157,16 +121,6 @@ export const AccountRow = observer(
 											{displayName}
 										</span>
 									)}
-									{shouldShowInstance && instanceEndpoint ? (
-										<Tooltip text={instanceEndpoint} position="right" data-flx="auth.accounts.account-row.tooltip--2">
-											<span
-												className={styles.globeButtonCompact}
-												data-flx="auth.accounts.account-row.globe-button-compact--2"
-											>
-												<GlobeIcon size={12} weight="bold" data-flx="auth.accounts.account-row.globe-icon--2" />
-											</span>
-										</Tooltip>
-									) : null}
 								</div>
 								{variant !== 'manage' ? (
 									<span className={clsx('user-text', styles.tag)} data-flx="auth.accounts.account-row.user-text--4">
@@ -196,12 +150,16 @@ export const AccountRow = observer(
 					</div>
 					{isCurrent && variant !== 'manage' ? (
 						<div className={styles.checkIndicator} data-flx="auth.accounts.account-row.check-indicator">
-							<CheckIcon size={10} weight="bold" data-flx="auth.accounts.account-row.check-icon" />
+							<CheckIcon size={remFromPx(10)} weight="bold" data-flx="auth.accounts.account-row.check-icon" />
 						</div>
 					) : null}
 					{showCaretIndicator ? (
 						<div className={styles.caretIndicator} data-flx="auth.accounts.account-row.caret-indicator">
-							<CaretRightIcon size={18} weight="bold" data-flx="auth.accounts.account-row.caret-right-icon" />
+							<CaretRightIcon
+								size={remFromPx(18)}
+								weight="bold"
+								data-flx="auth.accounts.account-row.caret-right-icon"
+							/>
 						</div>
 					) : null}
 				</MainButtonComponent>
@@ -216,7 +174,7 @@ export const AccountRow = observer(
 							data-flx="auth.accounts.account-row.menu-button.menu-click"
 						>
 							<DotsThreeIcon
-								size={20}
+								size={remFromPx(20)}
 								weight="bold"
 								className={styles.menuIcon}
 								data-flx="auth.accounts.account-row.menu-icon"

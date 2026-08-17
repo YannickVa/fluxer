@@ -5,7 +5,7 @@ import {useSearchInputAutofocus} from '@app/features/app/hooks/useSearchInputAut
 import {useShouldAnimate} from '@app/features/app/hooks/useShouldAnimate';
 import styles from '@app/features/channel/components/EmojiPicker.module.css';
 import {EmojiPickerCategoryList} from '@app/features/channel/components/emoji_picker/EmojiPickerCategoryList';
-import {EMOJI_SPRITE_SIZE} from '@app/features/channel/components/emoji_picker/EmojiPickerConstants';
+import {getEmojiGridColumns} from '@app/features/channel/components/emoji_picker/EmojiPickerConstants';
 import {EmojiPickerInspector} from '@app/features/channel/components/emoji_picker/EmojiPickerInspector';
 import {EmojiPickerSearchBar} from '@app/features/channel/components/emoji_picker/EmojiPickerSearchBar';
 import {useEmojiCategories} from '@app/features/channel/components/emoji_picker/hooks/useEmojiCategories';
@@ -13,6 +13,7 @@ import {useVirtualRows} from '@app/features/channel/components/emoji_picker/hook
 import {VirtualizedRow} from '@app/features/channel/components/emoji_picker/VirtualRow';
 import {PremiumUpsellBanner} from '@app/features/channel/components/PremiumUpsellBanner';
 import premiumStyles from '@app/features/channel/components/PremiumUpsellBanner.module.css';
+import {useScrollerViewport} from '@app/features/channel/components/pickers/shared/useScrollerViewport';
 import Channels from '@app/features/channel/state/Channels';
 import * as EmojiPickerCommands from '@app/features/emoji/commands/EmojiPickerCommands';
 import Emoji, {normalizeEmojiSearchQuery} from '@app/features/emoji/state/Emoji';
@@ -26,7 +27,6 @@ import {
 	shouldShowEmojiPremiumUpsell,
 } from '@app/features/expressions/utils/ExpressionPermissionUtils';
 import {getEmojiDisplayDataWithSkinTone} from '@app/features/expressions/utils/SkinToneUtils';
-import UnicodeEmojis, {EMOJI_SPRITES} from '@app/features/expressions/utils/UnicodeEmojis';
 import Permission from '@app/features/permissions/state/Permission';
 import {ComponentDispatch} from '@app/features/platform/utils/ComponentBus';
 import {usePremiumUpsellData} from '@app/features/premium/hooks/usePremiumUpsellData';
@@ -58,6 +58,8 @@ export const EmojiPicker = observer(
 		const [selectedColumn, setSelectedColumn] = useState(-1);
 		const [shouldScrollOnSelection, setShouldScrollOnSelection] = useState(false);
 		const scrollerRef = useRef<ScrollerHandle>(null);
+		const {viewportSize, handleResize} = useScrollerViewport(scrollerRef);
+		const gridColumns = useMemo(() => getEmojiGridColumns(viewportSize.width), [viewportSize.width]);
 		const searchInputRef = useRef<HTMLInputElement>(null);
 		const emojiRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
 		const normalizedSearchTerm = useMemo(() => normalizeEmojiSearchQuery(searchTerm), [searchTerm]);
@@ -107,17 +109,6 @@ export const EmojiPicker = observer(
 			},
 			[shouldAnimateEmoji, skinTone],
 		);
-		const spriteSheetSizes = useMemo(() => {
-			const nonDiversitySize = [
-				`${EMOJI_SPRITE_SIZE * EMOJI_SPRITES.NonDiversityPerRow}px`,
-				`${EMOJI_SPRITE_SIZE * Math.ceil(UnicodeEmojis.numNonDiversitySprites / EMOJI_SPRITES.NonDiversityPerRow)}px`,
-			].join(' ');
-			const diversitySize = [
-				`${EMOJI_SPRITE_SIZE * EMOJI_SPRITES.DiversityPerRow}px`,
-				`${EMOJI_SPRITE_SIZE * Math.ceil(UnicodeEmojis.numDiversitySprites / EMOJI_SPRITES.DiversityPerRow)}px`,
-			].join(' ');
-			return {nonDiversitySize, diversitySize};
-		}, []);
 		useEffect(() => {
 			const handleEmojiDataUpdated = () => {
 				setEmojiDataVersion((version) => version + 1);
@@ -148,13 +139,14 @@ export const EmojiPicker = observer(
 			renderedEmojis,
 		);
 		const showFrequentlyUsedButton = frequentlyUsedEmojis.length > 0 && !normalizedSearchTerm;
-		const virtualRows = useVirtualRows(
+		const pickerRows = useVirtualRows(
 			normalizedSearchTerm,
 			renderedEmojis,
 			favoriteEmojis,
 			frequentlyUsedEmojis,
 			customEmojisByGuildId,
 			unicodeEmojisByCategory,
+			gridColumns,
 		);
 		const lockedEmojiCount = allUpsell.summary.lockedItems.length;
 		const communityCount = allUpsell.summary.communityCount;
@@ -185,13 +177,13 @@ export const EmojiPicker = observer(
 			lockedEmojiCount > 0;
 		const sections = useMemo(() => {
 			const result: Array<number> = [];
-			for (const row of virtualRows) {
+			for (const row of pickerRows) {
 				if (row.type === 'emoji-row') {
 					result.push(row.emojis.length);
 				}
 			}
 			return result;
-		}, [virtualRows]);
+		}, [pickerRows]);
 		const handleCategoryClick = (category: string) => {
 			const element = categoryRefs.current.get(category);
 			if (element) {
@@ -224,10 +216,10 @@ export const EmojiPicker = observer(
 				setSelectedColumn(column);
 				setShouldScrollOnSelection(shouldScroll);
 				let currentRow = 0;
-				for (const virtualRow of virtualRows) {
-					if (virtualRow.type === 'emoji-row') {
-						if (currentRow === row && column < virtualRow.emojis.length) {
-							const emoji = virtualRow.emojis[column];
+				for (const pickerRow of pickerRows) {
+					if (pickerRow.type === 'emoji-row') {
+						if (currentRow === row && column < pickerRow.emojis.length) {
+							const emoji = pickerRow.emojis[column];
 							setHoveredEmoji(emoji);
 							break;
 						}
@@ -235,7 +227,7 @@ export const EmojiPicker = observer(
 					}
 				}
 			},
-			[virtualRows],
+			[pickerRows],
 		);
 		useEffect(() => {
 			if (renderedEmojis.length > 0 && selectedRow === 0 && selectedColumn === 0 && !hoveredEmoji) {
@@ -248,10 +240,10 @@ export const EmojiPicker = observer(
 					return;
 				}
 				let currentRow = 0;
-				for (const virtualRow of virtualRows) {
-					if (virtualRow.type === 'emoji-row') {
-						if (currentRow === row && column < virtualRow.emojis.length) {
-							const emoji = virtualRow.emojis[column];
+				for (const pickerRow of pickerRows) {
+					if (pickerRow.type === 'emoji-row') {
+						if (currentRow === row && column < pickerRow.emojis.length) {
+							const emoji = pickerRow.emojis[column];
 							handleEmojiSelect(emoji, event?.shiftKey);
 							return;
 						}
@@ -259,7 +251,7 @@ export const EmojiPicker = observer(
 					}
 				}
 			},
-			[virtualRows, handleEmojiSelect],
+			[pickerRows, handleEmojiSelect],
 		);
 		return (
 			<div className={styles.container} data-flx="channel.emoji-picker.container">
@@ -289,6 +281,7 @@ export const EmojiPicker = observer(
 								className={`${styles.list} ${styles.listWrapper}`}
 								fade={false}
 								key="emoji_picker-scroller"
+								onResize={handleResize}
 								data-emoji-picker-scroll-root="true"
 								data-flx="channel.emoji-picker.list"
 							>
@@ -301,9 +294,9 @@ export const EmojiPicker = observer(
 										data-flx="channel.emoji-picker.premium-upsell-banner"
 									/>
 								)}
-								{virtualRows.map((row, index) => {
-									const emojiRowIndex = virtualRows.slice(0, index).filter((r) => r.type === 'emoji-row').length;
-									const needsSpacingAfter = row.type === 'emoji-row' && virtualRows[index + 1]?.type === 'header';
+								{pickerRows.map((row, index) => {
+									const emojiRowIndex = pickerRows.slice(0, index).filter((r) => r.type === 'emoji-row').length;
+									const needsSpacingAfter = row.type === 'emoji-row' && pickerRows[index + 1]?.type === 'header';
 									return (
 										<div
 											key={`${row.type}-${row.index}`}
@@ -324,9 +317,9 @@ export const EmojiPicker = observer(
 												handleHover={handleHover}
 												handleSelect={handleEmojiSelect}
 												skinTone={skinTone}
-												spriteSheetSizes={spriteSheetSizes}
 												channel={channel}
 												allowAnimation={shouldAnimateEmoji}
+												gridColumns={gridColumns}
 												hoveredEmoji={hoveredEmoji}
 												selectedRow={selectedRow}
 												selectedColumn={selectedColumn}

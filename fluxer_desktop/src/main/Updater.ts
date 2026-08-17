@@ -2,10 +2,9 @@
 
 import {createRequire} from 'node:module';
 import {BUILD_CHANNEL} from '@electron/common/BuildChannel';
-import {DESKTOP_BUILD_VARIANT} from '@electron/common/BuildVariant';
 import {isPortableMode} from '@electron/common/UserDataPath';
-import {resolveDesktopUpdateEndpoints} from '@electron/main/DesktopUpdateEndpoints';
 import {destroyDesktopTray} from '@electron/main/DesktopTray';
+import {resolveDesktopUpdateEndpoints} from '@electron/main/DesktopUpdateEndpoints';
 import {isFlatpakRuntime} from '@electron/main/LinuxSandbox';
 import {setQuitting} from '@electron/main/Window';
 import {app, autoUpdater, type BrowserWindow, ipcMain} from 'electron';
@@ -76,7 +75,6 @@ const {updateBaseUrl: UPDATE_BASE_URL, downloadPageUrl: DOWNLOAD_PAGE_URL} = res
 	channel: BUILD_CHANNEL,
 	platform: process.platform,
 	arch: DESKTOP_DOWNLOAD_ARCH,
-	variant: DESKTOP_BUILD_VARIANT,
 	updateBaseUrlOverride: process.env.PUBLIC_DESKTOP_UPDATE_BASE_URL,
 	downloadPageUrlOverride: process.env.PUBLIC_DESKTOP_DOWNLOAD_URL,
 });

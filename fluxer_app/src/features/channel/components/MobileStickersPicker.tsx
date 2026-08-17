@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import Accessibility from '@app/features/accessibility/state/Accessibility';
 import {PREMIUM_PRODUCT_NAME} from '@app/features/app/config/I18nDisplayConstants';
 import {useSearchInputAutofocus} from '@app/features/app/hooks/useSearchInputAutofocus';
 import mobileStyles from '@app/features/channel/components/MobileEmojiPicker.module.css';
@@ -133,8 +134,9 @@ export const MobileStickersPicker = observer(
 			allUpsell.accessibleItems,
 			renderedStickers,
 		);
-		const gridColumns = useMemo(() => getMobileStickerGridColumns(viewportSize.width), [viewportSize.width]);
-		const virtualRows = useVirtualRows(
+		const zoomLevel = Accessibility.zoomLevel;
+		const gridColumns = useMemo(() => getMobileStickerGridColumns(viewportSize.width), [viewportSize.width, zoomLevel]);
+		const pickerRows = useVirtualRows(
 			searchTerm,
 			renderedStickers,
 			favoriteStickers,
@@ -262,8 +264,8 @@ export const MobileStickersPicker = observer(
 										data-flx="channel.mobile-stickers-picker.premium-upsell-banner"
 									/>
 								)}
-								{virtualRows.map((row, index) => {
-									const stickerRowIndex = virtualRows.slice(0, index).filter((r) => r.type === 'sticker-row').length;
+								{pickerRows.map((row, index) => {
+									const stickerRowIndex = pickerRows.slice(0, index).filter((r) => r.type === 'sticker-row').length;
 									return (
 										<div
 											key={`${row.type}-${row.index}`}

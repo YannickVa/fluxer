@@ -20,11 +20,6 @@ const embeddedBuildVersion = process.env.PUBLIC_BUILD_VERSION || process.env.BUI
 const embeddedReleaseChannel = process.env.PUBLIC_RELEASE_CHANNEL || process.env.RELEASE_CHANNEL || '';
 const embeddedDesktopUpdateBaseUrl = process.env.PUBLIC_DESKTOP_UPDATE_BASE_URL || '';
 const embeddedDesktopDownloadUrl = process.env.PUBLIC_DESKTOP_DOWNLOAD_URL || '';
-const requestedDesktopBuildVariant = process.env.FLUXER_DESKTOP_BUILD_VARIANT || process.env.DESKTOP_VARIANT || '';
-const windowsGameCaptureModuleEnabled =
-	requestedDesktopBuildVariant === 'windows-game-capture' ||
-	process.env.FLUXER_WINDOWS_GAME_CAPTURE_MODULE_ENABLED === 'true';
-const embeddedDesktopBuildVariant = windowsGameCaptureModuleEnabled ? 'windows-game-capture' : 'default';
 const publicBuildDefines = {
 	'process.env.PUBLIC_BUILD_VERSION': JSON.stringify(embeddedBuildVersion),
 	'process.env.BUILD_VERSION': JSON.stringify(embeddedBuildVersion),
@@ -32,19 +27,14 @@ const publicBuildDefines = {
 	'process.env.RELEASE_CHANNEL': JSON.stringify(embeddedReleaseChannel),
 	'process.env.PUBLIC_DESKTOP_UPDATE_BASE_URL': JSON.stringify(embeddedDesktopUpdateBaseUrl),
 	'process.env.PUBLIC_DESKTOP_DOWNLOAD_URL': JSON.stringify(embeddedDesktopDownloadUrl),
-	'process.env.FLUXER_DESKTOP_BUILD_VARIANT': JSON.stringify(embeddedDesktopBuildVariant),
-	'process.env.FLUXER_WINDOWS_GAME_CAPTURE_MODULE_ENABLED': JSON.stringify(
-		windowsGameCaptureModuleEnabled ? 'true' : 'false',
-	),
 };
 const electronExternals = [
 	'electron',
 	'electron-log',
 	'update-electron-app',
 	'velopack',
+	'@fluxer/hardware-encoder',
 	'@fluxer/webauthn',
-	'@fluxer/webrtc-sender',
-	'node-mac-permissions',
 	'hunspell-asm',
 ];
 const pathAliasPlugin = {
@@ -149,7 +139,7 @@ function addFilesFromDirectory(files, packageDir, relativeDir, predicate) {
 
 function collectRuntimeArtifactPaths(packageDir) {
 	const artifacts = new Set();
-	for (const fileName of ['index.js', 'index.d.ts', 'binding.js', 'binding.d.ts', 'loader-diagnostics.cjs']) {
+	for (const fileName of ['index.js', 'index.d.ts', 'binding.js', 'binding.d.ts', 'loader-diagnostics.cjs', 'pure.cjs']) {
 		if (fs.existsSync(path.join(packageDir, fileName))) {
 			artifacts.add(fileName);
 		}
@@ -179,7 +169,6 @@ function isWindowsNativeRuntimeManifest(fileName) {
 }
 
 function addWinGameCaptureRuntimeArtifacts(artifacts, tag, arch) {
-	if (!windowsGameCaptureModuleEnabled) return;
 	const add = (relativePath) => {
 		artifacts.push({
 			label: '@fluxer/win-game-capture',
@@ -234,16 +223,27 @@ function platformTag(platform, arch) {
 }
 
 function expectedNativeRuntimeArtifacts(platform = process.platform, arch = process.env.ELECTRON_ARCH || process.arch) {
+	if (platform === 'darwin' && arch === 'universal') {
+		return [
+			...expectedNativeRuntimeArtifactsForArch(platform, 'arm64'),
+			...expectedNativeRuntimeArtifactsForArch(platform, 'x64'),
+		];
+	}
+	return expectedNativeRuntimeArtifactsForArch(platform, arch);
+}
+
+function expectedNativeRuntimeArtifactsForArch(platform, arch) {
 	const tag = platformTag(platform, arch);
 	if (!tag) return [];
 	const artifacts = [];
 	artifacts.push({
 		label: '@fluxer/webauthn',
 		relativePath: `webauthn.${tag}.node`,
+		runtimeFiles: ['index.js', 'loader-diagnostics.cjs', 'pure.cjs'],
 	});
 	artifacts.push({
-		label: '@fluxer/webrtc-sender',
-		relativePath: `webrtc-sender.${tag}.node`,
+		label: '@fluxer/hardware-encoder',
+		relativePath: `hardware-encoder.${tag}.node`,
 		runtimeFiles: ['index.js'],
 	});
 	if (platform === 'darwin') {
@@ -274,6 +274,7 @@ function expectedNativeRuntimeArtifacts(platform = process.platform, arch = proc
 		artifacts.push({
 			label: '@fluxer/platform-info',
 			relativePath: `platform-info.${tag}.node`,
+			runtimeFiles: ['index.js', 'loader-diagnostics.cjs', 'pure.cjs'],
 		});
 	} else if (platform === 'win32') {
 		artifacts.push({
@@ -300,6 +301,7 @@ function expectedNativeRuntimeArtifacts(platform = process.platform, arch = proc
 		artifacts.push({
 			label: '@fluxer/platform-info',
 			relativePath: `platform-info.${tag}.node`,
+			runtimeFiles: ['index.js', 'loader-diagnostics.cjs', 'pure.cjs'],
 		});
 	} else if (platform === 'linux') {
 		artifacts.push({
@@ -333,6 +335,7 @@ function expectedNativeRuntimeArtifacts(platform = process.platform, arch = proc
 		artifacts.push({
 			label: '@fluxer/platform-info',
 			relativePath: `platform-info.${tag}.node`,
+			runtimeFiles: ['index.js', 'loader-diagnostics.cjs', 'pure.cjs'],
 		});
 	}
 	return artifacts;
@@ -420,8 +423,8 @@ function buildNativeAddons() {
 		jsEntry: 'index.js',
 	});
 	buildNativeAddon({
-		label: '@fluxer/webrtc-sender',
-		dirName: 'webrtc-sender',
+		label: '@fluxer/hardware-encoder',
+		dirName: 'hardware-encoder',
 		commands: [['pnpm', 'build']],
 		jsEntry: 'index.js',
 	});
@@ -502,14 +505,12 @@ function buildNativeAddons() {
 			commands: [['pnpm', 'build']],
 			jsEntry: 'index.js',
 		});
-		if (windowsGameCaptureModuleEnabled) {
-			buildNativeAddon({
-				label: '@fluxer/win-game-capture',
-				dirName: 'win-game-capture',
-				commands: [['pnpm', 'build']],
-				jsEntry: 'index.js',
-			});
-		}
+		buildNativeAddon({
+			label: '@fluxer/win-game-capture',
+			dirName: 'win-game-capture',
+			commands: [['pnpm', 'build']],
+			jsEntry: 'index.js',
+		});
 		buildNativeAddon({
 			label: '@fluxer/platform-info',
 			dirName: 'platform-info',
