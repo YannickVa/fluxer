@@ -2,6 +2,7 @@
 	"name": "fluxer",
 	"private": true,
 	"scripts": {
+		"browser:smoke": "node scripts/browser-smoke.mjs",
 		"build": "cargo run -p fluxer-dev -- build",
 		"dev": "cargo run -p fluxer-dev -- dev",
 		"dev:bootstrap": "cargo run -p fluxer-dev -- bootstrap",
@@ -50,7 +51,8 @@
 	"devDependencies": {
 		"@biomejs/biome": "catalog:",
 		"@vitest/coverage-v8": "catalog:",
-		"knip": "catalog:"
+		"knip": "catalog:",
+		"playwright": "catalog:"
 	},
 	"packageManager": "pnpm@10.29.3"
 }
