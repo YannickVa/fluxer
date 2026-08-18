@@ -210,6 +210,47 @@ async function sendMessage(page, channelId, content, timeoutMs) {
 	return payload.id;
 }
 
+async function sendAttachment(page, channelId, filename, content, timeoutMs, onCreated) {
+	const responsePromise = page.waitForResponse(
+		(response) =>
+			response.request().method() === 'POST' &&
+			new URL(response.url()).pathname === `/api/v1/channels/${channelId}/messages`,
+		{timeout: timeoutMs},
+	);
+	await page.evaluate(
+		({attachmentFilename, attachmentContent}) => {
+			const transfer = new DataTransfer();
+			transfer.items.add(new File([attachmentContent], attachmentFilename, {type: 'text/plain'}));
+			for (const type of ['dragenter', 'dragover', 'drop']) {
+				window.dispatchEvent(
+					new DragEvent(type, {
+						bubbles: true,
+						cancelable: true,
+						dataTransfer: transfer,
+						shiftKey: true,
+					}),
+				);
+			}
+		},
+		{attachmentFilename: filename, attachmentContent: content},
+	);
+	const response = await responsePromise;
+	assert(response.ok(), `Sending attachment failed with HTTP ${response.status()}.`);
+	const payload = await response.json();
+	assert(payload && typeof payload.id === 'string', 'The attachment response did not contain a message ID.');
+	onCreated(payload.id);
+	assert.equal(payload.attachments?.length, 1, 'The attachment response did not contain exactly one attachment.');
+	assert.equal(payload.attachments[0].filename, filename, 'The attachment response filename did not match.');
+	const attachmentResponse = await page.evaluate(async (url) => {
+		const download = await fetch(url);
+		return {body: await download.text(), ok: download.ok, status: download.status};
+	}, payload.attachments[0].url);
+	assert(attachmentResponse.ok, `Downloading the uploaded attachment failed with HTTP ${attachmentResponse.status}.`);
+	assert.equal(attachmentResponse.body, content, 'The downloaded attachment content did not match.');
+	await messageRowById(page, payload.id).filter({hasText: filename}).waitFor({state: 'visible', timeout: timeoutMs});
+	return payload.id;
+}
+
 async function openMessageContextMenu(page, messageId, timeoutMs) {
 	const row = messageRowById(page, messageId);
 	await page.bringToFront();
@@ -286,6 +327,9 @@ const originalContent = `${runTag} original`;
 const editedContent = `${runTag} original edited`;
 const replyContent = `${runTag} reply`;
 const reconnectContent = `${runTag} reconnect`;
+const deleteContent = `${runTag} delete`;
+const attachmentFilename = `${runTag}.txt`;
+const attachmentContent = `${runTag} attachment\n`;
 const report = {
 	startedAt,
 	completedAt: null,
@@ -386,10 +430,25 @@ try {
 	await openMessageContextMenu(pageB, originalId, timeoutMs);
 	await pageB.locator(QUICK_REACTION_MENU_ITEM_SELECTOR).first().click();
 	await pageA
+		.locator(`${MESSAGE_ROW_SELECTOR}[data-message-id="${originalId}"]`)
 		.getByRole('button', {name: /1 reaction/i})
-		.last()
 		.waitFor({state: 'visible', timeout: timeoutMs});
 	pass('user A receives user B reaction live');
+
+	const attachmentId = await sendAttachment(
+		pageA,
+		channelId,
+		attachmentFilename,
+		attachmentContent,
+		timeoutMs,
+		(id) => {
+			createdMessages.push({owner: 'A', id});
+		},
+	);
+	await messageRowById(pageB, attachmentId)
+		.filter({hasText: attachmentFilename})
+		.waitFor({state: 'visible', timeout: timeoutMs});
+	pass('user B receives user A attachment live and its stored bytes match', {filename: attachmentFilename});
 
 	const gatewayConnectionsBeforeOffline = gatewayTrackerB.opened;
 	await contextB.setOffline(true);
@@ -403,14 +462,30 @@ try {
 		connection: gatewayTrackerB.opened > gatewayConnectionsBeforeOffline ? 'reopened' : 'reused',
 	});
 
-	await pageA.waitForTimeout(settleMs);
-	assert.deepEqual(report.diagnostics[0].pageErrors, [], 'User A page emitted runtime errors.');
-	assert.deepEqual(report.diagnostics[1].pageErrors, [], 'User B page emitted runtime errors.');
-	assert.deepEqual(report.diagnostics[0].consoleErrors, [], 'User A page emitted console errors.');
-	assert.deepEqual(report.diagnostics[1].consoleErrors, [], 'User B page emitted console errors.');
-	assert.deepEqual(report.diagnostics[0].requestFailures, [], 'User A page emitted unexpected request failures.');
-	assert.deepEqual(report.diagnostics[1].requestFailures, [], 'User B page emitted unexpected request failures.');
-	pass('neither page emitted uncaught errors or unexpected request failures');
+	await openChannel(pageB, gatewayTrackerB, guildId, channelId, timeoutMs);
+	await messageRowById(pageB, originalId)
+		.filter({hasText: editedContent})
+		.waitFor({state: 'visible', timeout: timeoutMs});
+	await messageRowById(pageB, originalId)
+		.getByRole('button', {name: /1 reaction/i})
+		.waitFor({state: 'visible', timeout: timeoutMs});
+	await messageRowById(pageB, replyId)
+		.locator(REPLY_PREVIEW_SELECTOR)
+		.filter({hasText: editedContent})
+		.waitFor({state: 'visible', timeout: timeoutMs});
+	await messageRowById(pageB, attachmentId)
+		.filter({hasText: attachmentFilename})
+		.waitFor({state: 'visible', timeout: timeoutMs});
+	pass('channel reload preserves edit, reply, reaction, and attachment state');
+
+	const deleteId = await sendMessage(pageA, channelId, deleteContent, timeoutMs);
+	createdMessages.push({owner: 'A', id: deleteId});
+	await messageRowById(pageB, deleteId).waitFor({state: 'visible', timeout: timeoutMs});
+	await deleteMessage(pageA, deleteId, timeoutMs);
+	createdMessages.pop();
+	report.cleanup.push({messageId: deleteId, status: 'deleted'});
+	await messageRowById(pageB, deleteId).waitFor({state: 'detached', timeout: timeoutMs});
+	pass('user B receives user A message deletion live');
 
 	report.status = 'passed';
 } catch (error) {
@@ -442,7 +517,9 @@ try {
 		if (!ownerPage) continue;
 		try {
 			const ownerTracker = message.owner === 'A' ? gatewayTrackerA : gatewayTrackerB;
-			await openChannel(ownerPage, ownerTracker, guildId, channelId, timeoutMs);
+			if (new URL(ownerPage.url()).pathname !== `/channels/${guildId}/${channelId}`) {
+				await openChannel(ownerPage, ownerTracker, guildId, channelId, timeoutMs);
+			}
 			await deleteMessage(ownerPage, message.id, timeoutMs);
 			report.cleanup.push({messageId: message.id, status: 'deleted'});
 			console.log(`CLEANUP deleted ${message.id}`);
@@ -453,6 +530,23 @@ try {
 			report.error ??= 'One or more test messages could not be deleted.';
 			process.exitCode = 1;
 			console.error(`CLEANUP failed ${message.id}: ${messageText}`);
+		}
+	}
+	if (report.status === 'passed') {
+		try {
+			await pageA.waitForTimeout(settleMs);
+			assert.deepEqual(report.diagnostics[0].pageErrors, [], 'User A page emitted runtime errors.');
+			assert.deepEqual(report.diagnostics[1].pageErrors, [], 'User B page emitted runtime errors.');
+			assert.deepEqual(report.diagnostics[0].consoleErrors, [], 'User A page emitted console errors.');
+			assert.deepEqual(report.diagnostics[1].consoleErrors, [], 'User B page emitted console errors.');
+			assert.deepEqual(report.diagnostics[0].requestFailures, [], 'User A page emitted unexpected request failures.');
+			assert.deepEqual(report.diagnostics[1].requestFailures, [], 'User B page emitted unexpected request failures.');
+			pass('neither page emitted uncaught errors or unexpected request failures');
+		} catch (error) {
+			report.status = 'failed';
+			report.error = error instanceof Error ? error.message : String(error);
+			process.exitCode = 1;
+			console.error(`FAIL ${report.error}`);
 		}
 	}
 	await Promise.all([browserA?.close().catch(() => undefined), browserB?.close().catch(() => undefined)]);
