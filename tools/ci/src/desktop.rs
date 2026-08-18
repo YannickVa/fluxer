@@ -1404,6 +1404,8 @@ const WINDOWS_SIGNING_ENV: &[&str] = &[
     "AZURE_ARTIFACT_SIGNING_CERTIFICATE_PROFILE_NAME",
 ];
 const VELOPACK_TRUSTED_SIGN_FILE_ENV: &str = "VELOPACK_TRUSTED_SIGN_FILE";
+const ALLOW_UNSIGNED_WINDOWS_PACKAGING_ENV: &str =
+    "FLUXER_ALLOW_UNSIGNED_WINDOWS_PACKAGING";
 const TRUSTED_SIGNING_EXCLUDED_CREDENTIALS: &[&str] = &[
     "ManagedIdentityCredential",
     "WorkloadIdentityCredential",
@@ -1416,6 +1418,13 @@ const TRUSTED_SIGNING_EXCLUDED_CREDENTIALS: &[&str] = &[
 ];
 
 fn validate_windows_signing_inputs_step() -> Result<()> {
+    if env_bool(ALLOW_UNSIGNED_WINDOWS_PACKAGING_ENV) {
+        println!(
+            "WARNING: {ALLOW_UNSIGNED_WINDOWS_PACKAGING_ENV}=true; Windows packages will be unsigned. Use this only for explicitly trusted self-hosted distributions."
+        );
+        return Ok(());
+    }
+
     let missing = WINDOWS_SIGNING_ENV
         .iter()
         .copied()
@@ -1544,23 +1553,33 @@ fn package_app_windows_velopack_step() -> Result<()> {
         )
     })?;
     let vpk = find_velopack_cli()?;
-    let trusted_sign_file = PathBuf::from(require_env(VELOPACK_TRUSTED_SIGN_FILE_ENV).context(
-        "Velopack packaging requires the Trusted Signing metadata written by the write_windows_signing_metadata step. Windows packages are never produced unsigned.",
-    )?);
-    ensure!(
-        trusted_sign_file.is_file(),
-        "Velopack Trusted Signing metadata file is missing: {}",
-        trusted_sign_file.display()
-    );
+    let trusted_sign_file = if env_bool(ALLOW_UNSIGNED_WINDOWS_PACKAGING_ENV) {
+        println!(
+            "WARNING: packaging unsigned Windows artifacts because {ALLOW_UNSIGNED_WINDOWS_PACKAGING_ENV}=true."
+        );
+        None
+    } else {
+        let path = PathBuf::from(require_env(VELOPACK_TRUSTED_SIGN_FILE_ENV).context(
+            "Velopack packaging requires the Trusted Signing metadata written by the write_windows_signing_metadata step. Set FLUXER_ALLOW_UNSIGNED_WINDOWS_PACKAGING=true only for an explicitly trusted self-hosted distribution.",
+        )?);
+        ensure!(
+            path.is_file(),
+            "Velopack Trusted Signing metadata file is missing: {}",
+            path.display()
+        );
+        Some(path)
+    };
     let packaged = pack_and_validate_windows_velopack(
         &vpk,
         &config,
         &version,
         &arch,
         &pack_dir,
-        &trusted_sign_file,
+        trusted_sign_file.as_deref(),
     );
-    let metadata_removed = remove_file_if_exists(&trusted_sign_file);
+    let metadata_removed = trusted_sign_file
+        .as_deref()
+        .map_or(Ok(()), remove_file_if_exists);
     packaged?;
     metadata_removed?;
     print_directory(&config.output_dir)
@@ -1572,41 +1591,62 @@ fn pack_and_validate_windows_velopack(
     version: &str,
     arch: &str,
     pack_dir: &Path,
-    trusted_sign_file: &Path,
+    trusted_sign_file: Option<&Path>,
 ) -> Result<()> {
-    ensure_velopack_pack_supports(vpk, &["--azureTrustedSignFile"])?;
+    if trusted_sign_file.is_some() {
+        ensure_velopack_pack_supports(vpk, &["--azureTrustedSignFile"])?;
+    }
 
-    run_command(CommandSpec::new(vpk).args([
-        "--yes",
-        "pack",
-        "--packId",
-        config.pack_id,
-        "--packVersion",
+    run_command(CommandSpec::new(vpk).args(windows_velopack_pack_args(
+        config,
         version,
-        "--packDir",
-        pack_dir.to_string_lossy().as_ref(),
-        "--mainExe",
-        config.main_exe.as_str(),
-        "--packTitle",
-        config.pack_title,
-        "--packAuthors",
-        "Fluxer Platform AB",
-        "--shortcuts",
-        "Desktop,StartMenu",
-        "--runtime",
-        config.runtime,
-        "--icon",
-        &format!("build_resources/{}/icon.ico", config.icon_dir),
-        "--outputDir",
-        config.output_dir.to_string_lossy().as_ref(),
-        "--delta",
-        "BestSpeed",
-        "--azureTrustedSignFile",
-        trusted_sign_file.to_string_lossy().as_ref(),
-    ]))?;
+        pack_dir,
+        trusted_sign_file,
+    )))?;
 
     validate_velopack_output(config, version, arch)?;
     remove_velopack_portable_archives(&config.output_dir)
+}
+
+fn windows_velopack_pack_args(
+    config: &WindowsPackageConfig,
+    version: &str,
+    pack_dir: &Path,
+    trusted_sign_file: Option<&Path>,
+) -> Vec<OsString> {
+    let mut args = vec![
+        "--yes".into(),
+        "pack".into(),
+        "--packId".into(),
+        config.pack_id.into(),
+        "--packVersion".into(),
+        version.into(),
+        "--packDir".into(),
+        pack_dir.as_os_str().to_owned(),
+        "--mainExe".into(),
+        config.main_exe.clone().into(),
+        "--packTitle".into(),
+        config.pack_title.into(),
+        "--packAuthors".into(),
+        "Fluxer Platform AB".into(),
+        "--shortcuts".into(),
+        "Desktop,StartMenu".into(),
+        "--runtime".into(),
+        config.runtime.into(),
+        "--icon".into(),
+        format!("build_resources/{}/icon.ico", config.icon_dir).into(),
+        "--outputDir".into(),
+        config.output_dir.as_os_str().to_owned(),
+        "--delta".into(),
+        "BestSpeed".into(),
+    ];
+    if let Some(path) = trusted_sign_file {
+        args.extend([
+            OsString::from("--azureTrustedSignFile"),
+            path.as_os_str().to_owned(),
+        ]);
+    }
+    args
 }
 
 fn remove_velopack_portable_archives(output_dir: &Path) -> Result<()> {
@@ -1616,7 +1656,7 @@ fn remove_velopack_portable_archives(output_dir: &Path) -> Result<()> {
         }
         fs::remove_file(&path).with_context(|| format!("Failed to remove {}", path.display()))?;
         println!(
-            "Removed Velopack portable archive {}. Fluxer publishes its own portable ZIP built from the signed application tree.",
+            "Removed Velopack portable archive {}. Fluxer publishes its own portable ZIP built from the application tree.",
             path.display()
         );
     }
@@ -3812,6 +3852,31 @@ export const CHANNEL_DISPLAY_NAME = BUILD_CHANNEL;\n"
         assert_eq!(canary.pack_id, "fluxer_desktop_canary");
         assert_eq!(canary.runtime, "win-arm64");
         assert_eq!(canary.main_exe, "Fluxer Canary.exe");
+    }
+
+    #[test]
+    fn windows_velopack_args_only_request_trusted_signing_when_configured() {
+        let config = windows_package_config("canary", "x64");
+        let unsigned = windows_velopack_pack_args(
+            &config,
+            "2026.818.16",
+            Path::new(r"C:\build\win-unpacked"),
+            None,
+        );
+        assert!(!unsigned.contains(&OsString::from("--azureTrustedSignFile")));
+
+        let metadata = Path::new(r"C:\runner\velopack-trusted-signing.json");
+        let signed = windows_velopack_pack_args(
+            &config,
+            "2026.818.16",
+            Path::new(r"C:\build\win-unpacked"),
+            Some(metadata),
+        );
+        let signing_option = signed
+            .iter()
+            .position(|arg| arg.as_os_str() == OsStr::new("--azureTrustedSignFile"))
+            .unwrap();
+        assert_eq!(signed[signing_option + 1].as_os_str(), metadata.as_os_str());
     }
 
     #[test]
