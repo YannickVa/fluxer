@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import assert from 'node:assert/strict';
-import {isElectronPlatform} from '@app/features/platform/types/Platform';
 import {Logger} from '@app/features/platform/utils/AppLogger';
 import * as VoicePresenceHeartbeatCommands from '@app/features/voice/commands/VoicePresenceHeartbeatCommands';
 import {Store} from '@app/features/voice/engine/Store';
@@ -33,6 +32,7 @@ import {
 	isPresenceConnectionReady,
 	isReadyToRepublishTrack,
 } from '@app/features/voice/engine/v2/VoiceEngineV2AppAdapterAssertions';
+import {createRoomConnectOptions} from '@app/features/voice/engine/v2/VoiceEngineV2AppLiveKitConnectOptions';
 import {VoiceEngineV2AppReconnectPolicy} from '@app/features/voice/engine/v2/VoiceEngineV2AppReconnectPolicy';
 import VoiceRegionTeleport from '@app/features/voice/state/VoiceRegionTeleport';
 import {
@@ -43,7 +43,6 @@ import type {
 	ExternalE2EEKeyProvider,
 	LocalTrack,
 	Room,
-	RoomConnectOptions,
 	RoomOptions,
 	TrackPublishOptions,
 } from 'livekit-client';
@@ -175,22 +174,6 @@ function createRoomOptions(
 		}
 	}
 	return {roomOptions, e2eeKeyProvider};
-}
-
-function createRoomConnectOptions(): RoomConnectOptions {
-	const connectOptions: RoomConnectOptions = {
-		autoSubscribe: false,
-	};
-	assert.equal(connectOptions.autoSubscribe, false, 'LiveKit connect options must not auto-subscribe');
-	if (isElectronPlatform()) {
-		connectOptions.rtcConfig = {iceTransportPolicy: 'relay'};
-		assert.equal(
-			connectOptions.rtcConfig.iceTransportPolicy,
-			'relay',
-			'Electron LiveKit connects must force relay ICE',
-		);
-	}
-	return connectOptions;
 }
 
 export class VoiceEngineV2AppConnectionHostAdapter extends Store {
