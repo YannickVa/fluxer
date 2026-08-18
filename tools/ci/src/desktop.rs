@@ -1404,8 +1404,7 @@ const WINDOWS_SIGNING_ENV: &[&str] = &[
     "AZURE_ARTIFACT_SIGNING_CERTIFICATE_PROFILE_NAME",
 ];
 const VELOPACK_TRUSTED_SIGN_FILE_ENV: &str = "VELOPACK_TRUSTED_SIGN_FILE";
-const ALLOW_UNSIGNED_WINDOWS_PACKAGING_ENV: &str =
-    "FLUXER_ALLOW_UNSIGNED_WINDOWS_PACKAGING";
+const ALLOW_UNSIGNED_WINDOWS_PACKAGING_ENV: &str = "FLUXER_ALLOW_UNSIGNED_WINDOWS_PACKAGING";
 const TRUSTED_SIGNING_EXCLUDED_CREDENTIALS: &[&str] = &[
     "ManagedIdentityCredential",
     "WorkloadIdentityCredential",
@@ -1848,7 +1847,7 @@ fn create_portable_zip_windows_step() -> Result<()> {
     let portable_marker = pack_dir.join(".portable");
     fs::write(&portable_marker, "")
         .with_context(|| format!("Failed to write {}", portable_marker.display()))?;
-    let zip_name = format!("{}-{version}-portable-win-{arch}.zip", config.pack_title);
+    let zip_name = windows_portable_zip_name(&config, &version, &arch);
     let zip_path = PathBuf::from("dist-electron").join(zip_name);
     create_zip_from_dir(&pack_dir, &zip_path)?;
     remove_file_if_exists(&portable_marker)?;
@@ -1859,6 +1858,10 @@ fn create_portable_zip_windows_step() -> Result<()> {
         portable_marker.display()
     );
     Ok(())
+}
+
+fn windows_portable_zip_name(config: &WindowsPackageConfig, version: &str, arch: &str) -> String {
+    format!("{}-{version}-portable-win-{arch}.zip", config.pack_title)
 }
 
 const FLUXER_WINDOWS_SIGNER_COMMON_NAME: &str = "Fluxer Platform AB";
@@ -2586,6 +2589,9 @@ fn verify_windows_signed_artifacts_step() -> Result<()> {
 
 fn prepare_artifacts_windows_step() -> Result<()> {
     let arch = require_env("ARCH")?;
+    let version = require_env("VERSION")?;
+    let build_channel = env::var("BUILD_CHANNEL").unwrap_or_else(|_| "stable".to_string());
+    let config = windows_package_config(&build_channel, &arch);
     let staging = Path::new("upload_staging");
     remove_dir_if_exists(staging)?;
     fs::create_dir_all(staging).context("Failed to create upload_staging")?;
@@ -2606,8 +2612,19 @@ fn prepare_artifacts_windows_step() -> Result<()> {
             || (name.starts_with("releases") && name.ends_with(".json"))
             || (name.starts_with("assets") && name.ends_with(".json"))
     })?;
-    let portable_suffix = format!("-portable-win-{arch}.zip");
-    copy_matching_files(&dist, staging, |name| name.ends_with(&portable_suffix))?;
+    let portable_name = windows_portable_zip_name(&config, &version, &arch);
+    let portable_source = dist.join(&portable_name);
+    ensure!(
+        portable_source.is_file(),
+        "Current-version portable ZIP not found: {}",
+        portable_source.display()
+    );
+    fs::copy(&portable_source, staging.join(&portable_name)).with_context(|| {
+        format!(
+            "Failed to stage current-version portable ZIP {}",
+            portable_source.display()
+        )
+    })?;
 
     ensure!(
         any_file_matching(staging, |name| name.ends_with(".exe"))?,
@@ -3852,6 +3869,15 @@ export const CHANNEL_DISPLAY_NAME = BUILD_CHANNEL;\n"
         assert_eq!(canary.pack_id, "fluxer_desktop_canary");
         assert_eq!(canary.runtime, "win-arm64");
         assert_eq!(canary.main_exe, "Fluxer Canary.exe");
+    }
+
+    #[test]
+    fn windows_portable_zip_name_is_version_specific() {
+        let config = windows_package_config("canary", "x64");
+        assert_eq!(
+            windows_portable_zip_name(&config, "2026.818.21", "x64"),
+            "Fluxer Canary-2026.818.21-portable-win-x64.zip"
+        );
     }
 
     #[test]
