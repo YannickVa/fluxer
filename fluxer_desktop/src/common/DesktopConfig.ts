@@ -14,6 +14,7 @@ const MINIMIZE_TO_TRAY_STORAGE_KEY_V2 = 'minimizeToTrayV2';
 const CLOSE_TO_TRAY_STORAGE_KEY_V2 = 'closeToTrayV2';
 
 interface DesktopConfig extends Record<string, unknown> {
+	app_url?: string;
 	chromiumSwitches?: ChromiumSwitchesSetting;
 	window_behavior?: PersistedDesktopWindowBehaviorSettings;
 	troubleshooting?: PersistedDesktopTroubleshootingSettings;
@@ -143,7 +144,11 @@ function sanitizeDesktopConfig(value: unknown): DesktopConfig {
 		return {};
 	}
 	const nextConfig: DesktopConfig = {...value};
-	delete nextConfig.app_url;
+	if (typeof value.app_url === 'string') {
+		nextConfig.app_url = value.app_url;
+	} else {
+		delete nextConfig.app_url;
+	}
 	const chromiumSwitches = sanitizeChromiumSwitchesSetting(value.chromiumSwitches);
 	if (chromiumSwitches) {
 		nextConfig.chromiumSwitches = chromiumSwitches;
@@ -321,15 +326,27 @@ export function getAppUrl(): string {
 	if (runtimeAppUrlOverride) {
 		return runtimeAppUrlOverride;
 	}
+	if (config.app_url) {
+		return config.app_url;
+	}
 	return BUILD_CHANNEL === 'canary' ? CANARY_APP_URL : STABLE_APP_URL;
 }
 
 export function getCustomAppUrl(): string | null {
-	return runtimeAppUrlOverride;
+	return runtimeAppUrlOverride ?? config.app_url ?? null;
 }
 
 export function setRuntimeAppUrlOverride(appUrl: string | null): void {
 	runtimeAppUrlOverride = appUrl;
+}
+
+export function setCustomAppUrl(appUrl: string | null): void {
+	if (appUrl) {
+		config.app_url = appUrl;
+	} else {
+		delete config.app_url;
+	}
+	saveDesktopConfig();
 }
 
 export function getConfiguredChromiumSwitches(): ChromiumSwitchesSetting | undefined {
