@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {getElectronAPI, isNativeMacOS} from '@app/features/ui/utils/NativeUtils';
+import {getElectronAPI, isNativeMacOS, isNativeWindows} from '@app/features/ui/utils/NativeUtils';
 
 export type PermissionKind = 'microphone' | 'camera' | 'screen' | 'input-monitoring';
 export type NativePermissionResult = 'granted' | 'denied' | 'not-determined' | 'unsupported';
@@ -23,7 +23,7 @@ export async function checkNativePermission(kind: PermissionKind): Promise<Nativ
 		return 'unsupported';
 	}
 	if (!isNativeMacOS()) {
-		return 'granted';
+		return 'unsupported';
 	}
 	if (kind === 'input-monitoring') {
 		if (typeof electronApi.getInputMonitoringPermissionStatus === 'function') {
@@ -53,7 +53,7 @@ export async function requestNativePermission(kind: PermissionKind): Promise<Nat
 	const electronApi = getElectronAPI();
 	if (!electronApi) return 'unsupported';
 	if (!isNativeMacOS()) {
-		return 'granted';
+		return 'unsupported';
 	}
 	if (kind === 'input-monitoring') {
 		const current = await checkNativePermission(kind);
@@ -89,6 +89,12 @@ export async function ensureNativePermission(kind: PermissionKind): Promise<Nati
 export async function openNativePermissionSettings(kind: PermissionKind): Promise<void> {
 	const electronApi = getElectronAPI();
 	if (!electronApi) return;
+	if (isNativeWindows()) {
+		if (kind === 'microphone' || kind === 'camera') {
+			await electronApi.openMediaAccessSettings(kind);
+		}
+		return;
+	}
 	if (!isNativeMacOS()) {
 		return;
 	}

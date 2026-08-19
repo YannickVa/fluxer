@@ -40,7 +40,7 @@
 				"src/main/Bootstrap.ts",
 				"src/main/index.ts",
 				"src/preload/index.ts",
-				"src/main/**/*.test.{ts,mjs}",
+				"src/**/*.test.{ts,mjs}",
 				"native/*/index.{js,d.ts}",
 				"native/*/loader-diagnostics.cjs",
 				"native/*/*.test.mjs",

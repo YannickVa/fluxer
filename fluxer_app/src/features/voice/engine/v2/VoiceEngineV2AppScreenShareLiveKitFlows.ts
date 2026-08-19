@@ -52,7 +52,6 @@ import {
 } from '@app/features/voice/utils/AudioPublishOptions';
 import type {ScreenShareContentSource} from '@app/features/voice/utils/CodecCapabilityDetector';
 import {commitNativeAudioBridgeReplacement} from '@app/features/voice/utils/NativeAudioCaptureBridge';
-import {applyCameraMirrorProcessor} from '@app/features/voice/utils/VideoBackgroundProcessor';
 import {
 	createLocalAudioTrack,
 	createLocalVideoTrack,
@@ -306,7 +305,6 @@ export class VoiceEngineV2AppScreenShareLiveKitFlows {
 				: undefined,
 		});
 		createdTracks.push(videoTrack);
-		await applyCameraMirrorProcessor(videoTrack);
 		let audioTrack: LocalAudioTrack | undefined;
 		if (audioDeviceId !== undefined) {
 			audioTrack = await createLocalAudioTrack({
@@ -623,16 +621,12 @@ export class VoiceEngineV2AppScreenShareLiveKitFlows {
 	private async swapScreenShareVideoTrack(
 		screenShareTrack: LocalVideoTrack,
 		tracks: CapturedScreenShareTracks,
-		nextContentSource: ScreenShareContentSource,
 	): Promise<boolean> {
 		assert.ok(screenShareTrack);
 		assert.ok(tracks);
 		const previousVideoMediaTrack = screenShareTrack.mediaStreamTrack;
 		try {
 			await screenShareTrack.replaceTrack(tracks.videoTrack, false);
-			if (nextContentSource === 'device') {
-				await applyCameraMirrorProcessor(screenShareTrack);
-			}
 			await this.refreshSimulcastTracks(screenShareTrack);
 		} catch (error) {
 			stopMediaTrack(tracks.videoTrack);
@@ -724,7 +718,7 @@ export class VoiceEngineV2AppScreenShareLiveKitFlows {
 		if (nextContentSource !== 'device' && screenShareTrack.getProcessor()) {
 			await screenShareTrack.stopProcessor(false);
 		}
-		const videoSwapped = await this.swapScreenShareVideoTrack(screenShareTrack, tracks, nextContentSource);
+		const videoSwapped = await this.swapScreenShareVideoTrack(screenShareTrack, tracks);
 		if (!videoSwapped) return false;
 		await this.swapScreenShareAudioTrack(participant, tracks);
 		await this.finalizeReplaceActiveTracks(room, participant, tracks, nextContentSource, options, publishOptions);

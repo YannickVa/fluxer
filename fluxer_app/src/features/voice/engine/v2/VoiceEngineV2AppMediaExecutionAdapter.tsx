@@ -85,7 +85,6 @@ import LocalVoiceState from '@app/features/voice/state/LocalVoiceState';
 import ParticipantVolume from '@app/features/voice/state/ParticipantVolume';
 import VoiceSettings from '@app/features/voice/state/VoiceSettings';
 import {buildMicrophonePublishOptions} from '@app/features/voice/utils/AudioPublishOptions';
-import {applyBackgroundProcessor} from '@app/features/voice/utils/VideoBackgroundProcessor';
 import {
 	removeVoiceInputProcessor,
 	syncVoiceInputProcessor,
@@ -182,7 +181,6 @@ export class VoiceEngineV2AppMediaExecutionAdapter extends Store {
 	private mediaStateSnapshot: VoiceMediaSnapshot = createVoiceMediaSnapshot();
 	private microphoneEnablePromise: Promise<void> | null = null;
 	private microphoneRefreshQueue: Promise<void> = Promise.resolve();
-	private cameraBackgroundRefreshQueue: Promise<void> = Promise.resolve();
 	private cameraCaptureRefreshQueue: Promise<void> = Promise.resolve();
 	private sourceLifecycleBridge: VoiceEngineV2AppSourceLifecycleBridge | null = null;
 	private microphoneLifecycleBinding: {captureId: string; trackId: string; cleanup: () => void} | null = null;
@@ -942,7 +940,6 @@ export class VoiceEngineV2AppMediaExecutionAdapter extends Store {
 		}
 		await this.applyCameraEncodingConstraints(track, options);
 		await this.applyCameraEncodingBitrate(track, options);
-		await this.applyCameraEncodingEffects(track, options);
 		updateLocalParticipantFromRoom(room);
 		logger.info('Applied in-place camera encoding update', {
 			width: options.width,
@@ -988,23 +985,6 @@ export class VoiceEngineV2AppMediaExecutionAdapter extends Store {
 			await sender.setParameters(senderParameters);
 		} catch (error) {
 			logger.warn('Failed to apply in-place camera bitrate', {error, maxBitrateBps: options.maxBitrateBps});
-		}
-	}
-
-	private async applyCameraEncodingEffects(
-		track: LocalVideoTrack,
-		options: VoiceEngineV2CameraEncodingOptions,
-	): Promise<void> {
-		const touchesEffects =
-			options.mirror !== undefined ||
-			options.backgroundMode !== undefined ||
-			options.backgroundBlurStrength !== undefined ||
-			options.backgroundCustomMediaPath !== undefined;
-		if (!touchesEffects) return;
-		try {
-			await applyBackgroundProcessor(track, options.mirror === undefined ? undefined : {mirrorCamera: options.mirror});
-		} catch (error) {
-			logger.warn('Failed to apply in-place camera effects', {error});
 		}
 	}
 
@@ -1063,7 +1043,6 @@ export class VoiceEngineV2AppMediaExecutionAdapter extends Store {
 		await participant.setCameraEnabled(enabled, {resolution: videoResolution, ...restOptions});
 		await this.enforceCameraPublicationCap(participant, enabled ? 'after camera enable' : 'after camera disable');
 		if (enabled) {
-			await this.applyBackgroundToCamera(participant);
 			const cameraPublication = Array.from(participant.videoTrackPublications.values()).find(
 				(pub) => pub.source === Track.Source.Camera,
 			);
@@ -1085,46 +1064,12 @@ export class VoiceEngineV2AppMediaExecutionAdapter extends Store {
 		}
 	}
 
-	private async applyBackgroundToCamera(
-		participant: Room['localParticipant'],
-		options: {warnIfMissing?: boolean} = {},
-	): Promise<boolean> {
-		const videoPublication = Array.from(participant.videoTrackPublications.values()).find(
-			(pub) => pub.source === Track.Source.Camera,
-		);
-		const track = videoPublication?.track as LocalVideoTrack | undefined;
-		if (!track) {
-			if (options.warnIfMissing === false) {
-				logger.debug('Skipping background refresh: no camera track');
-			} else {
-				logger.warn('No camera track found to apply background');
-			}
-			return false;
-		}
-		await applyBackgroundProcessor(track);
-		return true;
-	}
-
 	async refreshCameraBackground(room?: Room | null): Promise<void> {
 		if (room !== undefined) {
 			assertNullableObjectLike<Room>(room, 'refreshCameraBackground.room');
 		}
 		assert.ok(this.mediaStateSnapshot !== null, 'refreshCameraBackground pre-condition: snapshot present');
-		const refresh = async () => {
-			const activeRoom = room === undefined ? this.getActiveRoom() : room;
-			const participant = activeRoom?.localParticipant;
-			if (!participant) {
-				logger.debug('Skipping background refresh: no local participant');
-				return;
-			}
-			const didApply = await this.applyBackgroundToCamera(participant, {warnIfMissing: false});
-			if (didApply) {
-				updateLocalParticipantFromRoom(activeRoom);
-			}
-		};
-		const pendingRefresh = this.cameraBackgroundRefreshQueue.then(refresh, refresh);
-		this.cameraBackgroundRefreshQueue = pendingRefresh.catch(() => {});
-		return pendingRefresh;
+		logger.debug('Browser camera background refresh leaves the outbound track unchanged');
 	}
 
 	async refreshCameraCapture(room?: Room | null): Promise<void> {

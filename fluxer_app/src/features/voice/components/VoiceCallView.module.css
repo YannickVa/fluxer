@@ -129,6 +129,10 @@
 	border-radius: var(--radius-lg);
 }
 
+.lkParticipantTile[data-camera-mirrored='true'] video {
+	transform: scaleX(-1);
+}
+
 .lkParticipantTile[data-source='screen_share'] {
 	background-color: var(--voice-surface-0);
 }

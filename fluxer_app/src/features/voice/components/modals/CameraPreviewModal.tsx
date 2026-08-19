@@ -37,7 +37,6 @@ import VoiceSettings, {
 	CAMERA_EFFECT_STRENGTH_MIN,
 	NONE_BACKGROUND_ID,
 } from '@app/features/voice/state/VoiceSettings';
-import {applyBackgroundProcessor} from '@app/features/voice/utils/VideoBackgroundProcessor';
 import {areVoiceBackgroundsAvailable} from '@app/features/voice/utils/VoiceBackgroundAvailability';
 import {resolveEffectiveDeviceId, type VoiceDeviceState} from '@app/features/voice/utils/VoiceDeviceManager';
 import {
@@ -128,7 +127,6 @@ const CAMERA_RESOLUTION_PRESETS: Record<'low' | 'medium' | 'high', VideoResoluti
 interface CameraPreviewConfig {
 	videoDeviceId: string;
 	backgroundImageId: string;
-	mirrorCamera: boolean;
 	cameraResolution: 'low' | 'medium' | 'high';
 	videoFrameRate: number;
 }
@@ -180,10 +178,6 @@ function useCameraPreviewParticipantState(): CameraPreviewParticipantState {
 		};
 	}, [room]);
 	return state;
-}
-
-interface CameraPreviewProcessor {
-	destroy: () => Promise<void>;
 }
 
 function isSameCameraPreviewConfig(previous: CameraPreviewConfig | null, next: CameraPreviewConfig): boolean {
@@ -264,18 +258,13 @@ interface CameraPreviewTrackSetupArgs {
 	videoFrameRate: number;
 	isCurrentInitialization: () => boolean;
 	trackRef: React.MutableRefObject<LocalVideoTrack | null>;
-	processorRef: React.MutableRefObject<CameraPreviewProcessor | null>;
 	onResolutionNegotiated: (resolution: {width: number; height: number} | null) => void;
 }
 
-async function setupPreviewTrackAndProcessor(args: CameraPreviewTrackSetupArgs): Promise<'cancelled' | 'ready'> {
+async function setupPreviewTrack(args: CameraPreviewTrackSetupArgs): Promise<'cancelled' | 'ready'> {
 	if (args.trackRef.current) {
 		args.trackRef.current.stop();
 		args.trackRef.current = null;
-	}
-	if (args.processorRef.current) {
-		await args.processorRef.current.destroy();
-		args.processorRef.current = null;
 	}
 	const resolutionPreset = CAMERA_RESOLUTION_PRESETS[args.cameraResolution];
 	const track = await createLocalVideoTrack({
@@ -307,22 +296,6 @@ async function setupPreviewTrackAndProcessor(args: CameraPreviewTrackSetupArgs):
 		return 'cancelled';
 	}
 	args.onResolutionNegotiated(negotiatedResolution);
-	let processor: CameraPreviewProcessor | null = null;
-	try {
-		processor = await applyBackgroundProcessor(track);
-	} catch (_webglError) {
-		logger.warn('WebGL not supported for background processing, falling back to basic camera');
-	}
-	if (!args.isCurrentInitialization()) {
-		await processor?.destroy().catch((destroyError) => {
-			logger.warn('Failed to destroy camera preview processor after stale initialization', {
-				error: destroyError,
-			});
-		});
-		track.stop();
-		return 'cancelled';
-	}
-	args.processorRef.current = processor;
 	return 'ready';
 }
 
@@ -522,7 +495,6 @@ const CameraPreviewModalContent = observer((props: CameraPreviewModalProps) => {
 	const [backgroundOverrideId, setBackgroundOverrideId] = useState<string | null>(null);
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const trackRef = useRef<LocalVideoTrack | null>(null);
-	const processorRef = useRef<CameraPreviewProcessor | null>(null);
 	const isMountedRef = useRef(true);
 	const isIOSRef = useRef(/iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window));
 	const prevConfigRef = useRef<CameraPreviewConfig | null>(null);
@@ -605,7 +577,6 @@ const CameraPreviewModalContent = observer((props: CameraPreviewModalProps) => {
 			const currentConfig: CameraPreviewConfig = {
 				videoDeviceId: effectiveVideoDeviceId ?? 'default',
 				backgroundImageId,
-				mirrorCamera: voiceSettings.mirrorCamera,
 				cameraResolution: voiceSettings.cameraResolution,
 				videoFrameRate: voiceSettings.videoFrameRate,
 			};
@@ -620,14 +591,13 @@ const CameraPreviewModalContent = observer((props: CameraPreviewModalProps) => {
 			videoElement.muted = true;
 			videoElement.autoplay = true;
 			videoElement.playsInline = true;
-			const setupResult = await setupPreviewTrackAndProcessor({
+			const setupResult = await setupPreviewTrack({
 				videoElement,
 				effectiveVideoDeviceId,
 				cameraResolution: voiceSettings.cameraResolution,
 				videoFrameRate: voiceSettings.videoFrameRate,
 				isCurrentInitialization,
 				trackRef,
-				processorRef,
 				onResolutionNegotiated: (resolution) => {
 					if (resolution && !isApplyingFixRef.current) {
 						needsResolutionFixRef.current = !isNear16x9AspectRatio(resolution);
@@ -723,12 +693,6 @@ const CameraPreviewModalContent = observer((props: CameraPreviewModalProps) => {
 				trackRef.current.stop();
 				trackRef.current = null;
 			}
-			if (processorRef.current) {
-				processorRef.current.destroy().catch((error) => {
-					logger.warn('Failed to destroy camera preview processor during modal cleanup', {error});
-				});
-				processorRef.current = null;
-			}
 			if (videoRef.current) {
 				try {
 					if (videoRef.current.srcObject) {
@@ -745,14 +709,6 @@ const CameraPreviewModalContent = observer((props: CameraPreviewModalProps) => {
 		if (trackRef.current) {
 			trackRef.current.stop();
 			trackRef.current = null;
-		}
-		if (processorRef.current) {
-			processorRef.current.destroy().catch((error) => {
-				logger.warn('Failed to destroy browser camera preview processor after native preview became available', {
-					error,
-				});
-			});
-			processorRef.current = null;
 		}
 		const videoElement = videoRef.current;
 		if (!videoElement) return;
@@ -784,7 +740,6 @@ const CameraPreviewModalContent = observer((props: CameraPreviewModalProps) => {
 		const currentConfig: CameraPreviewConfig = {
 			videoDeviceId: voiceSettings.videoDeviceId,
 			backgroundImageId,
-			mirrorCamera: voiceSettings.mirrorCamera,
 			cameraResolution: voiceSettings.cameraResolution,
 			videoFrameRate: voiceSettings.videoFrameRate,
 		};
@@ -799,15 +754,13 @@ const CameraPreviewModalContent = observer((props: CameraPreviewModalProps) => {
 		nativeCameraPublished,
 		VoiceSettings.videoDeviceId,
 		VoiceSettings.backgroundImageId,
-		VoiceSettings.mirrorCamera,
 		VoiceSettings.cameraResolution,
 		VoiceSettings.videoFrameRate,
 		voiceBackgroundsAvailable,
 	]);
 	const voiceSettings = VoiceSettings;
 	const effectiveVideoDeviceId = resolveEffectiveDeviceId(voiceSettings.videoDeviceId, videoDevices) ?? 'default';
-	const previewVideoClassName =
-		activeNativeStream && voiceSettings.mirrorCamera ? `${styles.video} ${styles.videoMirrored}` : styles.video;
+	const previewVideoClassName = voiceSettings.mirrorCamera ? `${styles.video} ${styles.videoMirrored}` : styles.video;
 	const videoDeviceOptions =
 		videoDevices.length > 0
 			? videoDevices.map((device) => ({

@@ -29,6 +29,7 @@ import {
 } from '@electron/main/LinuxAppearance';
 import {getTccStatus, registerMacTccIpcHandlers} from '@electron/main/MacTcc';
 import {setNativeStrings} from '@electron/main/MainI18n';
+import {getMediaAccessSettingsUrl} from '@electron/main/MediaAccessSettings';
 import {copyRemoteFileToClipboard, parseClipboardWriteFileOptions} from '@electron/main/MediaClipboard';
 import {registerNotificationIpcHandlers} from '@electron/main/NotificationsIpc';
 import {openExternalDeduped} from '@electron/main/OpenExternal';
@@ -440,16 +441,10 @@ export function registerIpcHandlers(): void {
 		return systemPreferences.askForMediaAccess(type);
 	});
 	ipcMain.handle('open-media-access-settings', async (_event, type: MediaAccessType): Promise<void> => {
-		if (process.platform !== 'darwin') {
-			return;
+		const settingsUrl = getMediaAccessSettingsUrl(type);
+		if (settingsUrl) {
+			await shell.openExternal(settingsUrl);
 		}
-		const privacyKeys: Record<MediaAccessType, string> = {
-			microphone: 'Privacy_Microphone',
-			camera: 'Privacy_Camera',
-			screen: 'Privacy_ScreenCapture',
-			'audio-capture': 'Privacy_AudioCapture',
-		};
-		await shell.openExternal(`x-apple.systempreferences:com.apple.preference.security?${privacyKeys[type]}`);
 	});
 	ipcMain.handle('open-input-monitoring-settings', async (): Promise<void> => {
 		if (process.platform !== 'darwin') {

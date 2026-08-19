@@ -1021,6 +1021,7 @@ const VoiceParticipantTileInner = observer(function VoiceParticipantTileInner({
 					data-speaking={shouldShowTileSpeakingIndicator}
 					data-video-muted={isFocusedPlaceholderTile || !hasVideo || (shouldHideOwnScreenShareVideo && !frozenFrameUrl)}
 					data-source={sourceAttr}
+					data-camera-mirrored={isCameraTile && isOwnContent && !isNativeEngine && VoiceSettings.mirrorCamera}
 					data-tile-presentation={presentation}
 					onContextMenu={handleContextMenu}
 					onClick={isInsideTilePopout ? undefined : handleTileClick}
