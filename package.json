@@ -3,6 +3,7 @@
 	"private": true,
 	"scripts": {
 		"browser:collaboration-smoke": "node scripts/browser-collaboration-smoke.mjs",
+		"browser:media-smoke": "node scripts/browser-media-smoke.mjs",
 		"browser:smoke": "node scripts/browser-smoke.mjs",
 		"build": "cargo run -p fluxer-dev -- build",
 		"dev": "cargo run -p fluxer-dev -- dev",
