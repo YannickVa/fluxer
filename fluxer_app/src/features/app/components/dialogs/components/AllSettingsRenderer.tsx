@@ -23,6 +23,7 @@ import MyProfileTab from '@app/features/user/components/modals/tabs/MyProfileTab
 import {NotificationsInlineContent} from '@app/features/user/components/modals/tabs/notifications_tab/NotificationsTabInline';
 import PlutoniumTab from '@app/features/user/components/modals/tabs/PlutoniumTab';
 import {PrivacyDashboardContent} from '@app/features/user/components/modals/tabs/privacy_safety_tab/PrivacySafetyTabInline';
+import SupportCenterTab from '@app/features/user/components/modals/tabs/support_center_tab/SupportCenterTab';
 import {VoiceVideoInlineContent} from '@app/features/user/components/modals/tabs/voice_video_tab/VoiceVideoTabInline';
 import {getSettingsTabComponent} from '@app/features/user/components/settings_utils/DesktopSettingsTabs';
 import type {SettingsTab} from '@app/features/user/components/settings_utils/SettingsConstants';
@@ -77,6 +78,7 @@ const INLINE_TAB_COMPONENTS: Partial<Record<UserSettingsTabType, React.Component
 	notifications: NotificationsInlineContent,
 	language: LanguageTab,
 	desktop_settings: DesktopSettingsTab,
+	support_center: SupportCenterTab,
 	applications: ApplicationsTab,
 	keybinds: KeybindsTab,
 	linked_accounts: LinkedAccountsTab,

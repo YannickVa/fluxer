@@ -75,6 +75,22 @@ const APPLICATIONS_LIST_DESCRIPTOR = msg({
 	message: 'Applications',
 	comment: 'Settings section label for developer application list.',
 });
+const SYSTEM_CHECK_DESCRIPTOR = msg({
+	message: 'Check my setup',
+	comment: 'Support Center section for live service, connection, device, and update checks.',
+});
+const COMMON_FIXES_DESCRIPTOR = msg({
+	message: 'Fix a common problem',
+	comment: 'Support Center section linking to common troubleshooting settings.',
+});
+const VERSION_UPDATES_DESCRIPTOR = msg({
+	message: 'Version & updates',
+	comment: 'Support Center section showing release identity and update controls.',
+});
+const SUPPORT_DIAGNOSTICS_DESCRIPTOR = msg({
+	message: 'Diagnostics to share',
+	comment: 'Support Center section for previewing and exporting privacy-safe diagnostics.',
+});
 
 export const generalSettingsSections = [
 	{
@@ -145,6 +161,34 @@ export const generalSettingsSections = [
 		tabType: 'applications',
 		label: APPLICATIONS_LIST_DESCRIPTOR,
 		keywords: [],
+		isAdvanced: false,
+	},
+	{
+		id: 'system-check',
+		tabType: 'support_center',
+		label: SYSTEM_CHECK_DESCRIPTOR,
+		keywords: ['support', 'health', 'status', 'connection', 'gateway', 'voice', 'devices', 'permissions'],
+		isAdvanced: false,
+	},
+	{
+		id: 'common-fixes',
+		tabType: 'support_center',
+		label: COMMON_FIXES_DESCRIPTOR,
+		keywords: ['help', 'troubleshoot', 'microphone', 'camera', 'notifications', 'display'],
+		isAdvanced: false,
+	},
+	{
+		id: 'version-updates',
+		tabType: 'support_center',
+		label: VERSION_UPDATES_DESCRIPTOR,
+		keywords: ['build', 'release', 'desktop', 'browser', 'update', 'upgrade'],
+		isAdvanced: false,
+	},
+	{
+		id: 'diagnostics',
+		tabType: 'support_center',
+		label: SUPPORT_DIAGNOSTICS_DESCRIPTOR,
+		keywords: ['logs', 'report', 'export', 'download', 'copy', 'privacy'],
 		isAdvanced: false,
 	},
 ] as const satisfies ReadonlyArray<SectionDefinition>;

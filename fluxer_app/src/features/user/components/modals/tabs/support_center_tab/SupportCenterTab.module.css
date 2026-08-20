@@ -1,0 +1,404 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+
+.container {
+	gap: var(--spacing-6);
+}
+
+.hero {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.54fr);
+	gap: var(--spacing-5);
+	align-items: center;
+	padding: var(--spacing-6);
+	background:
+		linear-gradient(135deg, color-mix(in srgb, var(--brand-primary) 12%, transparent), transparent 58%),
+		var(--settings-surface-background, var(--form-surface-background));
+	border: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+	border-radius: 0.75rem;
+}
+
+.heroCopy {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-2);
+	min-width: 0;
+}
+
+.eyebrow {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--spacing-1-5);
+	font-size: var(--font-size-xs);
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--brand-primary);
+}
+
+.heroTitle {
+	margin: 0;
+	font-size: 1.625rem;
+	font-weight: 700;
+	line-height: 1.15;
+	color: var(--text-primary);
+}
+
+.heroDescription {
+	max-width: 38rem;
+	margin: 0;
+	font-size: 0.9375rem;
+	line-height: 1.5;
+	color: var(--text-secondary);
+}
+
+.heroStatus {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-3);
+	min-width: 0;
+	padding: var(--spacing-4);
+	background: color-mix(in srgb, var(--background-secondary) 78%, transparent);
+	border: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+	border-radius: 0.625rem;
+}
+
+.overallIcon {
+	display: grid;
+	place-items: center;
+	flex: 0 0 auto;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 50%;
+}
+
+.overall_pass {
+	color: var(--status-online);
+	background: color-mix(in srgb, var(--status-online) 14%, transparent);
+}
+.overall_warning {
+	color: var(--status-warning);
+	background: color-mix(in srgb, var(--status-warning) 14%, transparent);
+}
+.overall_fail {
+	color: var(--status-danger);
+	background: color-mix(in srgb, var(--status-danger) 14%, transparent);
+}
+.overall_checking {
+	color: var(--brand-primary);
+	background: color-mix(in srgb, var(--brand-primary) 14%, transparent);
+}
+.overall_neutral {
+	color: var(--text-secondary);
+	background: var(--background-modifier-hover);
+}
+
+.overall_checking svg,
+.status_checking svg {
+	animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.overallLabel,
+.overallHint {
+	display: block;
+}
+
+.overallLabel {
+	font-size: 0.9375rem;
+	font-weight: 650;
+	color: var(--text-primary);
+}
+
+.overallHint {
+	margin-top: 0.125rem;
+	font-size: var(--font-size-xs);
+	line-height: 1.4;
+	color: var(--text-secondary);
+}
+
+.readinessList {
+	overflow: hidden;
+	border: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+	border-radius: 0.625rem;
+}
+
+.readinessRow {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	gap: var(--spacing-3);
+	align-items: center;
+	padding: var(--spacing-4);
+	background: var(--settings-surface-background, var(--form-surface-background));
+	border-top: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+}
+
+.readinessRow:first-child {
+	border-top: 0;
+}
+
+.readinessIcon {
+	display: grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	color: var(--text-secondary);
+	background: var(--background-modifier-hover);
+	border-radius: 0.5rem;
+}
+
+.readinessCopy {
+	min-width: 0;
+}
+
+.readinessTitleRow {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--spacing-2);
+}
+
+.readinessTitle {
+	margin: 0;
+	font-size: 0.9375rem;
+	font-weight: 600;
+	color: var(--text-primary);
+}
+
+.readinessDescription {
+	margin: 0.125rem 0 0;
+	font-size: 0.8125rem;
+	line-height: 1.4;
+	color: var(--text-secondary);
+}
+
+.readinessAction {
+	justify-self: end;
+}
+
+.statusPill {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--spacing-1);
+	font-size: 0.6875rem;
+	font-weight: 650;
+	line-height: 1;
+}
+
+.statusPill svg {
+	width: 0.875rem;
+	height: 0.875rem;
+}
+.status_pass {
+	color: var(--status-online);
+}
+.status_warning {
+	color: var(--status-warning);
+}
+.status_fail {
+	color: var(--status-danger);
+}
+.status_checking {
+	color: var(--brand-primary);
+}
+.status_neutral {
+	color: var(--text-tertiary);
+}
+
+.quickFixGrid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: var(--spacing-3);
+}
+
+.quickFix {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	gap: var(--spacing-3);
+	align-items: center;
+	width: 100%;
+	padding: var(--spacing-4);
+	text-align: left;
+	cursor: pointer;
+	background: var(--settings-surface-background, var(--form-surface-background));
+	border: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+	border-radius: 0.625rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.quickFix:hover {
+		background: var(--settings-hover-background, var(--surface-interactive-hover-bg));
+		border-color: color-mix(in srgb, var(--background-modifier-accent) 62%, var(--text-tertiary));
+	}
+
+	.quickFix:hover .quickFixArrow {
+		color: var(--text-primary);
+		transform: translateX(0.125rem);
+	}
+}
+
+.quickFixIcon {
+	display: grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	color: var(--brand-primary);
+	background: color-mix(in srgb, var(--brand-primary) 12%, transparent);
+	border-radius: 0.5rem;
+}
+
+.quickFixCopy,
+.quickFixTitle,
+.quickFixDescription {
+	display: block;
+	min-width: 0;
+}
+
+.quickFixTitle {
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--text-primary);
+}
+.quickFixDescription {
+	margin-top: var(--spacing-1);
+	font-size: var(--font-size-xs);
+	line-height: 1.4;
+	color: var(--text-secondary);
+}
+.quickFixArrow {
+	color: var(--text-tertiary);
+	transition:
+		color 120ms ease,
+		transform 120ms ease;
+}
+
+.identityPanel,
+.diagnosticsPanel {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-4);
+	padding: var(--spacing-4);
+	background: var(--settings-surface-background, var(--form-surface-background));
+	border: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+	border-radius: 0.625rem;
+}
+
+.identityGrid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: var(--spacing-4) var(--spacing-6);
+}
+
+.identityLabel,
+.identityValue {
+	display: block;
+}
+
+.identityLabel {
+	font-size: 0.6875rem;
+	font-weight: 650;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+}
+
+.identityValue {
+	overflow-wrap: anywhere;
+	margin-top: var(--spacing-1);
+	font-family: var(--font-mono);
+	font-size: 0.8125rem;
+	line-height: 1.4;
+	color: var(--text-primary);
+}
+
+.buttonRow {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--spacing-2);
+}
+
+.privacyNote {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	gap: var(--spacing-3);
+	padding: var(--spacing-3);
+	color: var(--text-secondary);
+	background: color-mix(in srgb, var(--brand-primary) 8%, transparent);
+	border: 0.0625rem solid color-mix(in srgb, var(--brand-primary) 26%, var(--background-modifier-accent));
+	border-radius: 0.5rem;
+}
+
+.privacyNote svg {
+	color: var(--brand-primary);
+}
+.privacyNote strong {
+	display: block;
+	font-size: 0.875rem;
+	color: var(--text-primary);
+}
+.privacyNote p {
+	margin: var(--spacing-1) 0 0;
+	font-size: 0.8125rem;
+	line-height: 1.5;
+}
+
+.preview {
+	overflow: hidden;
+	border: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+	border-radius: 0.5rem;
+}
+
+.preview summary {
+	padding: var(--spacing-3);
+	cursor: pointer;
+	font-size: 0.8125rem;
+	font-weight: 600;
+	color: var(--text-primary);
+	background: var(--background-modifier-hover);
+}
+
+.preview pre {
+	max-height: 24rem;
+	margin: 0;
+	padding: var(--spacing-4);
+	overflow: auto;
+	font-family: var(--font-mono);
+	font-size: 0.75rem;
+	line-height: 1.5;
+	color: var(--text-secondary);
+	background: var(--background-secondary);
+}
+
+@media (max-width: 48rem) {
+	.hero {
+		grid-template-columns: 1fr;
+		padding: var(--spacing-4);
+	}
+	.quickFixGrid,
+	.identityGrid {
+		grid-template-columns: 1fr;
+	}
+	.readinessRow {
+		grid-template-columns: auto minmax(0, 1fr);
+	}
+	.readinessAction {
+		grid-column: 2;
+		justify-self: start;
+	}
+}
+
+@media (max-width: 30rem) {
+	.heroTitle {
+		font-size: 1.375rem;
+	}
+	.readinessRow {
+		padding: var(--spacing-3);
+	}
+	.buttonRow > * {
+		width: 100%;
+	}
+}
