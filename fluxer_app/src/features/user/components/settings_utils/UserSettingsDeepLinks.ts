@@ -31,6 +31,7 @@ const USER_SETTINGS_TAB_TYPES = new Set<UserSettingsTabType>([
 	'voice_video',
 	'notifications',
 	'desktop_settings',
+	'support_center',
 	'advanced_settings',
 	'client_developer_settings',
 	'embed_debugger',

@@ -37,6 +37,7 @@ import {
 	type Icon,
 	type IconWeight,
 	KeyboardIcon,
+	LifebuoyIcon,
 	MicrophoneIcon,
 	PaintBrushIcon,
 	PaletteIcon,
@@ -145,6 +146,10 @@ const DESKTOP_SETTINGS_DESCRIPTOR = msg({
 const ADVANCED_SETTINGS_DESCRIPTOR = msg({
 	message: 'Advanced',
 	comment: 'User settings tab for power-user and experimental application preferences.',
+});
+const SUPPORT_CENTER_DESCRIPTOR = msg({
+	message: 'Support',
+	comment: 'User settings tab for troubleshooting, diagnostics, version information, and updates.',
 });
 const EMBED_DEBUGGER_DESCRIPTOR = msg({
 	message: 'Embed debugger',
@@ -321,6 +326,12 @@ const ALL_TABS_DESCRIPTORS: Array<SettingsTabDescriptor> = [
 		category: 'app_settings',
 		label: DESKTOP_SETTINGS_DESCRIPTOR,
 		icon: DesktopIcon,
+	},
+	{
+		type: 'support_center',
+		category: 'app_settings',
+		label: SUPPORT_CENTER_DESCRIPTOR,
+		icon: LifebuoyIcon,
 	},
 	{
 		type: 'advanced_settings',

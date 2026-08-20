@@ -18,6 +18,7 @@ import MyProfileTab from '@app/features/user/components/modals/tabs/MyProfileTab
 import NotificationsTab from '@app/features/user/components/modals/tabs/NotificationsTab';
 import PlutoniumTab from '@app/features/user/components/modals/tabs/PlutoniumTab';
 import PrivacySafetyTab from '@app/features/user/components/modals/tabs/PrivacySafetyTab';
+import SupportCenterTab from '@app/features/user/components/modals/tabs/support_center_tab/SupportCenterTab';
 import VoiceVideoTab from '@app/features/user/components/modals/tabs/VoiceVideoTab';
 import type {UserSettingsTabType} from '@app/features/user/components/settings_utils/SettingsSectionRegistry';
 import type React from 'react';
@@ -40,6 +41,7 @@ const DESKTOP_TAB_COMPONENTS: Partial<Record<UserSettingsTabType, React.Componen
 	notifications: NotificationsTab,
 	language: LanguageTab,
 	desktop_settings: DesktopSettingsTab,
+	support_center: SupportCenterTab,
 	advanced_settings: AdvancedSettingsTab,
 	embed_debugger: EmbedDebuggerTab,
 	applications: ApplicationsTab,
