@@ -12,7 +12,7 @@ on:
           - canary
         default: stable
       test_build:
-        description: Stash artifacts under desktop-test/ instead of desktop/ (API will not pick these up as a release).
+        description: Build test packages without publishing; Windows packages are unsigned and retained as run artifacts.
         required: false
         default: false
         type: boolean
@@ -39,6 +39,7 @@ env:
   CHANNEL: ${{ inputs.channel }}
   BUILD_CHANNEL: ${{ inputs.channel == 'canary' && 'canary' || 'stable' }}
   TEST_BUILD: ${{ inputs.test_build && 'true' || 'false' }}
+  FLUXER_ALLOW_UNSIGNED_WINDOWS_PACKAGING: ${{ inputs.test_build && 'true' || 'false' }}
 
 jobs:
   meta:
@@ -353,7 +354,7 @@ jobs:
           --step validate_windows_signing_inputs
 
       - name: Azure login for Artifact Signing
-        if: matrix.platform == 'windows'
+        if: matrix.platform == 'windows' && !inputs.test_build
         uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -361,7 +362,7 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Write Velopack Trusted Signing metadata
-        if: matrix.platform == 'windows'
+        if: matrix.platform == 'windows' && !inputs.test_build
         env:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
@@ -375,7 +376,7 @@ jobs:
 
       - name: Resolve unpacked Windows app directory
         id: resolve_unpacked
-        if: matrix.platform == 'windows'
+        if: matrix.platform == 'windows' && !inputs.test_build
         working-directory: ${{ env.WORKDIR }}/fluxer_desktop
         env:
           BUILD_CHANNEL: ${{ env.BUILD_CHANNEL }}
@@ -384,7 +385,7 @@ jobs:
           --step resolve_windows_unpacked_dir
 
       - name: Sign unpacked Windows binaries with Artifact Signing
-        if: matrix.platform == 'windows'
+        if: matrix.platform == 'windows' && !inputs.test_build
         uses: azure/artifact-signing-action@c7ab2a863ab5f9a846ddb8265964877ef296ee82
         with:
           endpoint: ${{ secrets.AZURE_ARTIFACT_SIGNING_ENDPOINT }}
@@ -399,7 +400,7 @@ jobs:
           exclude-environment-credential: true
 
       - name: Verify unpacked Windows signatures
-        if: matrix.platform == 'windows'
+        if: matrix.platform == 'windows' && !inputs.test_build
         working-directory: ${{ env.WORKDIR }}/fluxer_desktop
         env:
           BUILD_CHANNEL: ${{ env.BUILD_CHANNEL }}
@@ -448,7 +449,7 @@ jobs:
           --step build_app_linux
 
       - name: Verify signed Windows artifacts
-        if: matrix.platform == 'windows'
+        if: matrix.platform == 'windows' && !inputs.test_build
         working-directory: ${{ env.WORKDIR }}/fluxer_desktop
         env:
           BUILD_CHANNEL: ${{ env.BUILD_CHANNEL }}
@@ -487,13 +488,24 @@ jobs:
           --step generate_checksums_windows
 
       - name: Upload artifacts to S3 handoff
+        if: ${{ !inputs.test_build }}
         run: >-
           cargo run --locked --quiet --manifest-path ${{ github.workspace }}/_ci/tools/ci/Cargo.toml -- build-desktop
           --step upload_handoff
 
+      - name: Retain test packages with this workflow run
+        if: ${{ inputs.test_build }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fluxer-desktop-test-${{ needs.meta.outputs.version }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.desktop_variant }}
+          path: upload_staging
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+
   upload:
     name: Upload to S3
-    if: ${{ !cancelled() && needs.build.result == 'success' }}
+    if: ${{ !cancelled() && needs.build.result == 'success' && needs.meta.outputs.test_build != 'true' }}
     needs:
       - meta
       - build

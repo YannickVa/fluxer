@@ -1067,6 +1067,8 @@ impl DesktopBuildPlatform {
                 "cannot resolve",
                 "i/o timeout",
                 "connection reset",
+                "forcibly closed",
+                "wsarecv",
                 "TLS handshake",
             ],
             Self::Macos | Self::Linux => &[
@@ -1193,7 +1195,10 @@ fn validate_macos_signing_env() -> Result<PathBuf> {
 }
 
 fn is_transient_failure(log: &str, patterns: &[&str]) -> bool {
-    patterns.iter().any(|pattern| log.contains(pattern))
+    let log = log.to_ascii_lowercase();
+    patterns
+        .iter()
+        .any(|pattern| log.contains(&pattern.to_ascii_lowercase()))
 }
 
 fn clean_electron_builder_outputs(platform: DesktopBuildPlatform) -> Result<()> {
@@ -3412,6 +3417,20 @@ mod tests {
         assert!(should_overwrite_payload("desktop-test", true));
         assert!(!should_overwrite_payload("desktop", true));
         assert!(!should_overwrite_payload("desktop-test", false));
+    }
+
+    #[test]
+    fn windows_network_resets_are_retried() {
+        let log = "wsarecv: An existing connection was forcibly closed by the remote host.";
+
+        assert!(is_transient_failure(
+            log,
+            DesktopBuildPlatform::Windows.transient_patterns()
+        ));
+        assert!(is_transient_failure(
+            "TLS HANDSHAKE timeout",
+            DesktopBuildPlatform::Windows.transient_patterns()
+        ));
     }
 
     #[test]
