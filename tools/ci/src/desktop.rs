@@ -121,14 +121,14 @@ const PLATFORMS: &[Platform] = &[
         platform: "windows",
         arch: "x64",
         desktop_variant: DEFAULT_DESKTOP_VARIANT,
-        os: "blacksmith-32vcpu-windows-2025",
+        os: "windows-2025",
         electron_arch: "x64",
     },
     Platform {
         platform: "windows",
         arch: "arm64",
         desktop_variant: DEFAULT_DESKTOP_VARIANT,
-        os: "blacksmith-32vcpu-windows-2025",
+        os: "windows-2025",
         electron_arch: "arm64",
     },
     Platform {
@@ -3463,7 +3463,7 @@ mod tests {
         assert_eq!(
             selected,
             vec![
-                "{\"platform\":\"windows\",\"arch\":\"arm64\",\"desktop_variant\":\"default\",\"os\":\"blacksmith-32vcpu-windows-2025\",\"electron_arch\":\"arm64\"}",
+                "{\"platform\":\"windows\",\"arch\":\"arm64\",\"desktop_variant\":\"default\",\"os\":\"windows-2025\",\"electron_arch\":\"arm64\"}",
                 "{\"platform\":\"linux\",\"arch\":\"x64\",\"desktop_variant\":\"default\",\"os\":\"blacksmith-32vcpu-ubuntu-2404\",\"electron_arch\":\"x64\"}",
                 "{\"platform\":\"linux\",\"arch\":\"arm64\",\"desktop_variant\":\"default\",\"os\":\"blacksmith-32vcpu-ubuntu-2404-arm\",\"electron_arch\":\"arm64\"}",
             ]
@@ -3481,6 +3481,12 @@ mod tests {
                 .filter(|platform| platform.platform == "windows")
                 .count(),
             2
+        );
+        assert!(
+            selected
+                .iter()
+                .filter(|platform| platform.platform == "windows")
+                .all(|platform| platform.os == "windows-2025")
         );
         assert!(
             selected
@@ -3503,7 +3509,7 @@ mod tests {
         assert_eq!(
             selected,
             vec![
-                "{\"platform\":\"windows\",\"arch\":\"arm64\",\"desktop_variant\":\"default\",\"os\":\"blacksmith-32vcpu-windows-2025\",\"electron_arch\":\"arm64\"}",
+                "{\"platform\":\"windows\",\"arch\":\"arm64\",\"desktop_variant\":\"default\",\"os\":\"windows-2025\",\"electron_arch\":\"arm64\"}",
                 "{\"platform\":\"linux\",\"arch\":\"x64\",\"desktop_variant\":\"default\",\"os\":\"blacksmith-32vcpu-ubuntu-2404\",\"electron_arch\":\"x64\"}",
                 "{\"platform\":\"linux\",\"arch\":\"arm64\",\"desktop_variant\":\"default\",\"os\":\"blacksmith-32vcpu-ubuntu-2404-arm\",\"electron_arch\":\"arm64\"}",
             ]
