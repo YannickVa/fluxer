@@ -11,6 +11,15 @@ import {type ClientInfo, getClientInfo} from '@app/features/platform/utils/Clien
 import {ComponentDispatch} from '@app/features/platform/utils/ComponentBus';
 import {downloadTextFile} from '@app/features/platform/utils/DownloadFile';
 import {
+	formatSupportDeviceSummary,
+	formatSupportEndpointSummary,
+	formatSupportInstanceSummary,
+	formatSupportMediaSummary,
+	formatSupportPermission,
+	formatSupportUpdateAvailable,
+	formatSupportUpdateLastChecked,
+} from '@app/features/support/SupportCenterCopy';
+import {
 	createSupportDiagnosticsSnapshot,
 	getOverallSupportStatus,
 	getSafeOrigin,
@@ -238,22 +247,6 @@ const QuickFix: React.FC<QuickFixProps> = ({icon, title, description, onClick}) 
 	</button>
 );
 
-function endpointSummary(check: SupportEndpointCheck | undefined): string {
-	if (!check) return 'waiting';
-	if (check.status === 'pass') return `${check.durationMs ?? 0} ms`;
-	if (check.error === 'timeout') return 'timed out';
-	if (check.httpStatus) return `HTTP ${check.httpStatus}`;
-	return 'unreachable';
-}
-
-function endpointSummaryNode(check: SupportEndpointCheck | undefined): React.ReactNode {
-	if (!check) return <Trans>waiting</Trans>;
-	if (check.status === 'pass') return <Trans>{check.durationMs ?? 0} ms</Trans>;
-	if (check.error === 'timeout') return <Trans>timed out</Trans>;
-	if (check.httpStatus) return <Trans>HTTP {check.httpStatus}</Trans>;
-	return <Trans>unreachable</Trans>;
-}
-
 function getUpdateStatus(): SupportCheckStatus {
 	if (Updater.isChecking) return 'checking';
 	if (Updater.hasUpdate) return 'warning';
@@ -277,32 +270,6 @@ function getGatewayStatus(): SupportCheckStatus {
 	if (GatewayConnection.isReady && GatewayConnection.isConnected) return 'pass';
 	if (GatewayConnection.isConnecting) return 'checking';
 	return 'fail';
-}
-
-function formatPermission(value: PermissionState | null): string {
-	switch (value) {
-		case 'granted':
-			return 'allowed';
-		case 'denied':
-			return 'blocked';
-		case 'prompt':
-			return 'not requested';
-		default:
-			return 'unknown';
-	}
-}
-
-function permissionNode(value: PermissionState | null): React.ReactNode {
-	switch (value) {
-		case 'granted':
-			return <Trans>allowed</Trans>;
-		case 'denied':
-			return <Trans>blocked</Trans>;
-		case 'prompt':
-			return <Trans>not requested</Trans>;
-		default:
-			return <Trans>unknown</Trans>;
-	}
 }
 
 const SupportCenterTab: React.FC = observer(() => {
@@ -453,10 +420,10 @@ const SupportCenterTab: React.FC = observer(() => {
 				? `Desktop: ${info.desktopVersion} (${info.desktopChannel ?? 'unknown channel'})`
 				: 'Desktop: no',
 			`System: ${[info.osName, info.osVersion, info.desktopArch ?? info.arch].filter(Boolean).join(' ') || 'unknown'}`,
-			`Checks: app ${endpointSummary(appCheck)}, API ${endpointSummary(apiCheck)}, media ${RuntimeConfig.features.voice_enabled ? endpointSummary(mediaCheck) : 'disabled'}`,
+			`Checks: app ${formatSupportEndpointSummary(i18n, appCheck)}, API ${formatSupportEndpointSummary(i18n, apiCheck)}, media ${RuntimeConfig.features.voice_enabled ? formatSupportEndpointSummary(i18n, mediaCheck) : 'disabled'}`,
 			`Messaging: ${gatewayStatus}`,
 			`Devices: ${inputDevices.length} microphone(s), ${outputDevices.length} speaker(s), ${videoDevices.length} camera(s)`,
-			`Permissions: microphone ${formatPermission(MediaPermission.microphonePermissionState)}, camera ${formatPermission(MediaPermission.cameraPermissionState)}`,
+			`Permissions: microphone ${formatSupportPermission(i18n, MediaPermission.microphonePermissionState)}, camera ${formatSupportPermission(i18n, MediaPermission.cameraPermissionState)}`,
 			`Update: ${Updater.hasUpdate ? `available (${Updater.displayVersion ?? 'version unknown'})` : updateStatus}`,
 		].join('\n');
 		if (await TextCopyCommands.copy(i18n, summary, true)) {
@@ -568,11 +535,7 @@ const SupportCenterTab: React.FC = observer(() => {
 							/>
 						}
 						title={<Trans>Instance</Trans>}
-						description={
-							<Trans>
-								App {endpointSummaryNode(appCheck)} · API {endpointSummaryNode(apiCheck)}
-							</Trans>
-						}
+						description={formatSupportInstanceSummary(i18n, appCheck, apiCheck)}
 						status={instanceStatus}
 						data-flx="user.support-center-tab.support-center-tab.readiness-row"
 					/>
@@ -609,7 +572,7 @@ const SupportCenterTab: React.FC = observer(() => {
 								<Trans>Voice is disabled on this instance.</Trans>
 							) : (
 								<>
-									<Trans>Media service {endpointSummaryNode(mediaCheck)}.</Trans>{' '}
+									{formatSupportMediaSummary(i18n, mediaCheck)}{' '}
 									{MediaEngineFacade.connected ? (
 										<Trans>You are connected to a call.</Trans>
 									) : (
@@ -640,13 +603,14 @@ const SupportCenterTab: React.FC = observer(() => {
 							/>
 						}
 						title={<Trans>Devices & permissions</Trans>}
-						description={
-							<Trans>
-								{inputDevices.length} microphone(s), {outputDevices.length} speaker(s), {videoDevices.length} camera(s).
-								Microphone {permissionNode(MediaPermission.microphonePermissionState)}; camera{' '}
-								{permissionNode(MediaPermission.cameraPermissionState)}.
-							</Trans>
-						}
+						description={formatSupportDeviceSummary(
+							i18n,
+							inputDevices.length,
+							outputDevices.length,
+							videoDevices.length,
+							MediaPermission.microphonePermissionState,
+							MediaPermission.cameraPermissionState,
+						)}
 						status={deviceStatus}
 						action={
 							<Button
@@ -671,9 +635,9 @@ const SupportCenterTab: React.FC = observer(() => {
 						title={<Trans>Updates</Trans>}
 						description={
 							Updater.hasUpdate ? (
-								<Trans>Version {Updater.displayVersion ?? 'unknown'} is available.</Trans>
+								formatSupportUpdateAvailable(i18n, Updater.displayVersion ?? 'unknown')
 							) : lastUpdateCheck ? (
-								<Trans>Last checked: {lastUpdateCheck}</Trans>
+								formatSupportUpdateLastChecked(i18n, lastUpdateCheck)
 							) : (
 								<Trans>Not checked yet.</Trans>
 							)
