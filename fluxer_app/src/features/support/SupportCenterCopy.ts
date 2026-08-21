@@ -53,10 +53,10 @@ const UPDATE_LAST_CHECKED_DESCRIPTOR = msg({
 export function formatSupportEndpointSummary(i18n: I18n, check: SupportEndpointCheck | undefined): string {
 	if (!check) return i18n._(ENDPOINT_WAITING_DESCRIPTOR);
 	if (check.status === 'pass') {
-		return i18n._({...ENDPOINT_DURATION_DESCRIPTOR, values: {durationMs: check.durationMs ?? 0}});
+		return i18n._(ENDPOINT_DURATION_DESCRIPTOR, {durationMs: check.durationMs ?? 0});
 	}
 	if (check.error === 'timeout') return i18n._(ENDPOINT_TIMEOUT_DESCRIPTOR);
-	if (check.httpStatus) return i18n._({...ENDPOINT_HTTP_DESCRIPTOR, values: {httpStatus: check.httpStatus}});
+	if (check.httpStatus) return i18n._(ENDPOINT_HTTP_DESCRIPTOR, {httpStatus: check.httpStatus});
 	return i18n._(ENDPOINT_UNREACHABLE_DESCRIPTOR);
 }
 
@@ -78,19 +78,15 @@ export function formatSupportInstanceSummary(
 	appCheck: SupportEndpointCheck | undefined,
 	apiCheck: SupportEndpointCheck | undefined,
 ): string {
-	return i18n._({
-		...INSTANCE_ENDPOINTS_DESCRIPTOR,
-		values: {
-			appSummary: formatSupportEndpointSummary(i18n, appCheck),
-			apiSummary: formatSupportEndpointSummary(i18n, apiCheck),
-		},
+	return i18n._(INSTANCE_ENDPOINTS_DESCRIPTOR, {
+		appSummary: formatSupportEndpointSummary(i18n, appCheck),
+		apiSummary: formatSupportEndpointSummary(i18n, apiCheck),
 	});
 }
 
 export function formatSupportMediaSummary(i18n: I18n, mediaCheck: SupportEndpointCheck | undefined): string {
-	return i18n._({
-		...MEDIA_ENDPOINT_DESCRIPTOR,
-		values: {mediaSummary: formatSupportEndpointSummary(i18n, mediaCheck)},
+	return i18n._(MEDIA_ENDPOINT_DESCRIPTOR, {
+		mediaSummary: formatSupportEndpointSummary(i18n, mediaCheck),
 	});
 }
 
@@ -102,22 +98,19 @@ export function formatSupportDeviceSummary(
 	microphonePermission: PermissionState | null,
 	cameraPermission: PermissionState | null,
 ): string {
-	return i18n._({
-		...DEVICE_PERMISSION_SUMMARY_DESCRIPTOR,
-		values: {
-			inputCount,
-			outputCount,
-			cameraCount,
-			microphonePermission: formatSupportPermission(i18n, microphonePermission),
-			cameraPermission: formatSupportPermission(i18n, cameraPermission),
-		},
+	return i18n._(DEVICE_PERMISSION_SUMMARY_DESCRIPTOR, {
+		inputCount,
+		outputCount,
+		cameraCount,
+		microphonePermission: formatSupportPermission(i18n, microphonePermission),
+		cameraPermission: formatSupportPermission(i18n, cameraPermission),
 	});
 }
 
 export function formatSupportUpdateAvailable(i18n: I18n, version: string): string {
-	return i18n._({...UPDATE_AVAILABLE_DESCRIPTOR, values: {version}});
+	return i18n._(UPDATE_AVAILABLE_DESCRIPTOR, {version});
 }
 
 export function formatSupportUpdateLastChecked(i18n: I18n, lastUpdateCheck: string): string {
-	return i18n._({...UPDATE_LAST_CHECKED_DESCRIPTOR, values: {lastUpdateCheck}});
+	return i18n._(UPDATE_LAST_CHECKED_DESCRIPTOR, {lastUpdateCheck});
 }

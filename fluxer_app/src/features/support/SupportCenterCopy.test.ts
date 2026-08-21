@@ -7,14 +7,18 @@ import {
 	formatSupportUpdateAvailable,
 	formatSupportUpdateLastChecked,
 } from '@app/features/support/SupportCenterCopy';
-import {type I18n, type MessageDescriptor, setupI18n} from '@lingui/core';
+import {type I18n, setupI18n} from '@lingui/core';
 import {describe, expect, test, vi} from 'vitest';
 
 vi.mock('@lingui/core/macro', () => ({msg: (descriptor: unknown) => descriptor}));
 
 const i18n = setupI18n({locale: 'en-US', messages: {'en-US': {}}});
-const descriptorOnlyI18n = {
-	_: (descriptor: MessageDescriptor) => i18n._(descriptor),
+const optimizedFallbackI18n = {
+	_: (descriptor: Parameters<I18n['_']>[0], values?: Parameters<I18n['_']>[1]) => {
+		if (typeof descriptor === 'string') return i18n._(descriptor, values);
+		const {id, message, comment} = descriptor;
+		return i18n._({id, message, comment}, values);
+	},
 } as unknown as I18n;
 const passingCheck = (service: 'app' | 'api' | 'media', durationMs: number) => ({
 	service,
@@ -43,22 +47,26 @@ describe('SupportCenterCopy', () => {
 		expect(formatSupportUpdateLastChecked(i18n, 'Aug 20, 2026, 6:00 PM')).toBe('Last checked: Aug 20, 2026, 6:00 PM');
 	});
 
-	test('keeps interpolation values inside descriptors for optimized fallback builds', () => {
-		expect(formatSupportInstanceSummary(descriptorOnlyI18n, passingCheck('app', 12), passingCheck('api', 34))).toBe(
+	test('passes interpolation values separately for optimized fallback builds', () => {
+		expect(formatSupportInstanceSummary(optimizedFallbackI18n, passingCheck('app', 12), passingCheck('api', 34))).toBe(
 			'App 12 ms · API 34 ms',
 		);
-		expect(formatSupportMediaSummary(descriptorOnlyI18n, passingCheck('media', 56))).toBe('Media service 56 ms.');
-		expect(formatSupportDeviceSummary(descriptorOnlyI18n, 1, 2, 3, 'granted', 'prompt')).toBe(
+		expect(formatSupportMediaSummary(optimizedFallbackI18n, passingCheck('media', 56))).toBe('Media service 56 ms.');
+		expect(formatSupportDeviceSummary(optimizedFallbackI18n, 1, 2, 3, 'granted', 'prompt')).toBe(
 			'1 microphone(s), 2 speaker(s), 3 camera(s). Microphone allowed; camera not requested.',
+		);
+		expect(formatSupportUpdateAvailable(optimizedFallbackI18n, '2026.820.7')).toBe('Version 2026.820.7 is available.');
+		expect(formatSupportUpdateLastChecked(optimizedFallbackI18n, 'Aug 20, 2026, 6:00 PM')).toBe(
+			'Last checked: Aug 20, 2026, 6:00 PM',
 		);
 	});
 
-	test('never exposes raw positional placeholders', () => {
+	test('never exposes raw placeholders', () => {
 		const rendered = [
 			formatSupportInstanceSummary(i18n, passingCheck('app', 12), passingCheck('api', 34)),
 			formatSupportMediaSummary(i18n, passingCheck('media', 56)),
 			formatSupportDeviceSummary(i18n, 1, 2, 3, 'granted', 'prompt'),
 		].join(' ');
-		expect(rendered).not.toMatch(/\{\d+\}/);
+		expect(rendered).not.toMatch(/\{[^{}]+\}/);
 	});
 });
