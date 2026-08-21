@@ -5,47 +5,73 @@ import type {I18n} from '@lingui/core';
 import {msg} from '@lingui/core/macro';
 
 const ENDPOINT_WAITING_DESCRIPTOR = msg({
+	id: 'support.endpoint.waiting',
 	message: 'waiting',
 	comment: 'Support Center endpoint check has not run yet.',
 });
 const ENDPOINT_DURATION_DESCRIPTOR = msg({
+	id: 'support.endpoint.duration',
 	message: '{durationMs} ms',
 	comment: 'Support Center endpoint response duration in milliseconds.',
 });
-const ENDPOINT_TIMEOUT_DESCRIPTOR = msg({message: 'timed out', comment: 'Support Center endpoint check timed out.'});
+const ENDPOINT_TIMEOUT_DESCRIPTOR = msg({
+	id: 'support.endpoint.timeout',
+	message: 'timed out',
+	comment: 'Support Center endpoint check timed out.',
+});
 const ENDPOINT_HTTP_DESCRIPTOR = msg({
+	id: 'support.endpoint.http_status',
 	message: 'HTTP {httpStatus}',
 	comment: 'Support Center endpoint check returned a non-success HTTP status.',
 });
 const ENDPOINT_UNREACHABLE_DESCRIPTOR = msg({
+	id: 'support.endpoint.unreachable',
 	message: 'unreachable',
 	comment: 'Support Center endpoint could not be reached.',
 });
-const PERMISSION_ALLOWED_DESCRIPTOR = msg({message: 'allowed', comment: 'Browser media permission is granted.'});
-const PERMISSION_BLOCKED_DESCRIPTOR = msg({message: 'blocked', comment: 'Browser media permission is denied.'});
+const PERMISSION_ALLOWED_DESCRIPTOR = msg({
+	id: 'support.permission.allowed',
+	message: 'allowed',
+	comment: 'Browser media permission is granted.',
+});
+const PERMISSION_BLOCKED_DESCRIPTOR = msg({
+	id: 'support.permission.blocked',
+	message: 'blocked',
+	comment: 'Browser media permission is denied.',
+});
 const PERMISSION_NOT_REQUESTED_DESCRIPTOR = msg({
+	id: 'support.permission.not_requested',
 	message: 'not requested',
 	comment: 'Browser media permission has not been requested yet.',
 });
-const PERMISSION_UNKNOWN_DESCRIPTOR = msg({message: 'unknown', comment: 'Browser media permission state is unknown.'});
+const PERMISSION_UNKNOWN_DESCRIPTOR = msg({
+	id: 'support.permission.unknown',
+	message: 'unknown',
+	comment: 'Browser media permission state is unknown.',
+});
 const INSTANCE_ENDPOINTS_DESCRIPTOR = msg({
+	id: 'support.summary.instance_endpoints',
 	message: 'App {appSummary} · API {apiSummary}',
 	comment: 'Support Center summary of the web app and API endpoint checks.',
 });
 const MEDIA_ENDPOINT_DESCRIPTOR = msg({
+	id: 'support.summary.media_endpoint',
 	message: 'Media service {mediaSummary}.',
 	comment: 'Support Center summary of the voice and video media endpoint check.',
 });
 const DEVICE_PERMISSION_SUMMARY_DESCRIPTOR = msg({
+	id: 'support.summary.devices_and_permissions',
 	message:
 		'{inputCount} microphone(s), {outputCount} speaker(s), {cameraCount} camera(s). Microphone {microphonePermission}; camera {cameraPermission}.',
 	comment: 'Support Center device counts and browser microphone and camera permission states.',
 });
 const UPDATE_AVAILABLE_DESCRIPTOR = msg({
+	id: 'support.update.available',
 	message: 'Version {version} is available.',
 	comment: 'Support Center update status when a newer desktop version is available.',
 });
 const UPDATE_LAST_CHECKED_DESCRIPTOR = msg({
+	id: 'support.update.last_checked',
 	message: 'Last checked: {lastUpdateCheck}',
 	comment: 'Support Center timestamp of the most recent desktop update check.',
 });
