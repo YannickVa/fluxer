@@ -82,6 +82,7 @@ function createSessionDiagnostics(label) {
 	return {
 		label,
 		consoleErrors: [],
+		expectedOfflineConsoleErrors: [],
 		pageErrors: [],
 		requestFailures: [],
 		expectedOfflineFailures: 0,
@@ -95,19 +96,34 @@ function createSessionDiagnostics(label) {
 	};
 }
 
+function isExpectedOfflineConsoleError(message) {
+	return (
+		message.includes('Failed to save synced preferences: Error: Network error during request') ||
+		message === 'Failed to load resource: net::ERR_INTERNET_DISCONNECTED'
+	);
+}
+
 function attachDiagnostics(page, diagnostics) {
+	const state = {expectOfflineFailures: false};
 	page.on('console', (message) => {
-		if (message.type() === 'error') diagnostics.consoleErrors.push(message.text());
+		if (message.type() !== 'error') return;
+		const text = message.text();
+		if (state.expectOfflineFailures && isExpectedOfflineConsoleError(text)) {
+			diagnostics.expectedOfflineConsoleErrors.push(text);
+			return;
+		}
+		diagnostics.consoleErrors.push(text);
 	});
 	page.on('pageerror', (error) => diagnostics.pageErrors.push(error.message));
 	page.on('requestfailed', (request) => {
 		const error = request.failure()?.errorText ?? 'unknown';
-		if (error.includes('ERR_INTERNET_DISCONNECTED')) {
+		if (state.expectOfflineFailures && error.includes('ERR_INTERNET_DISCONNECTED')) {
 			diagnostics.expectedOfflineFailures += 1;
 			return;
 		}
 		diagnostics.requestFailures.push({url: redactUrl(request.url()), error});
 	});
+	return state;
 }
 
 function attachGatewayDiagnostics(page, diagnostics) {
@@ -369,6 +385,8 @@ let pageA;
 let pageB;
 let gatewayTrackerA;
 let gatewayTrackerB;
+let diagnosticsStateA;
+let diagnosticsStateB;
 const createdMessages = [];
 
 try {
@@ -386,8 +404,8 @@ try {
 	}
 	pageA = await contextA.newPage();
 	pageB = await contextB.newPage();
-	attachDiagnostics(pageA, report.diagnostics[0]);
-	attachDiagnostics(pageB, report.diagnostics[1]);
+	diagnosticsStateA = attachDiagnostics(pageA, report.diagnostics[0]);
+	diagnosticsStateB = attachDiagnostics(pageB, report.diagnostics[1]);
 	gatewayTrackerA = attachGatewayDiagnostics(pageA, report.diagnostics[0]);
 	gatewayTrackerB = attachGatewayDiagnostics(pageB, report.diagnostics[1]);
 
@@ -451,11 +469,13 @@ try {
 	pass('user B receives user A attachment live and its stored bytes match', {filename: attachmentFilename});
 
 	const gatewayConnectionsBeforeOffline = gatewayTrackerB.opened;
+	diagnosticsStateB.expectOfflineFailures = true;
 	await contextB.setOffline(true);
 	await pageB.waitForTimeout(settleMs);
 	const reconnectId = await sendMessage(pageA, channelId, reconnectContent, timeoutMs);
 	createdMessages.push({owner: 'A', id: reconnectId});
 	await contextB.setOffline(false);
+	diagnosticsStateB.expectOfflineFailures = false;
 	await pageB.bringToFront();
 	await messageRowById(pageB, reconnectId).waitFor({state: 'visible', timeout: timeoutMs});
 	pass('user B gateway session catches up after going offline and online', {
@@ -512,6 +532,8 @@ try {
 	process.exitCode = 1;
 } finally {
 	if (contextB) await contextB.setOffline(false).catch(() => undefined);
+	if (diagnosticsStateA) diagnosticsStateA.expectOfflineFailures = false;
+	if (diagnosticsStateB) diagnosticsStateB.expectOfflineFailures = false;
 	for (const message of [...createdMessages].reverse()) {
 		const ownerPage = message.owner === 'A' ? pageA : pageB;
 		if (!ownerPage) continue;

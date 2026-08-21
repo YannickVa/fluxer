@@ -38,7 +38,7 @@ pub async fn csrf_protection(mut request: Request, next: Next) -> Response {
                 let (restored_request, body_token) =
                     match extract_csrf_from_form_body(request).await {
                         Ok(result) => result,
-                        Err(response) => return response,
+                        Err(status) => return status.into_response(),
                     };
                 request = restored_request;
                 submitted = body_token;
@@ -114,11 +114,11 @@ fn is_urlencoded_form(request: &Request) -> bool {
 
 async fn extract_csrf_from_form_body(
     request: Request,
-) -> Result<(Request, Option<String>), Response> {
+) -> Result<(Request, Option<String>), StatusCode> {
     let (parts, body) = request.into_parts();
     let body_bytes = match to_bytes(body, MAX_CSRF_FORM_BYTES).await {
         Ok(bytes) => bytes,
-        Err(_) => return Err(StatusCode::PAYLOAD_TOO_LARGE.into_response()),
+        Err(_) => return Err(StatusCode::PAYLOAD_TOO_LARGE),
     };
     let token = url::form_urlencoded::parse(body_bytes.as_ref())
         .find_map(|(name, value)| (name == CSRF_FORM_FIELD).then(|| value.into_owned()));

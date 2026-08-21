@@ -270,7 +270,7 @@ async fn metadata_handler(
     if req.with_base64.unwrap_or(false) && metadata_input_is_svg(&input) {
         input = match rasterize_metadata_svg(&app, input).await {
             Ok(input) => input,
-            Err(response) => return response,
+            Err(response) => return *response,
         };
     }
     let json = match media_process::metadata_json_with_options(
@@ -330,7 +330,7 @@ fn replace_image_extension(filename: &str, ext: AssetExtension) -> String {
 async fn rasterize_metadata_svg(
     app: &Arc<AppState>,
     input: InputData,
-) -> Result<InputData, Response> {
+) -> Result<InputData, Box<Response>> {
     let options = media_process::ImageOptions {
         format: AssetExtension::Webp,
         quality: "lossless".to_owned(),
@@ -345,18 +345,18 @@ async fn rasterize_metadata_svg(
             data: media.bytes.into(),
             filename: replace_image_extension(&input.filename, AssetExtension::Webp),
         }),
-        Err(err) if transform_error_is_timeout(&err) => Err(text_with_source(
+        Err(err) if transform_error_is_timeout(&err) => Err(Box::new(text_with_source(
             StatusCode::GATEWAY_TIMEOUT,
             "Gateway Timeout",
             "metadata_svg_rasterize_timeout",
             input.filename,
-        )),
-        Err(err) => Err(text_with_source(
+        ))),
+        Err(err) => Err(Box::new(text_with_source(
             StatusCode::BAD_REQUEST,
             "Bad Request",
             "metadata_svg_rasterize_failed",
             format!("filename={} err={err:?}", input.filename),
-        )),
+        ))),
     }
 }
 

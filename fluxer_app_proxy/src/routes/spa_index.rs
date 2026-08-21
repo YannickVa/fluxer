@@ -136,7 +136,7 @@ async fn serve_spa_index(state: &AppState, headers: &HeaderMap, request_path: &s
 
     let raw_html = match load_spa_index_html(state).await {
         Ok(content) => content,
-        Err(response) => return response,
+        Err(status) => return status.into_response(),
     };
 
     let mut html = inject_bootstrap(&raw_html, &nonce, &script_tag, static_cdn_endpoint);
@@ -239,7 +239,7 @@ fn discovery_endpoint(discovery: &DiscoveryResponse, key: &str) -> Option<String
         .map(ToOwned::to_owned)
 }
 
-async fn load_spa_index_html(state: &AppState) -> Result<String, Response> {
+async fn load_spa_index_html(state: &AppState) -> Result<String, StatusCode> {
     if let Some(index_upstream_url) = &state.config.index_upstream_url {
         let response = state
             .http_client
@@ -249,16 +249,16 @@ async fn load_spa_index_html(state: &AppState) -> Result<String, Response> {
             .await
             .map_err(|err| {
                 tracing::error!(url = %index_upstream_url, %err, "failed to fetch upstream index.html");
-                StatusCode::BAD_GATEWAY.into_response()
+                StatusCode::BAD_GATEWAY
             })?;
         if !response.status().is_success() {
             let status = response.status();
             tracing::error!(url = %index_upstream_url, %status, "upstream index.html returned non-success status");
-            return Err(StatusCode::BAD_GATEWAY.into_response());
+            return Err(StatusCode::BAD_GATEWAY);
         }
         return response.text().await.map_err(|err| {
             tracing::error!(url = %index_upstream_url, %err, "failed to read upstream index.html body");
-            StatusCode::BAD_GATEWAY.into_response()
+            StatusCode::BAD_GATEWAY
         });
     }
 
@@ -269,7 +269,7 @@ async fn load_spa_index_html(state: &AppState) -> Result<String, Response> {
     let index_path = Path::new(&state.config.static_dir).join("index.html");
     tokio::fs::read_to_string(&index_path).await.map_err(|err| {
         tracing::error!(path = ?index_path, %err, "failed to read index.html");
-        StatusCode::INTERNAL_SERVER_ERROR.into_response()
+        StatusCode::INTERNAL_SERVER_ERROR
     })
 }
 

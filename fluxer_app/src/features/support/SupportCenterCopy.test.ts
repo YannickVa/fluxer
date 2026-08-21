@@ -7,12 +7,15 @@ import {
 	formatSupportUpdateAvailable,
 	formatSupportUpdateLastChecked,
 } from '@app/features/support/SupportCenterCopy';
-import {setupI18n} from '@lingui/core';
+import {type I18n, type MessageDescriptor, setupI18n} from '@lingui/core';
 import {describe, expect, test, vi} from 'vitest';
 
 vi.mock('@lingui/core/macro', () => ({msg: (descriptor: unknown) => descriptor}));
 
 const i18n = setupI18n({locale: 'en-US', messages: {'en-US': {}}});
+const descriptorOnlyI18n = {
+	_: (descriptor: MessageDescriptor) => i18n._(descriptor),
+} as unknown as I18n;
 const passingCheck = (service: 'app' | 'api' | 'media', durationMs: number) => ({
 	service,
 	status: 'pass' as const,
@@ -38,6 +41,16 @@ describe('SupportCenterCopy', () => {
 	test('interpolates update details', () => {
 		expect(formatSupportUpdateAvailable(i18n, '2026.820.7')).toBe('Version 2026.820.7 is available.');
 		expect(formatSupportUpdateLastChecked(i18n, 'Aug 20, 2026, 6:00 PM')).toBe('Last checked: Aug 20, 2026, 6:00 PM');
+	});
+
+	test('keeps interpolation values inside descriptors for optimized fallback builds', () => {
+		expect(formatSupportInstanceSummary(descriptorOnlyI18n, passingCheck('app', 12), passingCheck('api', 34))).toBe(
+			'App 12 ms · API 34 ms',
+		);
+		expect(formatSupportMediaSummary(descriptorOnlyI18n, passingCheck('media', 56))).toBe('Media service 56 ms.');
+		expect(formatSupportDeviceSummary(descriptorOnlyI18n, 1, 2, 3, 'granted', 'prompt')).toBe(
+			'1 microphone(s), 2 speaker(s), 3 camera(s). Microphone allowed; camera not requested.',
+		);
 	});
 
 	test('never exposes raw positional placeholders', () => {
