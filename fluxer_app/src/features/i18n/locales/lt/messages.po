@@ -49,7 +49,7 @@ msgid "(you)"
 msgstr "(jūs)"
 
 #. placeholder {0}: guild.member_count
-#: src/features/discovery/discovery/DiscoveryGuildCard.tsx:184
+#: src/features/discovery/discovery/DiscoveryGuildCard.tsx:146
 msgid "{0, plural, one {# member} other {# members}}"
 msgstr "{0, plural, one {# narys} other {# nariai}}"
 
@@ -288,7 +288,7 @@ msgid "{blikPaymentMethod} does not support subscriptions in {paymentProviderNam
 msgstr "{blikPaymentMethod} nepalaiko prenumeratų {paymentProviderName} atsiskaitymo metu."
 
 #. Accessible label for a category row in the Discovery search sidebar. {categoryLabel} is the category name and {count} is how many communities match the current search in it. Both are inserted by code.
-#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:37
+#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:35
 msgid "{categoryLabel}, {count, plural, one {# community} other {# communities}}"
 msgstr "{categoryLabel}, {count, plural, one {# bendruomenė} few {# bendruomenės} many {# bendruomenės} other {# bendruomenių}}"
 
@@ -356,11 +356,11 @@ msgid "{count, plural, one {# bookmark} other {# bookmarks}}"
 msgstr "{count, plural, one {# žymė} other {# žymės}}"
 
 #. Screen-reader status text in Discovery. {count} is the total number of matching communities.
-#: src/features/discovery/discovery/DiscoveryPage.tsx:34
+#: src/features/discovery/discovery/DiscoveryPage.tsx:33
 msgid "{count, plural, one {# community found} other {# communities found}}"
 msgstr "{count, plural, one {# bendrija rasta} other {# bendrijų rasta}}"
 
-#: src/features/app/components/layout/GuildsLayout.tsx:1949
+#: src/features/app/components/layout/GuildsLayout.tsx:1926
 msgid "{count, plural, one {# community is temporarily unavailable due to a flux capacitor malfunction.} other {# communities are temporarily unavailable due to a flux capacitor malfunction.}}"
 msgstr "{count, plural, one {# bendruomenė laikinai nepasiekiama dėl srauto kondensatoriaus gedimo.} other {# bendruomenės laikinai nepasiekiamos dėl srauto kondensatoriaus gedimo.}}"
 
@@ -634,12 +634,12 @@ msgid "{deviceCount, plural, one {# device selected for sign out} other {# devic
 msgstr "{deviceCount, plural, one {# įrenginys pasirinktas išjungimui} other {# įrenginiai pasirinkti išjungimui}}"
 
 #. Sidebar Fluxer-home button tooltip showing how many incoming friend requests are pending. Count is interpolated.
-#: src/features/app/components/layout/sidebar_nav/FluxerButton.tsx:49
+#: src/features/app/components/layout/sidebar_nav/FluxerButton.tsx:50
 msgid "{displayedIncomingFriendRequestCount} friend requests"
 msgstr "{displayedIncomingFriendRequestCount} draugystės užklausų"
 
 #. Short label in the sidebar navigation fluxer button. Preserve {displayedUnreadDmCount}; it is inserted by code.
-#: src/features/app/components/layout/sidebar_nav/FluxerButton.tsx:40
+#: src/features/app/components/layout/sidebar_nav/FluxerButton.tsx:41
 msgid "{displayedUnreadDmCount} unread DMs"
 msgstr "{displayedUnreadDmCount} neskaitytų tiesioginių žinučių"
 
@@ -662,11 +662,6 @@ msgstr "{duration} anksčiau už jus"
 #: src/features/user/components/popouts/UserProfileShared.tsx:71
 msgid "{duration} behind you"
 msgstr "{duration} už jūsų"
-
-#. Support Center endpoint response duration in milliseconds.
-#: src/features/support/SupportCenterCopy.ts:11
-msgid "{durationMs} ms"
-msgstr ""
 
 #. Gift duration label. PREMIUM_PRODUCT_NAME is the paid plan name.
 #: src/features/gift/utils/GiftUtils.ts:12
@@ -731,7 +726,7 @@ msgid "{fifteenMinutes} minutes"
 msgstr "{fifteenMinutes} minučių"
 
 #. Short label in the sidebar navigation guild folder item. Preserve {folderName}; it is inserted by code.
-#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:77
+#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:78
 msgid "{folderName} folder"
 msgstr "{folderName} aplankas"
 
@@ -810,11 +805,6 @@ msgstr "{hours, plural, one {# valanda} other {# valandos}} ir {minutes, plural,
 msgid "{hours, plural, one {This invite expires in # hour.} other {This invite expires in # hours.}}"
 msgstr "{hours, plural, one {Šis kvietimas baigs galioti po # valandos.} other {Šis kvietimas baigs galioti po # valandų.}}"
 
-#. Support Center device counts and browser microphone and camera permission states.
-#: src/features/support/SupportCenterCopy.ts:39
-msgid "{inputCount} microphone(s), {outputCount} speaker(s), {cameraCount} camera(s). Microphone {microphonePermission}; camera {cameraPermission}."
-msgstr ""
-
 #. Accessible label for a disabled Discovery sidebar navigation item. {itemLabel} is the section name.
 #: src/features/discovery/discovery/DiscoverySidebar.tsx:31
 msgid "{itemLabel}, coming soon"
@@ -884,7 +874,7 @@ msgstr "{length} žiūri"
 msgid "{lineCount, plural, one {# line} other {# lines}}"
 msgstr "{lineCount, plural, one {# eilutė} other {# eilutės} few {# eilutės} many {# eilučių}}"
 
-#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:147
+#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:145
 msgid "{matchCount, plural, one {# match} other {# matches}}"
 msgstr "{matchCount, plural, one {# atitikmuo} other {# atitikmenys}}"
 
@@ -1577,7 +1567,7 @@ msgid "1 day"
 msgstr "1 diena"
 
 #. Short label in the sidebar navigation fluxer button.
-#: src/features/app/components/layout/sidebar_nav/FluxerButton.tsx:45
+#: src/features/app/components/layout/sidebar_nav/FluxerButton.tsx:46
 msgid "1 friend request"
 msgstr "1 draugo užklausa"
 
@@ -1632,7 +1622,7 @@ msgid "1 unread"
 msgstr "1 neperskaitytas"
 
 #. Short label in the sidebar navigation fluxer button.
-#: src/features/app/components/layout/sidebar_nav/FluxerButton.tsx:36
+#: src/features/app/components/layout/sidebar_nav/FluxerButton.tsx:37
 msgid "1 unread DM"
 msgstr "1 neperskaityta žinutė"
 
@@ -1953,10 +1943,6 @@ msgstr "pagrindinio kompiuterio pavadinimas, pvz., {exampleDomain}"
 msgid "A Linux desktop update is available. Choose the package format for this system and {productName} will save it locally."
 msgstr "Prieinamas „Linux“ darbalauko atnaujinimas. Pasirinkite šios sistemos paketų formatą, o programa „{productName}“ išsaugos jį vietiniame įrenginyje."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:511
-msgid "A live path through the systems needed for chat, calls, and updates."
-msgstr ""
-
 #. Duration label component for an elapsed call. Shown when the call lasted about a minute.
 #: src/features/channel/components/CallMessage.tsx:35
 msgid "a minute"
@@ -2115,7 +2101,7 @@ msgstr "Pasiekite pagrindinę profilio informaciją (naudotojo vardą, avatarą 
 #. User settings tab for accessibility preferences (visual, motion, screen reader, etc.).
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:14
 #: src/features/user/components/settings_utils/section_registry/SharedDescriptors.ts:93
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:67
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:66
 msgid "Accessibility"
 msgstr "Pritaikymas neįgaliesiems"
 
@@ -2129,7 +2115,7 @@ msgstr "Prieinama tiesioginė sritis"
 #. User settings tab for account login, password, MFA, and security.
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:11
 #: src/features/user/components/settings_utils/section_registry/AccountSecuritySections.ts:129
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:96
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:95
 msgid "Account"
 msgstr "Paskyra"
 
@@ -2268,7 +2254,7 @@ msgid "Active account"
 msgstr "Aktyvi paskyra"
 
 #. Lowercase screen-reader fragment in the sidebar navigation guild list DM item.
-#: src/features/app/components/layout/sidebar_nav/GuildListDMItem.tsx:66
+#: src/features/app/components/layout/sidebar_nav/GuildListDMItem.tsx:64
 msgid "active call"
 msgstr "aktyvus skambutis"
 
@@ -2841,7 +2827,7 @@ msgstr "Administratoriai pristabdė kvietimus – šiuo metu negalite prisijungt
 #: src/features/channel/components/modals/channel_tabs/ChannelOverviewTab.tsx:337
 #: src/features/guild/components/modals/guild_tabs/guild_overview_tab/index.tsx:28
 #: src/features/ui/action_menu/items/VoiceParticipantMenuData.tsx:178
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:146
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:145
 #: src/features/voice/components/voice_connection_status/VoiceDetailsPopout.tsx:60
 msgid "Advanced"
 msgstr "Išplėstiniai"
@@ -2921,8 +2907,8 @@ msgstr "Lygiavimo valdikliai pasiekiami tik platesniuose ekranuose"
 #: src/features/channel/components/MobileMemesPicker.tsx:40
 #: src/features/channel/components/pickers/memes/MemesPickerHeader.tsx:12
 #: src/features/discovery/components/bottomsheets/DiscoveryCategoryBottomSheet.tsx:11
-#: src/features/discovery/discovery/DiscoveryNavbar.tsx:20
-#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:25
+#: src/features/discovery/discovery/DiscoveryNavbar.tsx:19
+#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:23
 #: src/features/guild/components/modals/GuildNotificationSettingsModal.tsx:131
 msgid "All"
 msgstr "Visi"
@@ -2947,10 +2933,6 @@ msgstr "Viskas <0/>, amžinai. Jokių sąskaitų, jokių atnaujinimų."
 #: src/features/guild/components/modals/guild_tabs/GuildAuditLogTab.tsx:85
 msgid "All actions"
 msgstr "Visi veiksmai"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:496
-msgid "All checked systems look healthy."
-msgstr ""
 
 #. Message search scope menu item. Searches across every joined community.
 #. Short label in the entrance sound section. Keep it concise.
@@ -3003,7 +2985,7 @@ msgid "All inputs are fully interactive, so type away."
 msgstr "Visi įvesties laukai yra interaktyvūs, tad galite drąsiai rašyti."
 
 #. Short label in the discovery page. Keep it concise.
-#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:29
+#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:27
 msgid "All languages"
 msgstr "Visos kalbos"
 
@@ -3194,11 +3176,6 @@ msgstr "Leisti draugams matyti šį ryšį"
 #: src/features/user/components/modals/tabs/my_profile_tab/TimezoneProfileSettings.tsx:67
 msgid "Allow your friends to see your profile local time"
 msgstr "Leisti draugams matyti jūsų profilio vietinį laiką"
-
-#. Browser media permission is granted.
-#: src/features/support/SupportCenterCopy.ts:24
-msgid "allowed"
-msgstr ""
 
 #. placeholder {0}: renderInline(addedLabels, i18nInstance)
 #. placeholder {1}: renderInline(removedLabels, i18nInstance)
@@ -3714,11 +3691,6 @@ msgstr "Visi gali paprašyti paskyros, bet administratorius turi ją patvirtinti
 msgid "API key"
 msgstr "API raktas"
 
-#. Support Center summary of the web app and API endpoint checks.
-#: src/features/support/SupportCenterCopy.ts:31
-msgid "App {appSummary} · API {apiSummary}"
-msgstr ""
-
 #. Inline notice on Windows when per-window audio capture is not supported. Title text.
 #: src/features/voice/components/modals/screen_share_picker_modal/PerWindowAudioNotice.tsx:9
 msgid "App audio isn't available on this build of Windows."
@@ -3734,7 +3706,7 @@ msgstr "Programėlės piktogramos ženklelis"
 msgid "App language: {format}"
 msgstr "Programos kalba: {format}"
 
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:214
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:209
 msgid "App settings"
 msgstr "Programos nustatymai"
 
@@ -3761,7 +3733,7 @@ msgstr "Programėlės mastelio lygis"
 #. Advanced settings category tag.
 #. User settings tab for app appearance and layout options.
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:13
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:117
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:116
 msgid "Appearance"
 msgstr "Išvaizda"
 
@@ -3835,7 +3807,7 @@ msgstr "Programa sėkmingai atnaujinta"
 #: src/features/user/components/modals/tabs/applications_tab/index.tsx:129
 #: src/features/user/components/settings_utils/search_index/SharedDescriptors.ts:29
 #: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:74
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:71
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:70
 msgid "Applications"
 msgstr "Programos"
 
@@ -4376,7 +4348,7 @@ msgstr "Įgaliotosios programos"
 #: src/features/user/components/settings_utils/search_index/AuthorizedAppsIndex.ts:10
 #: src/features/user/components/settings_utils/section_registry/AccountSecuritySections.ts:148
 #: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:34
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:108
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:107
 msgid "Authorized apps"
 msgstr "Įgaliotosios programos"
 
@@ -4829,7 +4801,7 @@ msgstr "Užpakalinės dalies \"premium\" privilegijos išjungtos"
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/theme/components/modals/BackgroundImageGalleryModal.tsx:52
 #: src/features/user/components/settings_utils/search_index/SharedDescriptors.ts:5
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:800
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:847
 msgid "Background"
 msgstr "Fonas"
 
@@ -5065,7 +5037,7 @@ msgstr "Nuo 1 iki 32 simbolių"
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/PlutoniumIndex.ts:27
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:212
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:207
 msgid "Billing"
 msgstr "Atsiskaitymas"
 
@@ -5186,11 +5158,6 @@ msgstr "Blokuoti šį naudotoją"
 msgid "Block user"
 msgstr "Blokuoti naudotoją"
 
-#. Browser media permission is denied.
-#: src/features/support/SupportCenterCopy.ts:25
-msgid "blocked"
-msgstr ""
-
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/BlockedUsersIndex.ts:10
 msgid "Blocked"
@@ -5206,7 +5173,7 @@ msgstr "Užblokuoti"
 #: src/features/user/components/settings_utils/search_index/BlockedUsersIndex.ts:6
 #: src/features/user/components/settings_utils/section_registry/AccountSecuritySections.ts:152
 #: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:26
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:59
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:58
 msgid "Blocked users"
 msgstr "Užblokuoti naudotojai"
 
@@ -5244,7 +5211,7 @@ msgid "Blur"
 msgstr "Sulieti"
 
 #. Slider label in the camera preview modal controlling how strong the background blur effect is.
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:89
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:90
 msgid "Blur strength"
 msgstr "Fono suliejimo stiprumas"
 
@@ -5458,10 +5425,6 @@ msgstr "Prekės ženklo turinio peržiūra"
 #: src/features/user/components/settings_utils/section_registry/AppearanceSections.ts:150
 msgid "Brightness"
 msgstr "Ryškumas"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:775
-msgid "Browser"
-msgstr ""
 
 #. Title of the modal shown when the browser autoplay policy blocks voice audio until the user interacts.
 #: src/features/voice/components/modals/AudioPlaybackPermissionModal.tsx:8
@@ -5719,7 +5682,7 @@ msgstr "Kameros įrenginys"
 msgid "Camera effects"
 msgstr "Kameros efektai"
 
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:886
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:933
 msgid "Camera error"
 msgstr "Kameros klaida"
 
@@ -5762,7 +5725,7 @@ msgstr "Reikalingas leidimas naudoti kamerą"
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #. Title of the camera preview modal.
 #: src/features/user/components/settings_utils/section_registry/VoiceVideoSections.ts:181
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:67
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:68
 msgid "Camera preview"
 msgstr "Kameros peržiūra"
 
@@ -5822,8 +5785,8 @@ msgstr "Čia negalima įkelti failų"
 #: src/features/auth/components/modals/AccountDisableModal.tsx:45
 #: src/features/auth/components/modals/BackupCodesRegenerateModal.tsx:78
 #: src/features/auth/components/modals/BackupCodesViewModal.tsx:61
-#: src/features/auth/components/modals/ClaimAccountModal.tsx:216
-#: src/features/auth/components/modals/ClaimAccountModal.tsx:232
+#: src/features/auth/components/modals/ClaimAccountModal.tsx:210
+#: src/features/auth/components/modals/ClaimAccountModal.tsx:226
 #: src/features/auth/components/modals/DeviceRevokeModal.tsx:74
 #: src/features/auth/components/modals/PasskeyNameModal.tsx:80
 #: src/features/auth/components/modals/PasskeyPinModal.tsx:104
@@ -5849,7 +5812,7 @@ msgstr "Čia negalima įkelti failų"
 #: src/features/messaging/components/modals/AttachmentEditModal.tsx:133
 #: src/features/messaging/components/modals/EditAltTextModal.tsx:190
 #: src/features/messaging/components/modals/ExternalLinkWarningModal.tsx:111
-#: src/features/messaging/components/modals/ForwardModal.tsx:628
+#: src/features/messaging/components/modals/ForwardModal.tsx:627
 #: src/features/messaging/components/modals/ImageCropModal.tsx:925
 #: src/features/messaging/components/modals/MessageHistoryThresholdModal.tsx:107
 #: src/features/messaging/components/popouts/ScheduledMessagesContent.tsx:47
@@ -5868,7 +5831,7 @@ msgstr "Čia negalima įkelti failų"
 #: src/features/user/components/modals/PhoneAddModal.tsx:391
 #: src/features/user/components/modals/tabs/AuthorizedAppsTab.tsx:173
 #: src/features/voice/components/EntranceSoundTrimmerModal.tsx:31
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:922
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:969
 #: src/features/voice/components/VoiceMessageComposerModal.tsx:80
 msgid "Cancel"
 msgstr "Atšaukti"
@@ -6035,12 +5998,12 @@ msgstr "Kortelės gali išlaikyti TRY kainodarą po greito {paymentProviderName}
 #. Heading above the category filter list in the Discovery search sidebar.
 #. Short label in the discovery category bottom sheet. Keep it concise.
 #: src/features/discovery/components/bottomsheets/DiscoveryCategoryBottomSheet.tsx:15
-#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:21
+#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:19
 msgid "Categories"
 msgstr "Kategorijos"
 
 #. Lowercase channel type label used inside channel-list accessible text.
-#: src/features/app/components/layout/ChannelItem.tsx:84
+#: src/features/app/components/layout/ChannelItem.tsx:79
 msgid "category"
 msgstr "kategorija"
 
@@ -6131,7 +6094,7 @@ msgstr "Centre"
 msgid "Change avatar"
 msgstr "Keisti avatarą"
 
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:813
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:860
 msgid "Change background"
 msgstr "Keisti foną"
 
@@ -6350,7 +6313,7 @@ msgstr "Pakeitimai iškart pritaikomi tiesioginiam klientui."
 
 #. Fallback channel-name placeholder used inside the textarea message hint when no name is available. Lowercase.
 #. Lowercase generic channel type label used inside channel-list accessible text.
-#: src/features/app/components/layout/ChannelItem.tsx:92
+#: src/features/app/components/layout/ChannelItem.tsx:87
 #: src/features/channel/components/channel_textarea/shared.ts:11
 msgid "channel"
 msgstr "kanalas"
@@ -6370,7 +6333,7 @@ msgid "Channel"
 msgstr "Kanalas"
 
 #. Short label in the settings dialog forward channel selection. Preserve {id}; it is inserted by code.
-#: src/features/app/components/dialogs/shared/UseForwardChannelObservations.ts:26
+#: src/features/app/components/dialogs/shared/UseForwardChannelObservations.ts:22
 msgid "Channel {id}"
 msgstr "Kanalas \"{id}\""
 
@@ -6380,7 +6343,7 @@ msgid "Channel access"
 msgstr "Prieiga prie kanalo"
 
 #. Title of the alert shown when clicking a message link the user does not have permission to view.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:111
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:110
 msgid "Channel access denied"
 msgstr "Prieiga prie kanalo uždrausta"
 
@@ -6445,7 +6408,7 @@ msgstr "Kanalo ID nukopijuotas į iškarpinę"
 
 #. Short label in the messaging mention renderer. Keep it concise.
 #. Type chip suffix in tooltips for inline rendered channel mentions. Lowercase because it follows the channel name.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:80
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:79
 #: src/features/messaging/components/markdown/renderers/MentionRenderer.tsx:39
 msgid "channel link"
 msgstr "kanalo nuoroda"
@@ -6603,7 +6566,7 @@ msgstr "Viršytas simbolių limitas: {remaining}"
 #: src/features/input/components/modals/KeyboardShortcutsCheatsheetModal.tsx:40
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:15
 #: src/features/user/components/modals/tabs/keybinds_tab/DefaultKeybindsList.tsx:39
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:121
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:120
 msgid "Chat"
 msgstr "Pokalbis"
 
@@ -6638,19 +6601,8 @@ msgstr "Pokalbių spartieji klavišai"
 
 #. Tray menu item. Triggers the auto-updater to look for a new desktop build.
 #: src/features/platform/utils/DesktopLocaleBridge.ts:160
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:823
 msgid "Check for updates"
 msgstr "Tikrinti, ar yra naujinimų"
-
-#. Support Center section for live service, connection, device, and update checks.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:510
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:78
-msgid "Check my setup"
-msgstr ""
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:654
-msgid "Check now"
-msgstr ""
 
 #: src/features/app/components/BootstrapErrorScreen.tsx:56
 msgid "Check our <0>{BLUESKY_PROVIDER_NAME} ({FLUXER_BLUESKY_HANDLE})</0> for status updates."
@@ -6661,19 +6613,11 @@ msgstr "Patikrinkite mūsų <0>{BLUESKY_PROVIDER_NAME} ({FLUXER_BLUESKY_HANDLE})
 msgid "Check out my custom theme!"
 msgstr "Peržiūrėk mano pasirinktinę temą!"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:686
-msgid "Check permission, preview video, and select a camera."
-msgstr ""
-
 #. Error-state description in the channel and chat gif picker view.
 #: src/features/channel/components/pickers/gif/GifPickerView.tsx:44
 #: src/features/user/components/modals/tabs/applications_tab/index.tsx:96
 msgid "Check your connection and try again."
 msgstr "Patikrinkite ryšį ir bandykite dar kartą."
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:481
-msgid "Check your connection, devices, app version, and the services this client depends on."
-msgstr ""
 
 #. Empty-state hint in Discovery shown under the heading when the request for communities failed.
 #: src/features/discovery/discovery/DiscoveryEmptyState.tsx:32
@@ -6699,10 +6643,6 @@ msgstr "Patikrinkite savo gautuosius, ar nėra patvirtinimo el. laiško."
 #: src/features/user/components/modals/tabs/component_gallery_tab/SelectionsTab.tsx:250
 msgid "Checkboxes"
 msgstr "Žymimieji langeliai"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:82
-msgid "Checking"
-msgstr ""
 
 #. Loading label shown while permissions are being verified.
 #. Loading label shown while permissions are being verified.
@@ -6853,10 +6793,6 @@ msgstr "Pasirinkite parinktį"
 #: src/features/theme/components/modals/BackgroundImageGalleryModal.tsx:120
 msgid "Choose background"
 msgstr "Pasirinkite foną"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:677
-msgid "Choose devices, check levels, and test your microphone."
-msgstr ""
 
 #. OAuth authorize page error shown when a bot invite request provides both guild_id and channel_id. Keep the parameter names literal.
 #: src/features/auth/components/pages/oauth_authorize_page/state/useAuthorizeFlow.ts:86
@@ -7073,7 +7009,7 @@ msgstr "Pasiimkite paskyrą"
 msgid "Claim your account and verify your email to send reports."
 msgstr "Norėdami siųsti ataskaitas, patvirtinkite paskyrą ir el. pašto adresą."
 
-#: src/features/auth/components/modals/ClaimAccountModal.tsx:144
+#: src/features/auth/components/modals/ClaimAccountModal.tsx:138
 msgid "Claim your account by adding an email and password. We will send a verification code to confirm your email before finishing."
 msgstr "Prisijunkite prie savo paskyros pridėdami el. pašto adresą ir slaptažodį. Prieš baigdami, atsiųsime patvirtinimo kodą, kad patvirtintume jūsų el. pašto adresą."
 
@@ -7661,7 +7597,7 @@ msgid "Collapse"
 msgstr "Sutraukti"
 
 #. Short label in the sidebar navigation guild folder item. Preserve {folderName}; it is inserted by code.
-#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:97
+#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:98
 msgid "Collapse {folderName}"
 msgstr "Sutraukti aplanką \"{folderName}\""
 
@@ -7705,8 +7641,8 @@ msgstr "Sutraukti neskaitytus pranešimus kanale \"{channelHeading}\""
 
 #. Lowercase screen-reader fragment in the sidebar navigation guild folder item.
 #. Lowercase state label used inside channel-list accessible text for a collapsed category.
-#: src/features/app/components/layout/ChannelItem.tsx:100
-#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:85
+#: src/features/app/components/layout/ChannelItem.tsx:95
+#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:86
 msgid "collapsed"
 msgstr "sutraukta"
 
@@ -8330,7 +8266,7 @@ msgid "Connect with {providerName}"
 msgstr "Prisijungti naudojant „{providerName}\""
 
 #. Lowercase state label used inside channel-list accessible text for the current voice channel.
-#: src/features/app/components/layout/ChannelItem.tsx:116
+#: src/features/app/components/layout/ChannelItem.tsx:111
 msgid "connected"
 msgstr "prisijungta"
 
@@ -8453,7 +8389,7 @@ msgid "Connections"
 msgstr "Ryšiai"
 
 #. User settings tab for linked external accounts.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:112
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:111
 msgctxt "user-settings-tab"
 msgid "Connections"
 msgstr "Paskyros"
@@ -8947,10 +8883,6 @@ msgstr "Kopijuoti lipduko ID"
 #: src/features/ui/action_menu/items/StickerContextMenuItems.tsx:36
 msgid "Copy sticker URL"
 msgstr "Kopijuoti lipduko URL"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:881
-msgid "Copy support summary"
-msgstr ""
 
 #. Action label that copies a message body / selected text to the clipboard.
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
@@ -9625,10 +9557,6 @@ msgstr "Sukurti naują bendruomenę arba prisijungti prie esamos."
 #: src/features/channel/components/bottomsheets/channel_details_bottom_sheet/DMMembersList.tsx:19
 msgid "Create a new group with {userName}"
 msgstr "Sukurti naują grupę su „{userName}\""
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:841
-msgid "Create a small, privacy-reviewed snapshot for someone helping you troubleshoot."
-msgstr ""
 
 #. Generic authentication action label for starting or submitting account creation.
 #: src/features/auth/components/pages/RegisterPage.tsx:46
@@ -10586,7 +10514,7 @@ msgstr "Dekoratyvinis skirtukas"
 #: src/features/ui/action_menu/items/SearchMenuData.tsx:43
 #: src/features/ui/action_menu/items/SearchProviderMenuItems.tsx:14
 #: src/features/user/components/modals/tabs/component_gallery_tab/MarkdownTab.tsx:117
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:71
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:72
 #: src/features/voice/components/VoiceSettingsMenus.tsx:121
 #: src/features/voice/utils/SettingsDeviceOptions.ts:11
 msgid "Default"
@@ -11090,7 +11018,7 @@ msgid "Description must be no more than {discoveryDescriptionMaxLength} characte
 msgstr "Aprašas turi būti ne ilgesnis nei {discoveryDescriptionMaxLength} simbolių."
 
 #. Developer settings tab showing UI component examples.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:158
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:153
 msgid "Design system"
 msgstr "Dizaino sistema"
 
@@ -11104,8 +11032,8 @@ msgstr "Darbalaukis"
 
 #. User settings tab for desktop app integration and platform settings.
 #. User settings tab label shown on desktop builds when the OS could not be identified (fallback for the per-OS labels).
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:87
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:142
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:86
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:141
 msgid "Desktop app"
 msgstr "Darbalaukinė programa"
 
@@ -11128,10 +11056,6 @@ msgstr "Darbalaukio garso įrašymas nepasiekiamas šioje „Windows\" versijoje
 #: src/features/user/components/settings_utils/search_index/NotificationsIndex.ts:74
 msgid "Desktop away"
 msgstr "Išjungtas kompiuteris"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:769
-msgid "Desktop build"
-msgstr ""
 
 #. Aria label on a participant tile icon that indicates the participant is on desktop.
 #: src/features/voice/components/voice_participant_tile/shared.ts:83
@@ -11242,15 +11166,11 @@ msgstr "Išsami informacija"
 msgid "Detect while typing"
 msgstr "Aptikti rašant"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:791
-msgid "Detecting…"
-msgstr ""
-
 #. Advanced settings category tag.
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:20
 #: src/features/user/components/settings_utils/search_index/SharedDescriptors.ts:25
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:216
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:211
 msgid "Developer"
 msgstr "Kūrėjas"
 
@@ -11275,13 +11195,13 @@ msgstr "Kūrėjo būsena"
 #. Short label in the channel and chat utility buttons. Keep it concise.
 #. Title of the info alert shown when clicking an internal developer-tools deep link.
 #: src/features/channel/components/channel_header_components/UtilityButtons.tsx:20
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:123
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:122
 #: src/features/ui/action_menu/items/StaffDeveloperUserControlsMenuItem.tsx:13
 msgid "Developer tools"
 msgstr "Kūrėjo įrankiai"
 
 #. Body of the developer-tools info alert. Refers to the staff badge button in the channel header.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:127
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:126
 msgid "Developer tools are available from the staff badge in the channel header."
 msgstr "Kūrėjo įrankiai pasiekiami iš personalo ženkliuko kanalo antraštėje."
 
@@ -11342,20 +11262,10 @@ msgstr "Įrenginys:"
 #: src/features/user/components/modals/tabs/DevicesTab.tsx:528
 #: src/features/user/components/settings_utils/search_index/DevicesIndex.ts:11
 #: src/features/user/components/settings_utils/section_registry/AppearanceSections.ts:82
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:63
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:62
 #: src/features/voice/components/modals/ScreenSharePickerModal.tsx:133
 msgid "Devices"
 msgstr "Įrenginiai"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:605
-msgid "Devices & permissions"
-msgstr ""
-
-#. Support Center section for previewing and exporting privacy-safe diagnostics.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:840
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:90
-msgid "Diagnostics to share"
-msgstr ""
 
 #. Description for the Custom streaming preset. Lightly playful prose; keep tone casual.
 #: src/features/voice/components/StreamSettingsMenuContent.tsx:94
@@ -11747,7 +11657,7 @@ msgid "Discovery application withdrawn"
 msgstr "Atrankos paraiška atšaukta"
 
 #. Accessible label for the category tabs in the Discovery page.
-#: src/features/discovery/discovery/DiscoveryNavbar.tsx:24
+#: src/features/discovery/discovery/DiscoveryNavbar.tsx:23
 msgid "Discovery categories"
 msgstr "Atradimo kategorijos"
 
@@ -11761,12 +11671,12 @@ msgid "Discovery navigation"
 msgstr "Naršymas „Atraskite“ skiltyje"
 
 #. Accessible label for the Discovery community results region.
-#: src/features/discovery/discovery/DiscoveryPage.tsx:30
+#: src/features/discovery/discovery/DiscoveryPage.tsx:29
 msgid "Discovery results"
 msgstr "Atrastų bendruomenių rezultatai"
 
 #. Accessible label for the search form in the Discovery navigation bar.
-#: src/features/discovery/discovery/DiscoveryNavbar.tsx:32
+#: src/features/discovery/discovery/DiscoveryNavbar.tsx:31
 msgid "Discovery search"
 msgstr "„Discovery“ paieška"
 
@@ -12159,10 +12069,6 @@ msgstr "Atsisiųsti darbalaukio naujinimą {version}"
 msgid "Download desktop update {version} ({formatBytes})"
 msgstr "Atsisiųsti darbalaukio naujinimą {version} ({formatBytes})"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:907
-msgid "Download diagnostics"
-msgstr ""
-
 #. Media context menu action that downloads a file attachment.
 #: src/features/ui/action_menu/items/MediaMenuData.tsx:125
 msgid "Download file"
@@ -12460,7 +12366,7 @@ msgstr "Redaguoti priedą"
 #. Action that opens the edit-category modal.
 #. Action that opens the edit-category modal.
 #. Tooltip and accessible label for the category settings button in the channel list.
-#: src/features/app/components/layout/ChannelItem.tsx:120
+#: src/features/app/components/layout/ChannelItem.tsx:115
 #: src/features/ui/action_menu/items/CategoryMenuData.tsx:85
 #: src/features/ui/action_menu/items/CategoryMenuItems.tsx:62
 msgid "Edit category"
@@ -12664,7 +12570,7 @@ msgid "Education"
 msgstr "Švietimas"
 
 #. Inline notice in the camera preview modal when the native effects preview cannot start and the raw camera feed is shown instead.
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:84
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:85
 msgid "Effects preview unavailable — showing unprocessed camera"
 msgstr "Atsiprašome, efekto peržiūra negali būti paleista – rodomas neapdorotas vaizdo srautas iš kameros."
 
@@ -12777,7 +12683,7 @@ msgstr "Įterpti"
 #. Developer settings tab for testing URL unfurls and rendered embeds.
 #. Settings search entry label for the developer embed debugger.
 #: src/features/user/components/settings_utils/search_index/EmbedDebuggerIndex.ts:7
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:154
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:149
 msgid "Embed debugger"
 msgstr "Įterptųjų elementų derintuvas"
 
@@ -12979,7 +12885,7 @@ msgid "Emoticons"
 msgstr "Šypsenėliai"
 
 #. Short label in the app layout favorites channel list content.
-#: src/features/app/components/layout/FavoritesChannelListContent.tsx:70
+#: src/features/app/components/layout/FavoritesChannelListContent.tsx:65
 msgid "Empty favorites"
 msgstr "Nėra mėgstamiausių"
 
@@ -13559,7 +13465,7 @@ msgstr "Norėdami tęsti, įveskite programėlėje rodomą kodą."
 msgid "Enter the code we emailed to your new address."
 msgstr "Įveskite kodą, kurį išsiuntėme jūsų naujuoju el. pašto adresu."
 
-#: src/features/auth/components/modals/ClaimAccountModal.tsx:181
+#: src/features/auth/components/modals/ClaimAccountModal.tsx:175
 msgid "Enter the code we sent to your email to verify it. Your password will be set once the code is confirmed."
 msgstr "Įveskite kodą, kurį išsiuntėme jūsų el. paštu, kad jį patvirtintumėte. Jūsų slaptažodis bus nustatytas, kai kodas bus patvirtintas."
 
@@ -13789,10 +13695,6 @@ msgstr "Visiems – aukščiausi limitai"
 msgid "Everything"
 msgstr "Viskas"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:913
-msgid "Exact contents of the diagnostic file"
-msgstr ""
-
 #. Hint shown beside -in: (negation). Sentence case, no trailing punctuation.
 #: src/features/search/utils/SearchUtils.ts:121
 msgid "exclude a channel"
@@ -13900,8 +13802,8 @@ msgstr "Išskleisti neskaitytus pranešimus, skirtus {channelHeading}"
 
 #. Lowercase screen-reader fragment in the sidebar navigation guild folder item.
 #. Lowercase state label used inside channel-list accessible text for an expanded category.
-#: src/features/app/components/layout/ChannelItem.tsx:104
-#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:81
+#: src/features/app/components/layout/ChannelItem.tsx:99
+#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:82
 msgid "expanded"
 msgstr "išskleista"
 
@@ -14013,7 +13915,7 @@ msgid "Explicit content filter setting"
 msgstr "Nepadorus turinys – filtro nustatymas"
 
 #. Short label in the app layout discovery guild header.
-#: src/features/app/components/layout/DiscoveryGuildHeader.tsx:9
+#: src/features/app/components/layout/DiscoveryGuildHeader.tsx:10
 msgid "Explore"
 msgstr "Naršyti"
 
@@ -14074,7 +13976,7 @@ msgstr "Išraiškų automatinis pildymas"
 #. User settings tab for purchased or owned emoji/sticker expression packs.
 #: src/features/user/components/modals/tabs/ExpressionPacksTab.tsx:166
 #: src/features/user/components/settings_utils/search_index/ExpressionPacksIndex.ts:7
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:55
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:54
 msgid "Expression packs"
 msgstr "Išraiškų paketai"
 
@@ -14218,7 +14120,7 @@ msgid "Failed to delete channel"
 msgstr "Nepavyko ištrinti kanalo"
 
 #. Toast / inline error in the camera preview modal when enabling the camera fails.
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:63
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:64
 msgid "Failed to enable camera."
 msgstr "Nepavyko įjungti kameros."
 
@@ -14402,7 +14304,7 @@ msgid "Failed to start"
 msgstr "Nepavyko paleisti"
 
 #. Error text in the camera preview modal when the camera stream cannot be opened. Prompts user to check OS / browser permissions.
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:58
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:59
 msgid "Failed to start camera preview. Check your camera permissions."
 msgstr "Nepavyko paleisti kameros peržiūros. Patikrinkite kameros leidimus."
 
@@ -14699,7 +14601,7 @@ msgid "Filter by join method"
 msgstr "Filtruoti pagal prisijungimo būdą"
 
 #. Short label in the discovery page. Keep it concise.
-#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:33
+#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:31
 msgid "Filter by language"
 msgstr "Filtruoti pagal kalbą"
 
@@ -14740,7 +14642,7 @@ msgstr "Filtruoti paminėjimus"
 msgid "Filtering"
 msgstr "Filtravimas"
 
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:865
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:912
 msgid "Finalizing camera..."
 msgstr "Kamera ruošiama..."
 
@@ -14821,12 +14723,6 @@ msgstr "Pirmas paspaudimas pereina, kai neaktyvus"
 msgid "First option"
 msgstr "Pirmas pasirinkimas"
 
-#. Support Center section linking to common troubleshooting settings.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:664
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:82
-msgid "Fix a common problem"
-msgstr ""
-
 #. Unicode emoji category label.
 #: src/features/expressions/utils/UnicodeEmojis.ts:49
 msgid "Flags"
@@ -14905,7 +14801,7 @@ msgstr "Fokusuotas balsas"
 
 #. Folder icon option in the community-folder settings modal: a generic folder shape. Short standalone label.
 #. Short label in the sidebar navigation guild folder item.
-#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:73
+#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:74
 #: src/features/guild/components/modals/GuildFolderSettingsModal.tsx:39
 msgid "Folder"
 msgstr "Aplankas"
@@ -15189,7 +15085,7 @@ msgstr "Persiuntė žinutę"
 msgid "Forwarded from"
 msgstr "Persiųsta iš"
 
-#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:271
+#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:269
 msgid "Found {resultCount} results in {categoryCount} categories"
 msgstr "Rasta {resultCount} rezultatų {categoryCount} kategorijose"
 
@@ -15783,7 +15679,7 @@ msgstr "Dovanota <0/> iki <1>{giftEndDate}</1>. Automatiškai nepratęsiama. Nor
 #. Settings search entry label. Also used as a search synonym in the settings search bar.
 #. User settings tab for gift inventory and redemption codes.
 #: src/features/user/components/settings_utils/search_index/SharedDescriptors.ts:37
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:100
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:99
 msgid "Gifts"
 msgstr "Dovanos"
 
@@ -15833,10 +15729,6 @@ msgstr "Grįžti atgal"
 #: src/features/moderation/components/pages/ReportPage.tsx:84
 msgid "Go back and enter a valid email."
 msgstr "Grįžkite ir įveskite galiojantį el. pašto adresą."
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:665
-msgid "Go straight to the settings and tests that can resolve it."
-msgstr ""
 
 #. CTA label that opens the premium settings tab from gift inventory.
 #: src/features/user/components/modals/tabs/GiftInventoryTab.tsx:95
@@ -16717,11 +16609,6 @@ msgstr "Kaip išsaugoti mėgstamus GIF?"
 msgid "How this works"
 msgstr "Kaip tai veikia"
 
-#. Support Center endpoint check returned a non-success HTTP status.
-#: src/features/support/SupportCenterCopy.ts:16
-msgid "HTTP {httpStatus}"
-msgstr ""
-
 #. Accessible label in the language and locale names. Keep it concise.
 #: src/features/user/utils/LocaleUtils.ts:72
 msgid "Hungarian"
@@ -16784,10 +16671,6 @@ msgstr "Sutinku su atnaujintomis sąlygomis"
 #: src/features/user/components/modals/tabs/component_gallery_tab/OverlaysTab.tsx:19
 msgid "I am a tooltip"
 msgstr "Aš esu patarimas"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:676
-msgid "I can't hear or be heard"
-msgstr ""
 
 #. Gift redemption pre-filled DM message for a sender who already owns lifetime premium.
 #: src/features/expressions/components/modals/GiftSendToFriendModal.tsx:26
@@ -17492,7 +17375,7 @@ msgstr "Paveldėta"
 msgid "Inherited from {inheritedFromLabel}"
 msgstr "Paveldėta iš {inheritedFromLabel}"
 
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:867
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:914
 msgid "Initializing camera..."
 msgstr "Kamera paleidžiama..."
 
@@ -17649,11 +17532,6 @@ msgstr "Diegiamas darbalaukio naujinimas {version}…"
 #: src/features/channel/components/channel_header_components/UpdaterIcon.tsx:22
 msgid "Installing desktop update…"
 msgstr "Diegiamas darbalaukio naujinimas…"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:537
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:727
-msgid "Instance"
-msgstr ""
 
 #. Audit log operation flag label for invite creation.
 #: src/features/guild/utils/guild_tabs/GuildAuditLogTabUtils.ts:170
@@ -17856,7 +17734,7 @@ msgid "Invite link is hidden while sharing:"
 msgstr "Kvietimo nuoroda paslėpta, kol bendrinama:"
 
 #. Inline replacement text shown for invite links while streaming privacy is active.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:139
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:138
 msgid "Invite link masked while sharing"
 msgstr "Kvietimo nuoroda paslėpta, kol bendrinama"
 
@@ -17878,7 +17756,7 @@ msgstr "Kvietimų maskavimas"
 #. Action label that opens the invite flow.
 #. Button or menu action label in the guild header popout. Keep it concise.
 #. Tooltip and accessible label for the invite button shown beside a channel in the channel list.
-#: src/features/app/components/layout/ChannelItem.tsx:124
+#: src/features/app/components/layout/ChannelItem.tsx:119
 #: src/features/guild/components/popouts/GuildHeaderPopout.tsx:58
 #: src/features/ui/action_menu/items/GuildMenuData.tsx:84
 msgid "Invite members"
@@ -18284,7 +18162,7 @@ msgid "Jump to {displayName}"
 msgstr "Pereiti prie {displayName}"
 
 #. Accessible label for an inline channel mention link. labelText is the channel display name.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:94
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:93
 msgid "Jump to {labelText}"
 msgstr "Pereiti prie \"{labelText}\""
 
@@ -18341,12 +18219,12 @@ msgid "Jump to the current call"
 msgstr "Pereiti prie dabartinio skambučio"
 
 #. Fallback accessible label for an inline channel mention when the target name is not known.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:98
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:97
 msgid "Jump to the linked channel"
 msgstr "Pereiti į susietą kanalą"
 
 #. Fallback accessible label for an inline message link when the target channel is not known.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:90
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:89
 msgid "Jump to the linked message"
 msgstr "Pereiti prie susietos žinutės"
 
@@ -18356,7 +18234,7 @@ msgid "Jump to the message from {authorNickname}"
 msgstr "Pereiti prie pranešimo, kurį atsiuntė {authorNickname}"
 
 #. Accessible label for an inline message link that jumps to a specific message in a channel. labelText is the channel display name.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:85
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:84
 msgid "Jump to the message in {labelText}"
 msgstr "Pereiti prie žinutės {labelText}"
 
@@ -18520,7 +18398,7 @@ msgstr "korėjiečių"
 #. User settings tab for language, locale, and time display preferences.
 #: src/features/app/components/setup/SetupWizardSteps.tsx:56
 #: src/features/user/components/settings_utils/search_index/LanguageIndex.ts:6
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:138
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:137
 msgid "Language"
 msgstr "Kalba"
 
@@ -18564,11 +18442,6 @@ msgstr "Paskutinį kartą pakeista: {0}"
 #: src/features/user/components/modals/tabs/account_security_tab/AccountTab.tsx:155
 msgid "Last changed: never"
 msgstr "Paskutinį kartą keista: niekada"
-
-#. Support Center timestamp of the most recent desktop update check.
-#: src/features/support/SupportCenterCopy.ts:48
-msgid "Last checked: {lastUpdateCheck}"
-msgstr ""
 
 #: src/features/user/components/modals/tabs/DevicesTab.tsx:173
 msgid "Last used"
@@ -18782,10 +18655,6 @@ msgstr "Leisti ekrano skaitytuvams pranešti apie naujas žinutes, kai jos gauna
 msgid "Let the community self-moderate"
 msgstr "Leisti bendruomenei moderuoti save"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:478
-msgid "Let's get everything working"
-msgstr ""
-
 #: src/features/theme_studio/sections/ThemeStudioSettingsSection.tsx:259
 msgid "Lets custom CSS reveal transparent window regions after restarting the desktop app."
 msgstr "Leisti pasirinktiniam CSS atskleisti permatomus lango regionus iš naujo paleidus darbalaukio programą."
@@ -18843,7 +18712,7 @@ msgid "Light theme"
 msgstr "Šviesi tema"
 
 #. Singular external-post stat label on a social post embed. Lowercase to appear after the count.
-#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:70
+#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:75
 msgid "like"
 msgstr "patinka"
 
@@ -18853,7 +18722,7 @@ msgid "Liked."
 msgstr "Patinka."
 
 #. Plural external-post stat label on a social post embed. Lowercase to appear after the count.
-#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:74
+#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:79
 msgid "likes"
 msgstr "patinka"
 
@@ -18950,7 +18819,7 @@ msgid "Link styling"
 msgstr "Nuorodų stilius"
 
 #. Title of the alert shown when clicking an internal link that is not available to the current account.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:131
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:130
 msgid "Link unavailable"
 msgstr "Nuoroda nepasiekiama"
 
@@ -19000,7 +18869,7 @@ msgid "Links"
 msgstr "Nuorodos"
 
 #. User settings tab label shown on Linux desktop builds.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:79
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:78
 msgid "Linux app"
 msgstr "„Linux“ programa"
 
@@ -19043,10 +18912,6 @@ msgstr "Lietuvių"
 msgid "Live"
 msgstr "Tiesiogiai"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:553
-msgid "Live message connection is ready."
-msgstr ""
-
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/AccessibilityIndex.ts:181
@@ -19063,7 +18928,7 @@ msgid "Loading banned users"
 msgstr "Įkeliami užblokuoti naudotojai"
 
 #. Screen-reader status text shown while Discovery communities are loading.
-#: src/features/discovery/discovery/DiscoveryPage.tsx:38
+#: src/features/discovery/discovery/DiscoveryPage.tsx:37
 msgid "Loading communities"
 msgstr "Įkeliamos bendruomenės"
 
@@ -19316,7 +19181,7 @@ msgid "macOS"
 msgstr "„macOS“"
 
 #. User settings tab label shown on macOS desktop builds.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:83
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:82
 msgid "macOS app"
 msgstr "„macOS“ programėlė"
 
@@ -19935,11 +19800,6 @@ msgstr "Medijos peržiūra"
 msgid "Media progress"
 msgstr "Medijos eiga"
 
-#. Support Center summary of the voice and video media endpoint check.
-#: src/features/support/SupportCenterCopy.ts:35
-msgid "Media service {mediaSummary}."
-msgstr ""
-
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/section_registry/ChatSettingsSections.ts:114
 msgid "Media size"
@@ -20360,7 +20220,7 @@ msgid "Message layout"
 msgstr "Pranešimų išdėstymas"
 
 #. Type chip suffix in tooltips for inline rendered message links. Lowercase because it follows the channel name.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:75
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:74
 msgid "message link"
 msgstr "nuoroda į žinutę"
 
@@ -20495,10 +20355,6 @@ msgstr "Žinutės bendruomenės kanaluose"
 msgid "Messages shortcuts"
 msgstr "Žinučių nuorodos"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:550
-msgid "Messaging"
-msgstr ""
-
 #: src/features/channel/components/barriers/BarrierComponents.tsx:272
 msgid "Messaging is temporarily paused in this community."
 msgstr "Šioje bendruomenėje žinučių siuntimas laikinai pristabdytas."
@@ -20622,7 +20478,7 @@ msgstr "Nepilnamečiai pavojuje, netinkamoje vietoje esantis suaugusiesiems skir
 #. Switch label in the screen-share device picker for flipping shared camera/device video horizontally.
 #. Switch label in the video tab for flipping the local camera preview horizontally.
 #: src/features/user/components/modals/tabs/UserVideoTab.tsx:78
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:75
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:76
 #: src/features/voice/components/modals/ScreenSharePickerModal.tsx:181
 #: src/features/voice/components/VoiceSettingsMenus.tsx:135
 msgid "Mirror camera"
@@ -21158,8 +21014,8 @@ msgstr "Nutildyti srauto garsą"
 #. Lowercase screen-reader fragment in the sidebar navigation guild list item.
 #. Lowercase state label used inside channel-list accessible text when a channel is muted.
 #. Screen-reader fragment announcing that the DM list row is muted. Lowercase fragment.
-#: src/features/app/components/layout/ChannelItem.tsx:112
-#: src/features/app/components/layout/sidebar_nav/GuildListDMItem.tsx:62
+#: src/features/app/components/layout/ChannelItem.tsx:107
+#: src/features/app/components/layout/sidebar_nav/GuildListDMItem.tsx:60
 #: src/features/app/components/layout/sidebar_nav/UseGuildListItemState.ts:39
 #: src/features/channel/components/direct_message/DMListItem.tsx:75
 msgid "muted"
@@ -21278,10 +21134,6 @@ msgstr "Mano nuostabi medija"
 #: src/features/expressions/components/modals/sticker_form/StickerFormFields.tsx:32
 msgid "My awesome sticker"
 msgstr "Mano nuostabus lipdukas"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:685
-msgid "My camera isn't working"
-msgstr ""
 
 #. Channel overview settings tab label, control, or validation message (name, topic, slowmode, voice region, mature content gate).
 #: src/features/channel/components/modals/channel_tabs/ChannelOverviewTab.tsx:65
@@ -21475,10 +21327,6 @@ msgstr "Naršymo nuorodos"
 msgid "Need an account?"
 msgstr "Neturite paskyros?"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:104
-msgid "Needs attention"
-msgstr ""
-
 #. Settings search synonym. Proper name of the optional cat sprite that chases the cursor.
 #: src/features/user/components/settings_utils/section_registry/SharedDescriptors.ts:61
 msgid "Neko"
@@ -21541,7 +21389,7 @@ msgid "New"
 msgstr "Nauja"
 
 #. Small badge on a new or recently added app navigation item.
-#: src/features/app/components/layout/GuildsLayout.tsx:136
+#: src/features/app/components/layout/GuildsLayout.tsx:131
 msgctxt "navigation-badge"
 msgid "New"
 msgstr "Nauja"
@@ -21729,7 +21577,7 @@ msgid "No {sendMessagesPermission} permission"
 msgstr "Nėra leidimo \"{sendMessagesPermission}\""
 
 #. Inline text shown inside a custom message link pill when the linked message cannot be accessed.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:119
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:118
 msgid "No access"
 msgstr "Nėra prieigos"
 
@@ -21822,10 +21670,6 @@ msgstr "Nėra žymių"
 #: src/features/user/components/modals/tabs/applications_tab/application_detail/BotProfileSection.tsx:64
 msgid "No bot banner"
 msgstr "Nėra roboto reklamjuostės"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:579
-msgid "No call is active right now."
-msgstr ""
 
 #: src/features/user/components/modals/tabs/UserVideoTab.tsx:212
 msgid "No camera found"
@@ -22190,7 +22034,7 @@ msgstr "Linux ekrano dalijimosi portalas neparūpino nė vieno ekrano ar lango. 
 msgid "No search results"
 msgstr "Nėra paieškos rezultatų"
 
-#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:253
+#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:251
 #: src/features/app/components/dialogs/components/DesktopSettingsView.tsx:549
 msgid "No settings found"
 msgstr "Nustatymų nerasta"
@@ -22284,10 +22128,6 @@ msgstr "Nėra patikimų domenų"
 #: src/features/app/components/floating/UnreadChannelsContent.tsx:81
 msgid "No unread messages"
 msgstr "Nėra neskaitytų žinučių"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:805
-msgid "No update found"
-msgstr ""
 
 #. Empty-state text in the channel and chat add friend form.
 #: src/features/channel/components/direct_message/AddFriendForm.tsx:28
@@ -22401,10 +22241,6 @@ msgstr "Nėra pakankamai ilgai narys"
 msgid "Not available"
 msgstr "Nepasiekiama"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:642
-msgid "Not checked yet."
-msgstr ""
-
 #. Short label in the app constants.
 #: src/features/app/constants/AppConstants.ts:57
 msgid "Not connected"
@@ -22433,15 +22269,6 @@ msgstr "Ne dabar"
 #: src/features/channel/components/modals/UnaddableRecipientsConfirmModal.tsx:19
 msgid "Not on your friends list"
 msgstr "Nėra jūsų draugų sąraše"
-
-#. Browser media permission has not been requested yet.
-#: src/features/support/SupportCenterCopy.ts:26
-msgid "not requested"
-msgstr ""
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:126
-msgid "Not required"
-msgstr ""
 
 #. Option in the profile timezone picker. Means no timezone has been selected.
 #. Status chip for a macOS permission that has not been requested.
@@ -22541,14 +22368,10 @@ msgid "Notifications"
 msgstr "Pranešimai"
 
 #. User settings tab for notification and alert sound controls.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:133
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:132
 msgctxt "user-settings-tab"
 msgid "Notifications"
 msgstr "Pranešimai"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:706
-msgid "Notifications are missing"
-msgstr ""
 
 #. Notification toast title shown when the OS has blocked notifications.
 #: src/features/ui/commands/NotificationCommands.tsx:14
@@ -22693,10 +22516,6 @@ msgstr "Vieno ar kelių priedų nepavyko perskaityti arba įkelti. Failas galėj
 #: src/features/messaging/components/alerts/FileSizeTooLargeModal.tsx:27
 msgid "One or more files you're trying to upload exceed the maximum size limit of {maxSizeFormatted} per file."
 msgstr "Vienas ar keli failai, kuriuos bandote įkelti, viršija maksimalų {maxSizeFormatted} dydžio limitą vienam failui."
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:497
-msgid "One or more items may need your attention."
-msgstr ""
 
 #. Required-action modal carousel step title. Introduces why account verification is required.
 #: src/features/auth/components/modals/required_action/RequiredActionDescriptors.ts:206
@@ -22864,7 +22683,7 @@ msgid "Open {displayName}"
 msgstr "Atidaryti \"{displayName}\""
 
 #. Accessible label for an inline settings deep-link pill. labelText is the resolved settings tab and section breadcrumb.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:102
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:101
 msgid "Open {labelText} in settings"
 msgstr "Atidarykite „{labelText}“ nustatymuose"
 
@@ -22984,7 +22803,7 @@ msgstr "Atidaryti kanalo \"{channelName}\" išsamią informaciją"
 
 #. Context-menu action that opens a voice channel's embedded chat view without connecting to voice.
 #. Tooltip and accessible label for the chat icon shown beside a voice channel in the channel list.
-#: src/features/app/components/layout/ChannelItem.tsx:128
+#: src/features/app/components/layout/ChannelItem.tsx:123
 #: src/features/ui/action_menu/items/ChannelMenuData.tsx:152
 msgid "Open chat"
 msgstr "Atidaryti pokalbį"
@@ -23359,7 +23178,7 @@ msgstr "Operacinė sistema"
 msgid "Opt into experimental per-community and per-channel unread badge controls"
 msgstr "Įjunkite eksperimentines bendrų ir kanalų nenumatytų pranešimų atvaizdavimo valdymo funkcijas"
 
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:863
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:910
 msgid "Optimizing camera..."
 msgstr "Optimizuojama kamera..."
 
@@ -24639,10 +24458,6 @@ msgstr "Peržiūros mygtukas"
 msgid "Preview camera"
 msgstr "Peržiūrėti kamerą"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:893
-msgid "Preview diagnostics"
-msgstr ""
-
 #. Status text on the placeholder shown in the voice call view when the user has hidden a remote stream preview.
 #: src/features/voice/components/HiddenStreamPlaceholder.tsx:10
 msgid "Preview hidden"
@@ -24798,7 +24613,7 @@ msgstr "Prioritetinis kalbėtojas"
 #. User settings tab for privacy and safety controls.
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:12
 #: src/features/user/components/settings_utils/section_registry/PrivacySafetySections.ts:60
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:104
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:103
 msgid "Privacy"
 msgstr "Privatumas"
 
@@ -24857,10 +24672,6 @@ msgstr "Privati žinutė"
 msgid "Pro tip:"
 msgstr "Patarimas:"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:115
-msgid "Problem found"
-msgstr ""
-
 #. Generic action label that confirms proceeding past a content warning or mature-content gate.
 #: src/features/i18n/utils/CommonMessageDescriptors.ts:294
 msgid "Proceed"
@@ -24878,7 +24689,7 @@ msgid "Product name"
 msgstr "Produkto pavadinimas"
 
 #. User settings tab for editing the current user profile.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:92
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:91
 msgid "Profile"
 msgstr "Profilis"
 
@@ -25342,12 +25153,12 @@ msgid "Quit {appName}"
 msgstr "Išeiti iš \"{appName}\""
 
 #. Singular external-post stat label on a social post embed. Lowercase to appear after the count.
-#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:62
+#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:67
 msgid "quote"
 msgstr "citata"
 
 #. Plural external-post stat label on a social post embed. Lowercase to appear after the count.
-#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:66
+#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:71
 msgid "quotes"
 msgstr "citatos"
 
@@ -25467,10 +25278,6 @@ msgstr "Skaityti dokumentaciją ({domain})"
 #: src/features/user/components/settings_utils/section_registry/AccessibilitySections.ts:163
 msgid "Reading speed"
 msgstr "Skaitymo greitis"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:93
-msgid "Ready"
-msgstr ""
 
 #: src/features/app/components/dialogs/components/plutonium/BottomCTASection.tsx:64
 msgid "Ready to buy a gift?"
@@ -25837,20 +25644,12 @@ msgstr "Sąveika"
 msgid "Relative"
 msgstr "Santykinis"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:755
-msgid "Release channel"
-msgstr ""
-
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #. Short label for push-to-talk release delay.
 #: src/features/user/components/modals/tabs/UserVoiceTab.tsx:62
 #: src/features/user/components/settings_utils/section_registry/VoiceVideoSections.ts:89
 msgid "Release delay"
 msgstr "Išleidimo delsos laikas"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:717
-msgid "Release identity helps support confirm exactly which client you are using."
-msgstr ""
 
 #. Tooltip on the hold-to-record button while the user is actively holding to record.
 #: src/features/channel/components/textarea/HoldToRecordButton.tsx:38
@@ -26535,12 +26334,12 @@ msgid "Reported user tag (optional)"
 msgstr "Pranešto naudotojo žymė (pasirinktinai)"
 
 #. Singular external-post stat label on a social post embed (e.g. Twitter/X). Lowercase to appear after the count.
-#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:52
+#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:57
 msgid "repost"
 msgstr "pakartotinai paskelbta"
 
 #. Plural external-post stat label on a social post embed (e.g. Twitter/X). Lowercase to appear after the count.
-#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:57
+#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:62
 msgid "reposts"
 msgstr "pakartotiniai įrašai"
 
@@ -26671,7 +26470,7 @@ msgstr "Reikalingi visi vidutinio lygio reikalavimai ir narystė bendruomenėje 
 msgid "Reschedule message"
 msgstr "Perplanuoti žinutę"
 
-#: src/features/auth/components/modals/ClaimAccountModal.tsx:240
+#: src/features/auth/components/modals/ClaimAccountModal.tsx:234
 #: src/features/user/components/modals/EmailChangeModal.tsx:296
 #: src/features/user/components/modals/EmailChangeModal.tsx:333
 #: src/features/user/components/modals/PasswordChangeModal.tsx:244
@@ -26690,7 +26489,7 @@ msgstr "Siųsti iš naujo ({originalSecondsRemaining} s)"
 msgid "Resend ({resendCooldownSeconds}s)"
 msgstr "Siųsti iš naujo ({resendCooldownSeconds} s)"
 
-#: src/features/auth/components/modals/ClaimAccountModal.tsx:240
+#: src/features/auth/components/modals/ClaimAccountModal.tsx:234
 msgid "Resend ({resendSecondsRemaining}s)"
 msgstr "Siųsti iš naujo ({resendSecondsRemaining} s)"
 
@@ -27134,14 +26933,6 @@ msgstr "Peržiūrėti ir patvirtinti"
 msgid "Review apps that can access your account."
 msgstr "Peržiūrėkite programų, kurios gali pasiekti jūsų paskyrą, sąrašą."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:707
-msgid "Review desktop, push, sound, and mention settings."
-msgstr ""
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:695
-msgid "Review display, motion, accessibility, and performance settings."
-msgstr ""
-
 #. Settings row description for reviewing macOS permissions.
 #: src/features/permissions/system/components/MacPermissionsSettingsRow.tsx:16
 msgid "Review microphone, camera, screen recording, and Input Monitoring access."
@@ -27412,14 +27203,6 @@ msgstr "Eilutės puslapyje"
 msgid "Run {productName} automatically when your computer starts"
 msgstr "Automatiškai paleisti \"{productName}\" įjungus kompiuterį"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:502
-msgid "Run a check to see your setup status."
-msgstr ""
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:523
-msgid "Run again"
-msgstr ""
-
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/DesktopSettingsIndex.ts:114
 msgid "Run at login"
@@ -27429,10 +27212,6 @@ msgstr "Paleisti prisijungus"
 #: src/features/app/components/setup/SetupWizardSteps.tsx:191
 msgid "Run the instance as one community instead of many. This can only be enabled now, during setup."
 msgstr "Vykdykite instanciją kaip vieną bendruomenę, o ne daugelį. Tai galima įjungti tik dabar, sąrankos metu."
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:501
-msgid "Running a fresh check now."
-msgstr ""
 
 #. Developer tools debug menu label. Internal-only surface for developers; translators may keep this terse.
 #: src/features/channel/components/channel_header_components/developer_tools/ToolsMenu.tsx:100
@@ -27471,7 +27250,7 @@ msgid "Saturation"
 msgstr "Sodrumas"
 
 #. Singular external-post stat label on a social post embed. Lowercase to appear after the count.
-#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:78
+#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:83
 msgid "save"
 msgstr "išsaugoti"
 
@@ -27591,7 +27370,7 @@ msgid "Saved."
 msgstr "Išsaugota."
 
 #. Plural external-post stat label on a social post embed. Lowercase to appear after the count.
-#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:82
+#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:87
 msgid "saves"
 msgstr "išsaugojimų"
 
@@ -27940,7 +27719,7 @@ msgid "Search channels or DMs"
 msgstr "Ieškoti kanalų ar tiesioginių žinučių"
 
 #. Accessible label and placeholder for the community search field in the Discovery page.
-#: src/features/discovery/discovery/DiscoveryNavbar.tsx:28
+#: src/features/discovery/discovery/DiscoveryNavbar.tsx:27
 msgid "Search communities"
 msgstr "Ieškoti bendruomenių"
 
@@ -27979,7 +27758,7 @@ msgstr "Paieškos filtras: {filter}"
 #. Section header in the message search popout listing available filter operators.
 #: src/features/channel/components/message_search_bar/FilterOption.tsx:14
 #: src/features/channel/components/message_search_bar/HistorySection.tsx:17
-#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:17
+#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:15
 msgid "Search filters"
 msgstr "Paieškos filtrai"
 
@@ -28073,7 +27852,7 @@ msgid "Search results"
 msgstr "Paieškos rezultatai"
 
 #. Heading in the Discovery navigation bar when a search is active. {query} is the text the user searched for.
-#: src/features/discovery/discovery/DiscoveryNavbar.tsx:36
+#: src/features/discovery/discovery/DiscoveryNavbar.tsx:35
 msgid "Search results for “{query}”"
 msgstr "Paieškos rezultatai „{query}“"
 
@@ -28453,8 +28232,8 @@ msgstr "Pasirenkamas tekstas"
 #. Lowercase screen-reader fragment in the sidebar navigation guild list item.
 #. Lowercase state label used inside channel-list accessible text for the selected channel.
 #. Screen-reader suffix announcing that the DM list row is the active selection. Lowercase fragment.
-#: src/features/app/components/layout/ChannelItem.tsx:96
-#: src/features/app/components/layout/sidebar_nav/GuildListDMItem.tsx:54
+#: src/features/app/components/layout/ChannelItem.tsx:91
+#: src/features/app/components/layout/sidebar_nav/GuildListDMItem.tsx:52
 #: src/features/app/components/layout/sidebar_nav/UseGuildListItemState.ts:35
 #: src/features/channel/components/direct_message/DMListItem.tsx:67
 msgid "selected"
@@ -28586,7 +28365,7 @@ msgid "Send button"
 msgstr "Siuntimo mygtukas"
 
 #. Primary button in the required-action modal. Requests a verification code.
-#: src/features/auth/components/modals/ClaimAccountModal.tsx:219
+#: src/features/auth/components/modals/ClaimAccountModal.tsx:213
 #: src/features/auth/components/modals/required_action/RequiredActionDescriptors.ts:190
 #: src/features/user/components/modals/EmailChangeModal.tsx:318
 msgid "Send code"
@@ -28736,7 +28515,7 @@ msgid "Sending malware or dangerous links"
 msgstr "Kenksmingų programų ar pavojingų nuorodų siuntimas"
 
 #. Short label in the settings dialog forward channel selection.
-#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:14
+#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:13
 msgid "Sending messages is disabled in this community"
 msgstr "Šioje bendruomenėje pranešimų siuntimas išjungtas"
 
@@ -29098,7 +28877,7 @@ msgid "Settings"
 msgstr "Nustatymai"
 
 #. Type chip suffix in tooltips for inline rendered fluxer://settings/user deep links. Lowercase.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:107
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:106
 msgid "settings link"
 msgstr "nustatymų nuoroda"
 
@@ -29322,7 +29101,7 @@ msgstr "Spartieji klavišai dubliuojasi"
 #. User settings tab for keyboard shortcuts and custom bindings.
 #: src/features/user/components/settings_utils/search_index/KeybindsIndex.ts:18
 #: src/features/user/components/settings_utils/section_registry/AccessibilitySections.ts:175
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:129
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:128
 msgid "Shortcuts"
 msgstr "Spartieji klavišai"
 
@@ -30069,7 +29848,7 @@ msgid "Skip this step"
 msgstr "Praleisti šį veiksmą"
 
 #. Accessible skip-link label for keyboard users.
-#: src/app/App.tsx:76
+#: src/app/App.tsx:75
 msgid "Skip to content"
 msgstr "Pereiti prie turinio"
 
@@ -30156,7 +29935,7 @@ msgid "Slowmode"
 msgstr "Lėtasis režimas"
 
 #. Short label in the settings dialog forward channel selection. Preserve {remaining}; it is inserted by code.
-#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:37
+#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:36
 msgid "Slowmode · wait {remaining}"
 msgstr "Lėtasis režimas · laukti {remaining}"
 
@@ -31498,20 +31277,6 @@ msgstr "Pasiūlymai"
 msgid "Summary"
 msgstr "Suvestinė"
 
-#. User settings tab for troubleshooting, diagnostics, version information, and updates.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:150
-msgid "Support"
-msgstr ""
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:471
-msgid "Support center"
-msgstr ""
-
-#. Toast-like button state after the support summary is copied.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:65
-msgid "Support summary copied"
-msgstr ""
-
 #. Switch label in the community notification settings modal. Suppresses @everyone and @here notifications in this community. The two placeholders render the literal @everyone and @here tokens and must not be translated.
 #. Toggle label that suppresses @everyone and @here mentions; placeholders are the localized mention tags.
 #. Toggle label that suppresses @everyone and @here mentions; placeholders are the localized mention tags.
@@ -31820,7 +31585,6 @@ msgid "Syntax highlighting"
 msgstr "Sintaksės paryškinimas"
 
 #: src/features/channel/components/ChannelUserTag.tsx:27
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:783
 msgid "System"
 msgstr "Sistema"
 
@@ -32062,14 +31826,6 @@ msgstr "Sąlygų URL"
 msgid "Terrorism or violent extremism"
 msgstr "Terorizmas arba smurtinis ekstremizmas"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:592
-msgid "Test audio"
-msgstr ""
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:622
-msgid "Test camera"
-msgstr ""
-
 #. Button that validates SMTP credentials.
 #: src/features/app/components/setup/SetupWizardSteps.tsx:1001
 msgid "Test SMTP"
@@ -32285,10 +32041,6 @@ msgstr "Programa sudužo"
 msgid "The app has crashed. Checking for updates that might fix this issue…"
 msgstr "Programa sudužo. Tikrinama, ar yra naujinimų, kurie galėtų išspręsti šią problemą…"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:694
-msgid "The app looks or feels wrong"
-msgstr ""
-
 #: src/features/auth/flow/HandoffApprovalFlow.tsx:254
 msgid "The app should now be signed in to your account."
 msgstr "Dabar turėtumėte būti prisijungę prie savo paskyros programėlėje."
@@ -32334,10 +32086,6 @@ msgstr "Atsisiųstas failas išsaugotas jūsų kompiuteryje. Įdiekite jį naudo
 msgid "The file contains the verification token we will fetch from <0>{dnsUrl}</0>."
 msgstr "Faile yra patvirtinimo prieigos raktas, kurį gausime iš <0>{dnsUrl}</0>."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:859
-msgid "The file includes versions, operating system, service-check results, permission states, and device counts. It does not include passwords, tokens, cookies, messages, attachments, account IDs, community or channel names, participant identities, device IDs, or raw server responses."
-msgstr ""
-
 #. Body of the file-too-large alert when a single file exceeds the per-file size limit.
 #: src/features/messaging/components/alerts/FileSizeTooLargeModal.tsx:23
 msgid "The file you're trying to upload exceeds the maximum size limit of {maxSizeFormatted}."
@@ -32355,10 +32103,6 @@ msgstr "Kalba, kuria kalba didžioji jūsų bendruomenės dalis. Naudojama filtr
 #: src/features/invite/components/alerts/InviteRevokeFailedModal.tsx:12
 msgid "The link may still work. Try again in a moment."
 msgstr "Nuoroda gali vis dar veikti. Bandykite dar kartą po kurio laiko."
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:555
-msgid "The live message connection is not ready."
-msgstr ""
 
 #. Body copy on the mature content check callback page after the check was canceled.
 #: src/features/auth/components/pages/MatureContentCheckCallbackPage.tsx:23
@@ -33051,7 +32795,7 @@ msgid "This link channel is marked for mature content and may open material that
 msgstr "Šis nuorodų kanalas pažymėtas kaip skirtas brandesniam turiniui ir gali atverti medžiagą, kuri kai kuriems naudotojams gali būti netinkama."
 
 #. Body of the link-unavailable alert.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:135
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:134
 msgid "This link is not available for your account."
 msgstr "Ši nuoroda nepasiekiama jūsų paskyrai."
 
@@ -33477,11 +33221,6 @@ msgstr "Laikotarpis"
 #: src/features/voice/components/media_player/components/MediaTimeDisplay.tsx:9
 msgid "Time: {currentFormatted} of {durationFormatted}"
 msgstr "Laikas: {currentFormatted} iš {durationFormatted}"
-
-#. Support Center endpoint check timed out.
-#: src/features/support/SupportCenterCopy.ts:15
-msgid "timed out"
-msgstr ""
 
 #. Short label in the channel and chat message timeout indicator. Keep it concise.
 #: src/features/channel/components/MessageTimeoutIndicator.tsx:15
@@ -34046,7 +33785,7 @@ msgstr "Bandyti redaguoti žinutę dar kartą."
 msgid "TRY gifts are one-time payments. Cards charged in TRY still need to be issued in Türkiye for the purchase to stay eligible."
 msgstr "TRY dovanos – tai vienkartiniai mokėjimai. Kortelės, apmokestinamos TRY, vis tiek turi būti išduotos Turkijoje, kad pirkinys išliktų tinkamas."
 
-#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:256
+#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:254
 msgid "Try searching for something like \"theme\", \"notifications\", or \"privacy\""
 msgstr "Pabandykite ieškoti \"tema\", \"pranešimai\" arba \"privatumas\""
 
@@ -34598,11 +34337,6 @@ msgstr "Unikalus kvietimas"
 msgid "Universal fallback. Lowest quality, but it works everywhere."
 msgstr "Universalus atsarginis variantas. Žemiausia kokybė, bet veikia visur."
 
-#. Browser media permission state is unknown.
-#: src/features/support/SupportCenterCopy.ts:30
-msgid "unknown"
-msgstr ""
-
 #. Fallback uploader label when the user who uploaded an emoji is unavailable.
 #. Fallback version label when the installed desktop version is unknown.
 #. Generic fallback label when a more specific value is unavailable.
@@ -34977,19 +34711,14 @@ msgstr "Grupė nebeprisegta"
 msgid "Unpinned group DM"
 msgstr "Grupės DM neprisegtas"
 
-#. Support Center endpoint could not be reached.
-#: src/features/support/SupportCenterCopy.ts:20
-msgid "unreachable"
-msgstr ""
-
 #. Lowercase screen-reader fragment in the sidebar navigation guild folder item.
 #. Lowercase screen-reader fragment in the sidebar navigation guild list DM item.
 #. Lowercase screen-reader fragment in the sidebar navigation guild list item.
 #. Lowercase state label used inside channel-list accessible text when a channel has unread messages.
 #. Screen-reader fragment announcing that the DM list row has unread messages. Lowercase fragment.
-#: src/features/app/components/layout/ChannelItem.tsx:108
-#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:89
-#: src/features/app/components/layout/sidebar_nav/GuildListDMItem.tsx:58
+#: src/features/app/components/layout/ChannelItem.tsx:103
+#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:90
+#: src/features/app/components/layout/sidebar_nav/GuildListDMItem.tsx:56
 #: src/features/app/components/layout/sidebar_nav/UseGuildListItemState.ts:27
 #: src/features/channel/components/direct_message/DMListItem.tsx:71
 msgid "unread"
@@ -35142,7 +34871,6 @@ msgstr "Iki 4K/60 kadr./s"
 
 #. Confirm button label on the reschedule scheduled-message alert.
 #: src/features/channel/components/channel_textarea/shared.ts:28
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:831
 msgid "Update"
 msgstr "Atnaujinti"
 
@@ -35155,10 +34883,6 @@ msgstr "Atnaujinkite „{productName}\", kad galėtumėte peržiūrėti šį pra
 #: src/features/app/components/ErrorFallback.tsx:140
 msgid "Update app"
 msgstr "Atnaujinti programėlę"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:805
-msgid "Update available"
-msgstr ""
 
 #. Primary button in the required-action modal. Submits a code to update the account email.
 #: src/features/auth/components/modals/required_action/RequiredActionDescriptors.ts:186
@@ -35173,10 +34897,6 @@ msgstr "Atnaujinti mano būseną"
 #: src/features/app/components/dialogs/components/MobileSettingsView.tsx:56
 msgid "Update service worker"
 msgstr "Atnaujinti paslaugos doroklį"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:799
-msgid "Update status"
-msgstr ""
 
 #. Short label in the timeout member sheet. Keep it concise.
 #: src/features/moderation/components/modals/TimeoutMemberSheet.tsx:36
@@ -35282,10 +35002,6 @@ msgstr "Atnaujintas \"webhook\" pseudoportretas."
 #: src/features/channel/components/channel_header_components/developer_tools/DeveloperOptionLabels.ts:85
 msgid "Updater state"
 msgstr "Atnaujintuvo būsena"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:635
-msgid "Updates"
-msgstr ""
 
 #. Short label in the channel and chat gif picker grid item. Keep it concise.
 #: src/features/channel/components/pickers/gif/GifPickerGridItem.tsx:43
@@ -36002,7 +35718,7 @@ msgid "User record"
 msgstr "Vartotojo įrašas"
 
 #. Root label for the current user settings modal and settings search paths.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:363
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:352
 msgid "User settings"
 msgstr "Naudotojo nustatymai"
 
@@ -36446,17 +36162,6 @@ msgstr "Tikrinama nuoroda slaptažodžiui nustatyti iš naujo…"
 #: src/features/theme_studio/sections/LibrarySection.tsx:113
 msgid "Version"
 msgstr "Versija"
-
-#. Support Center update status when a newer desktop version is available.
-#: src/features/support/SupportCenterCopy.ts:44
-msgid "Version {version} is available."
-msgstr ""
-
-#. Support Center section showing release identity and update controls.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:716
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:86
-msgid "Version & updates"
-msgstr ""
 
 #. Member verification level option in the community moderation settings tab. Short standalone severity label.
 #: src/features/guild/components/modals/guild_tabs/GuildModerationTab.tsx:84
@@ -36942,7 +36647,7 @@ msgstr "Balso (suaugusiesiems)"
 
 #. User settings tab for microphone, speaker, camera, and call stats.
 #. User settings tab for microphone, speaker, camera, and call stats.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:125
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:124
 #: src/features/voice/utils/VoiceMessageDescriptors.ts:30
 msgid "Voice & video"
 msgstr "Garso ir vaizdo įrašai"
@@ -36954,7 +36659,7 @@ msgstr "Valdymas balsu"
 
 #. Lowercase screen-reader fragment in the sidebar navigation guild folder item.
 #. Lowercase screen-reader fragment in the sidebar navigation guild list item.
-#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:93
+#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:94
 #: src/features/app/components/layout/sidebar_nav/UseGuildListItemState.ts:47
 msgid "voice activity"
 msgstr "balso aktyvumas"
@@ -37011,7 +36716,7 @@ msgstr "Balso skambutis. {statusText}."
 
 #. Generic channel-type token used inside a wider delete confirmation string.
 #. Lowercase channel type label used inside channel-list accessible text.
-#: src/features/app/components/layout/ChannelItem.tsx:88
+#: src/features/app/components/layout/ChannelItem.tsx:83
 #: src/features/ui/action_menu/items/ChannelMenuItems.tsx:79
 msgid "voice channel"
 msgstr "balso kanalas"
@@ -37077,10 +36782,6 @@ msgstr "Balso ryšys nutrūko"
 msgid "Voice entrance sound"
 msgstr "Balso įjungimo garsas"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:572
-msgid "Voice is disabled on this instance."
-msgstr ""
-
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/section_registry/AppearanceSections.ts:394
 msgid "Voice join"
@@ -37140,10 +36841,6 @@ msgstr "Balso įrašymas šioje naršyklėje nepalaikomas."
 #: src/features/voice/components/VoiceSettingsMenus.tsx:131
 msgid "Voice region"
 msgstr "Balso regionas"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:569
-msgid "Voice service"
-msgstr ""
 
 #. Developer control label for the voice-session-restore banner.
 #: src/features/devtools/components/NagbarControls.ts:63
@@ -37211,11 +36908,6 @@ msgstr "Laikas tarp pranešimų. „{bypassSlowmodePermissionLabel}“ gali jį 
 #: src/features/auth/components/modals/required_action/RequiredActionDescriptors.ts:354
 msgid "Wait here"
 msgstr "Palaukite čia"
-
-#. Support Center endpoint check has not run yet.
-#: src/features/support/SupportCenterCopy.ts:7
-msgid "waiting"
-msgstr ""
 
 #. Tooltip explaining that video / screen share controls are gated while the voice connection is not yet ready.
 #: src/features/voice/components/voice_connection_status/LocalParticipantControls.tsx:56
@@ -37365,10 +37057,6 @@ msgstr "Nepavyko pašalinti paskyros. Bandykite dar kartą."
 msgid "We found an existing {premiumProductFullName} subscription for this account. Manage it in the secure billing portal to update payment details or check renewal status. If you just paid, wait a minute and reopen this page."
 msgstr "Radome esamą {premiumProductFullName} prenumeratą šiai paskyrai. Tvarkykite ją saugiame atsiskaitymo portale, kad atnaujintumėte mokėjimo duomenis arba patikrintumėte atnaujinimo būseną. Jei ką tik sumokėjote, palaukite minutę ir iš naujo atidarykite šį puslapį."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:499
-msgid "We found something that may stop the app working correctly."
-msgstr ""
-
 #. Required-action modal intro text for a generic verification requirement. productName is inserted by code. Keep it calm and concise.
 #: src/features/auth/components/modals/required_action/RequiredActionDescriptors.ts:210
 msgid "We need one verification step before you continue. This helps protect accounts and keep spam off {productName}."
@@ -37506,10 +37194,6 @@ msgstr "Žiniatinklio versija {buildVersion}"
 #: src/features/user/components/settings_utils/search_index/AccountSecurityIndex.ts:98
 msgid "Web authentication"
 msgstr "Žiniatinklio autentifikavimas"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:741
-msgid "Web build"
-msgstr ""
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/ChatSettingsIndex.ts:235
@@ -37922,7 +37606,7 @@ msgid "Window state"
 msgstr "Lango būsena"
 
 #. User settings tab label shown on Windows desktop builds. Refers to the Microsoft Windows OS.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:75
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:74
 msgid "Windows app"
 msgstr "Programos nustatymai (Windows)"
 
@@ -38080,10 +37764,6 @@ msgstr "Perduosite šios bendruomenės nuosavybės teises <0>{0}</0>. Šis veiks
 #: src/features/moderation/components/alerts/UserBannedFromGuildModal.tsx:12
 msgid "You are banned from this community and cannot join."
 msgstr "Esate užblokuotas šioje bendruomenėje ir negalite prisijungti."
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:577
-msgid "You are connected to a call."
-msgstr ""
 
 #. Voice participant status tooltip for the current user. They cannot hear voice chat. Distinct from muted.
 #: src/features/voice/utils/VoiceMessageDescriptors.ts:74
@@ -38330,7 +38010,7 @@ msgstr "Negalite kalbėti šiame kanale"
 #. Tooltip / error shown in the camera preview modal when the user lacks Video permission in the current channel. Tone stays plain.
 #. Tooltip in the voice control bar when the user lacks the Video permission in this channel. Tone stays plain.
 #. Tooltip shown when the user lacks the Video permission in the voice channel. Tone stays plain.
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:79
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:80
 #: src/features/voice/components/voice_connection_status/LocalParticipantControls.tsx:61
 #: src/features/voice/components/VoiceControlBar.tsx:131
 msgid "You can't turn on your camera in this channel"
@@ -38404,7 +38084,7 @@ msgid "You changed your tag while on {PREMIUM_PRODUCT_NAME}. It will reroll rand
 msgstr "Pakeitėte savo žymę, kol naudojatės \"{PREMIUM_PRODUCT_NAME}\". Ji bus atsitiktinai pakeista, kai baigs galioti jūsų \"{PREMIUM_PRODUCT_NAME}\", nebent prenumerata bus atnaujinta."
 
 #. Body of the access-denied alert for clicked message links.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:115
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:114
 msgid "You do not have access to the channel where this message was sent."
 msgstr "Neturite prieigos prie kanalo, kuriame buvo išsiųsta ši žinutė."
 
@@ -38551,12 +38231,12 @@ msgid "You need access to your current email to change it from here. Use phone v
 msgstr "Kad galėtumėte pakeisti el. pašto adresą, turite turėti prieigą prie dabartinio. Jei įmanoma, naudokite telefono patvirtinimą arba susisiekite su palaikymo komanda."
 
 #. Forward dialog error shown when the forwarded message has attachments and the user lacks Attach Files in the target channel.
-#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:32
+#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:31
 msgid "You need the \"{attachFilesPermissionLabel}\" permission to attach files in this channel"
 msgstr "Norėdami pridėti failus šiame kanale, turite turėti \"{attachFilesPermissionLabel}\" leidimą"
 
 #. Forward dialog error shown when the forwarded message contains embeds and the user lacks Embed Links in the target channel.
-#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:27
+#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:26
 msgid "You need the \"{embedLinksPermissionLabel}\" permission to embed links in this channel"
 msgstr "Kad galėtumėte įterpti nuorodas į šį kanalą, jums reikia \"{embedLinksPermissionLabel}\" leidimo"
 
@@ -38594,7 +38274,7 @@ msgid "You need the \"{permissionLabel}\" permission to use stickers from other 
 msgstr "Kad galėtumėte naudoti lipdukus iš kitų bendruomenių, jums reikia \"{permissionLabel}\" leidimo."
 
 #. Forward dialog error shown when the user lacks the Send Messages permission in the target channel. Permission name is interpolated.
-#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:22
+#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:21
 msgid "You need the \"{sendMessagesPermissionLabel}\" permission to send messages in this channel"
 msgstr "Norėdami siųsti pranešimus šiame kanale, turite turėti \"{sendMessagesPermissionLabel}\" leidimą"
 
@@ -38647,10 +38327,6 @@ msgstr "Kad galėtumėte siųsti žinutes šioje bendruomenėje, turite patvirti
 #: src/features/app/components/alerts/DmActionErrorModal.tsx:60
 msgid "You or someone you're adding already has the maximum number of group DMs open. Leave one and try again."
 msgstr "Jūs arba asmuo, kurį bandote pridėti, jau turi maksimalų atidarytų grupinių tiesioginių žinučių skaičių. Palikite vieną ir bandykite dar kartą."
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:856
-msgid "You stay in control"
-msgstr ""
 
 #. Voice chat status tooltip for the current user. A moderator deafened them so they cannot hear voice chat.
 #: src/features/voice/utils/VoiceMessageDescriptors.ts:61
@@ -38838,7 +38514,7 @@ msgid "You're on a legacy rate. The current price for this plan is {currentSubsc
 msgstr "Jums taikomas senas tarifas. Dabartinė šio plano kaina yra {currentSubscriptionListPriceLabel}."
 
 #. Short label in the settings dialog forward channel selection. Keep the tone plain and specific.
-#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:18
+#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:17
 msgid "You're on timeout in this community"
 msgstr "Šioje bendruomenėje jums skirta pertraukėlė"
 
@@ -38965,7 +38641,7 @@ msgstr "Jūsų „{premiumProductName}\" prenumerata baigėsi. Praradote visas �
 msgid "Your {productName} session expired. Sign in again to continue authorizing this application."
 msgstr "Jūsų \"{productName}\" seanso laikas baigėsi. Prisijunkite iš naujo, kad tęstumėte šios programos autorizavimą."
 
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:210
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:205
 msgid "Your account"
 msgstr "Jūsų paskyra"
 

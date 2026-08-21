@@ -49,7 +49,7 @@ msgid "(you)"
 msgstr "(自分)"
 
 #. placeholder {0}: guild.member_count
-#: src/features/discovery/discovery/DiscoveryGuildCard.tsx:184
+#: src/features/discovery/discovery/DiscoveryGuildCard.tsx:146
 msgid "{0, plural, one {# member} other {# members}}"
 msgstr "{0, plural, one {#人のメンバー} other {#人のメンバー}}"
 
@@ -288,7 +288,7 @@ msgid "{blikPaymentMethod} does not support subscriptions in {paymentProviderNam
 msgstr "{paymentProviderName}の決済では、{blikPaymentMethod}は定期購入に対応していません。"
 
 #. Accessible label for a category row in the Discovery search sidebar. {categoryLabel} is the category name and {count} is how many communities match the current search in it. Both are inserted by code.
-#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:37
+#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:35
 msgid "{categoryLabel}, {count, plural, one {# community} other {# communities}}"
 msgstr "{categoryLabel}、{count, plural, other {#件のコミュニティ}}"
 
@@ -356,11 +356,11 @@ msgid "{count, plural, one {# bookmark} other {# bookmarks}}"
 msgstr "{count, plural, one {#件のブックマーク} other {#件のブックマーク}}"
 
 #. Screen-reader status text in Discovery. {count} is the total number of matching communities.
-#: src/features/discovery/discovery/DiscoveryPage.tsx:34
+#: src/features/discovery/discovery/DiscoveryPage.tsx:33
 msgid "{count, plural, one {# community found} other {# communities found}}"
 msgstr "{count, plural, one {#件のコミュニティが見つかりました} other {#件のコミュニティが見つかりました}}"
 
-#: src/features/app/components/layout/GuildsLayout.tsx:1949
+#: src/features/app/components/layout/GuildsLayout.tsx:1926
 msgid "{count, plural, one {# community is temporarily unavailable due to a flux capacitor malfunction.} other {# communities are temporarily unavailable due to a flux capacitor malfunction.}}"
 msgstr "{count, plural, one {#件のコミュニティはフラックスキャパシタの不具合により一時的に利用できません。} other {#件のコミュニティはフラックスキャパシタの不具合により一時的に利用できません。}}"
 
@@ -634,12 +634,12 @@ msgid "{deviceCount, plural, one {# device selected for sign out} other {# devic
 msgstr "{deviceCount, plural, one {# 選択されたデバイス} other {# 選択されたデバイス}} をログアウトします"
 
 #. Sidebar Fluxer-home button tooltip showing how many incoming friend requests are pending. Count is interpolated.
-#: src/features/app/components/layout/sidebar_nav/FluxerButton.tsx:49
+#: src/features/app/components/layout/sidebar_nav/FluxerButton.tsx:50
 msgid "{displayedIncomingFriendRequestCount} friend requests"
 msgstr "友達リクエスト {displayedIncomingFriendRequestCount} 件"
 
 #. Short label in the sidebar navigation fluxer button. Preserve {displayedUnreadDmCount}; it is inserted by code.
-#: src/features/app/components/layout/sidebar_nav/FluxerButton.tsx:40
+#: src/features/app/components/layout/sidebar_nav/FluxerButton.tsx:41
 msgid "{displayedUnreadDmCount} unread DMs"
 msgstr "未読DM {displayedUnreadDmCount}件"
 
@@ -662,11 +662,6 @@ msgstr "あなたより{duration}進んでいます"
 #: src/features/user/components/popouts/UserProfileShared.tsx:71
 msgid "{duration} behind you"
 msgstr "あなたより{duration}遅れています"
-
-#. Support Center endpoint response duration in milliseconds.
-#: src/features/support/SupportCenterCopy.ts:11
-msgid "{durationMs} ms"
-msgstr ""
 
 #. Gift duration label. PREMIUM_PRODUCT_NAME is the paid plan name.
 #: src/features/gift/utils/GiftUtils.ts:12
@@ -731,7 +726,7 @@ msgid "{fifteenMinutes} minutes"
 msgstr "{fifteenMinutes}分"
 
 #. Short label in the sidebar navigation guild folder item. Preserve {folderName}; it is inserted by code.
-#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:77
+#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:78
 msgid "{folderName} folder"
 msgstr "{folderName}フォルダー"
 
@@ -810,11 +805,6 @@ msgstr "{hours, plural, one {#時間} other {#時間}}と{minutes, plural, one {
 msgid "{hours, plural, one {This invite expires in # hour.} other {This invite expires in # hours.}}"
 msgstr "{hours, plural, one {この招待は#時間で期限切れになります。} other {この招待は#時間で期限切れになります。}}"
 
-#. Support Center device counts and browser microphone and camera permission states.
-#: src/features/support/SupportCenterCopy.ts:39
-msgid "{inputCount} microphone(s), {outputCount} speaker(s), {cameraCount} camera(s). Microphone {microphonePermission}; camera {cameraPermission}."
-msgstr ""
-
 #. Accessible label for a disabled Discovery sidebar navigation item. {itemLabel} is the section name.
 #: src/features/discovery/discovery/DiscoverySidebar.tsx:31
 msgid "{itemLabel}, coming soon"
@@ -884,7 +874,7 @@ msgstr "{length}人が視聴中"
 msgid "{lineCount, plural, one {# line} other {# lines}}"
 msgstr "{lineCount, plural, one {# 行} other {# 行}}"
 
-#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:147
+#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:145
 msgid "{matchCount, plural, one {# match} other {# matches}}"
 msgstr "{matchCount, plural, one {#件一致} other {#件一致}}"
 
@@ -1577,7 +1567,7 @@ msgid "1 day"
 msgstr "1日"
 
 #. Short label in the sidebar navigation fluxer button.
-#: src/features/app/components/layout/sidebar_nav/FluxerButton.tsx:45
+#: src/features/app/components/layout/sidebar_nav/FluxerButton.tsx:46
 msgid "1 friend request"
 msgstr "友だちリクエスト1件"
 
@@ -1632,7 +1622,7 @@ msgid "1 unread"
 msgstr "未読1件"
 
 #. Short label in the sidebar navigation fluxer button.
-#: src/features/app/components/layout/sidebar_nav/FluxerButton.tsx:36
+#: src/features/app/components/layout/sidebar_nav/FluxerButton.tsx:37
 msgid "1 unread DM"
 msgstr "未読DM 1件"
 
@@ -1953,10 +1943,6 @@ msgstr "ホスト名（例: {exampleDomain}）"
 msgid "A Linux desktop update is available. Choose the package format for this system and {productName} will save it locally."
 msgstr "Linux デスクトップのアップデートが利用可能です。このシステムで使用するパッケージ形式を選択すると、{productName} がローカルに保存されます。"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:511
-msgid "A live path through the systems needed for chat, calls, and updates."
-msgstr ""
-
 #. Duration label component for an elapsed call. Shown when the call lasted about a minute.
 #: src/features/channel/components/CallMessage.tsx:35
 msgid "a minute"
@@ -2115,7 +2101,7 @@ msgstr "プロフィール情報（ユーザー名、アバターなど）にア
 #. User settings tab for accessibility preferences (visual, motion, screen reader, etc.).
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:14
 #: src/features/user/components/settings_utils/section_registry/SharedDescriptors.ts:93
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:67
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:66
 msgid "Accessibility"
 msgstr "アクセシビリティ"
 
@@ -2129,7 +2115,7 @@ msgstr "ライブリージョン"
 #. User settings tab for account login, password, MFA, and security.
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:11
 #: src/features/user/components/settings_utils/section_registry/AccountSecuritySections.ts:129
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:96
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:95
 msgid "Account"
 msgstr "アカウント"
 
@@ -2268,7 +2254,7 @@ msgid "Active account"
 msgstr "使用中のアカウント"
 
 #. Lowercase screen-reader fragment in the sidebar navigation guild list DM item.
-#: src/features/app/components/layout/sidebar_nav/GuildListDMItem.tsx:66
+#: src/features/app/components/layout/sidebar_nav/GuildListDMItem.tsx:64
 msgid "active call"
 msgstr "通話中"
 
@@ -2841,7 +2827,7 @@ msgstr "管理者が招待を一時停止しました。現在参加すること
 #: src/features/channel/components/modals/channel_tabs/ChannelOverviewTab.tsx:337
 #: src/features/guild/components/modals/guild_tabs/guild_overview_tab/index.tsx:28
 #: src/features/ui/action_menu/items/VoiceParticipantMenuData.tsx:178
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:146
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:145
 #: src/features/voice/components/voice_connection_status/VoiceDetailsPopout.tsx:60
 msgid "Advanced"
 msgstr "詳細設定"
@@ -2921,8 +2907,8 @@ msgstr "配置調整は、画面幅が広い場合のみ利用できます"
 #: src/features/channel/components/MobileMemesPicker.tsx:40
 #: src/features/channel/components/pickers/memes/MemesPickerHeader.tsx:12
 #: src/features/discovery/components/bottomsheets/DiscoveryCategoryBottomSheet.tsx:11
-#: src/features/discovery/discovery/DiscoveryNavbar.tsx:20
-#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:25
+#: src/features/discovery/discovery/DiscoveryNavbar.tsx:19
+#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:23
 #: src/features/guild/components/modals/GuildNotificationSettingsModal.tsx:131
 msgid "All"
 msgstr "すべて"
@@ -2947,10 +2933,6 @@ msgstr "すべて<0/>、永久に。請求も更新もありません。"
 #: src/features/guild/components/modals/guild_tabs/GuildAuditLogTab.tsx:85
 msgid "All actions"
 msgstr "すべてのアクション"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:496
-msgid "All checked systems look healthy."
-msgstr ""
 
 #. Message search scope menu item. Searches across every joined community.
 #. Short label in the entrance sound section. Keep it concise.
@@ -3003,7 +2985,7 @@ msgid "All inputs are fully interactive, so type away."
 msgstr "すべての入力項目は操作可能です。自由に入力してください。"
 
 #. Short label in the discovery page. Keep it concise.
-#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:29
+#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:27
 msgid "All languages"
 msgstr "すべての言語"
 
@@ -3194,11 +3176,6 @@ msgstr "友達にこのつながりを表示することを許可する"
 #: src/features/user/components/modals/tabs/my_profile_tab/TimezoneProfileSettings.tsx:67
 msgid "Allow your friends to see your profile local time"
 msgstr "友達にプロフィールに設定した現地時刻の表示を許可する"
-
-#. Browser media permission is granted.
-#: src/features/support/SupportCenterCopy.ts:24
-msgid "allowed"
-msgstr ""
 
 #. placeholder {0}: renderInline(addedLabels, i18nInstance)
 #. placeholder {1}: renderInline(removedLabels, i18nInstance)
@@ -3714,11 +3691,6 @@ msgstr "誰でもアカウントをリクエストできますが、管理者の
 msgid "API key"
 msgstr "APIキー"
 
-#. Support Center summary of the web app and API endpoint checks.
-#: src/features/support/SupportCenterCopy.ts:31
-msgid "App {appSummary} · API {apiSummary}"
-msgstr ""
-
 #. Inline notice on Windows when per-window audio capture is not supported. Title text.
 #: src/features/voice/components/modals/screen_share_picker_modal/PerWindowAudioNotice.tsx:9
 msgid "App audio isn't available on this build of Windows."
@@ -3734,7 +3706,7 @@ msgstr "アプリアイコンバッジ"
 msgid "App language: {format}"
 msgstr "アプリの言語: {format}"
 
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:214
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:209
 msgid "App settings"
 msgstr "アプリ設定"
 
@@ -3761,7 +3733,7 @@ msgstr "アプリの表示サイズ"
 #. Advanced settings category tag.
 #. User settings tab for app appearance and layout options.
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:13
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:117
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:116
 msgid "Appearance"
 msgstr "表示設定"
 
@@ -3835,7 +3807,7 @@ msgstr "アプリを更新しました"
 #: src/features/user/components/modals/tabs/applications_tab/index.tsx:129
 #: src/features/user/components/settings_utils/search_index/SharedDescriptors.ts:29
 #: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:74
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:71
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:70
 msgid "Applications"
 msgstr "アプリ"
 
@@ -4376,7 +4348,7 @@ msgstr "連携アプリ"
 #: src/features/user/components/settings_utils/search_index/AuthorizedAppsIndex.ts:10
 #: src/features/user/components/settings_utils/section_registry/AccountSecuritySections.ts:148
 #: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:34
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:108
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:107
 msgid "Authorized apps"
 msgstr "連携アプリ"
 
@@ -4829,7 +4801,7 @@ msgstr "バックエンドのプレミアム特典が無効です"
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/theme/components/modals/BackgroundImageGalleryModal.tsx:52
 #: src/features/user/components/settings_utils/search_index/SharedDescriptors.ts:5
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:800
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:847
 msgid "Background"
 msgstr "背景"
 
@@ -5065,7 +5037,7 @@ msgstr "1文字以上32文字以下"
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/PlutoniumIndex.ts:27
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:212
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:207
 msgid "Billing"
 msgstr "支払い"
 
@@ -5186,11 +5158,6 @@ msgstr "このユーザーをブロック"
 msgid "Block user"
 msgstr "ユーザーをブロック"
 
-#. Browser media permission is denied.
-#: src/features/support/SupportCenterCopy.ts:25
-msgid "blocked"
-msgstr ""
-
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/BlockedUsersIndex.ts:10
 msgid "Blocked"
@@ -5206,7 +5173,7 @@ msgstr "ブロック中"
 #: src/features/user/components/settings_utils/search_index/BlockedUsersIndex.ts:6
 #: src/features/user/components/settings_utils/section_registry/AccountSecuritySections.ts:152
 #: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:26
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:59
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:58
 msgid "Blocked users"
 msgstr "ブロック中のユーザー"
 
@@ -5244,7 +5211,7 @@ msgid "Blur"
 msgstr "ぼかし"
 
 #. Slider label in the camera preview modal controlling how strong the background blur effect is.
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:89
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:90
 msgid "Blur strength"
 msgstr "ぼかしの強さ"
 
@@ -5458,10 +5425,6 @@ msgstr "ブランドアセットのプレビュー"
 #: src/features/user/components/settings_utils/section_registry/AppearanceSections.ts:150
 msgid "Brightness"
 msgstr "明るさ"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:775
-msgid "Browser"
-msgstr ""
 
 #. Title of the modal shown when the browser autoplay policy blocks voice audio until the user interacts.
 #: src/features/voice/components/modals/AudioPlaybackPermissionModal.tsx:8
@@ -5719,7 +5682,7 @@ msgstr "カメラデバイス"
 msgid "Camera effects"
 msgstr "カメラエフェクト"
 
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:886
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:933
 msgid "Camera error"
 msgstr "カメラエラー"
 
@@ -5762,7 +5725,7 @@ msgstr "カメラの許可が必要です"
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #. Title of the camera preview modal.
 #: src/features/user/components/settings_utils/section_registry/VoiceVideoSections.ts:181
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:67
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:68
 msgid "Camera preview"
 msgstr "カメラプレビュー"
 
@@ -5822,8 +5785,8 @@ msgstr "ここにファイルをアップロードできません"
 #: src/features/auth/components/modals/AccountDisableModal.tsx:45
 #: src/features/auth/components/modals/BackupCodesRegenerateModal.tsx:78
 #: src/features/auth/components/modals/BackupCodesViewModal.tsx:61
-#: src/features/auth/components/modals/ClaimAccountModal.tsx:216
-#: src/features/auth/components/modals/ClaimAccountModal.tsx:232
+#: src/features/auth/components/modals/ClaimAccountModal.tsx:210
+#: src/features/auth/components/modals/ClaimAccountModal.tsx:226
 #: src/features/auth/components/modals/DeviceRevokeModal.tsx:74
 #: src/features/auth/components/modals/PasskeyNameModal.tsx:80
 #: src/features/auth/components/modals/PasskeyPinModal.tsx:104
@@ -5849,7 +5812,7 @@ msgstr "ここにファイルをアップロードできません"
 #: src/features/messaging/components/modals/AttachmentEditModal.tsx:133
 #: src/features/messaging/components/modals/EditAltTextModal.tsx:190
 #: src/features/messaging/components/modals/ExternalLinkWarningModal.tsx:111
-#: src/features/messaging/components/modals/ForwardModal.tsx:628
+#: src/features/messaging/components/modals/ForwardModal.tsx:627
 #: src/features/messaging/components/modals/ImageCropModal.tsx:925
 #: src/features/messaging/components/modals/MessageHistoryThresholdModal.tsx:107
 #: src/features/messaging/components/popouts/ScheduledMessagesContent.tsx:47
@@ -5868,7 +5831,7 @@ msgstr "ここにファイルをアップロードできません"
 #: src/features/user/components/modals/PhoneAddModal.tsx:391
 #: src/features/user/components/modals/tabs/AuthorizedAppsTab.tsx:173
 #: src/features/voice/components/EntranceSoundTrimmerModal.tsx:31
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:922
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:969
 #: src/features/voice/components/VoiceMessageComposerModal.tsx:80
 msgid "Cancel"
 msgstr "キャンセル"
@@ -6035,12 +5998,12 @@ msgstr "カードでTRY価格を維持するには、{paymentProviderName}での
 #. Heading above the category filter list in the Discovery search sidebar.
 #. Short label in the discovery category bottom sheet. Keep it concise.
 #: src/features/discovery/components/bottomsheets/DiscoveryCategoryBottomSheet.tsx:15
-#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:21
+#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:19
 msgid "Categories"
 msgstr "カテゴリ"
 
 #. Lowercase channel type label used inside channel-list accessible text.
-#: src/features/app/components/layout/ChannelItem.tsx:84
+#: src/features/app/components/layout/ChannelItem.tsx:79
 msgid "category"
 msgstr "カテゴリ"
 
@@ -6131,7 +6094,7 @@ msgstr "中央揃え"
 msgid "Change avatar"
 msgstr "アバターを変更"
 
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:813
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:860
 msgid "Change background"
 msgstr "背景を変更"
 
@@ -6350,7 +6313,7 @@ msgstr "変更はクライアントに即座に適用されます。"
 
 #. Fallback channel-name placeholder used inside the textarea message hint when no name is available. Lowercase.
 #. Lowercase generic channel type label used inside channel-list accessible text.
-#: src/features/app/components/layout/ChannelItem.tsx:92
+#: src/features/app/components/layout/ChannelItem.tsx:87
 #: src/features/channel/components/channel_textarea/shared.ts:11
 msgid "channel"
 msgstr "チャンネル"
@@ -6370,7 +6333,7 @@ msgid "Channel"
 msgstr "チャンネル"
 
 #. Short label in the settings dialog forward channel selection. Preserve {id}; it is inserted by code.
-#: src/features/app/components/dialogs/shared/UseForwardChannelObservations.ts:26
+#: src/features/app/components/dialogs/shared/UseForwardChannelObservations.ts:22
 msgid "Channel {id}"
 msgstr "チャンネル {id}"
 
@@ -6380,7 +6343,7 @@ msgid "Channel access"
 msgstr "チャンネルアクセス"
 
 #. Title of the alert shown when clicking a message link the user does not have permission to view.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:111
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:110
 msgid "Channel access denied"
 msgstr "チャンネルへのアクセスが拒否されました"
 
@@ -6445,7 +6408,7 @@ msgstr "チャンネルIDをクリップボードにコピーしました"
 
 #. Short label in the messaging mention renderer. Keep it concise.
 #. Type chip suffix in tooltips for inline rendered channel mentions. Lowercase because it follows the channel name.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:80
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:79
 #: src/features/messaging/components/markdown/renderers/MentionRenderer.tsx:39
 msgid "channel link"
 msgstr "チャンネルリンク"
@@ -6603,7 +6566,7 @@ msgstr "文字数制限を{remaining}超過しています"
 #: src/features/input/components/modals/KeyboardShortcutsCheatsheetModal.tsx:40
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:15
 #: src/features/user/components/modals/tabs/keybinds_tab/DefaultKeybindsList.tsx:39
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:121
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:120
 msgid "Chat"
 msgstr "チャット"
 
@@ -6638,19 +6601,8 @@ msgstr "チャットショートカット"
 
 #. Tray menu item. Triggers the auto-updater to look for a new desktop build.
 #: src/features/platform/utils/DesktopLocaleBridge.ts:160
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:823
 msgid "Check for updates"
 msgstr "アップデートを確認"
-
-#. Support Center section for live service, connection, device, and update checks.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:510
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:78
-msgid "Check my setup"
-msgstr ""
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:654
-msgid "Check now"
-msgstr ""
 
 #: src/features/app/components/BootstrapErrorScreen.tsx:56
 msgid "Check our <0>{BLUESKY_PROVIDER_NAME} ({FLUXER_BLUESKY_HANDLE})</0> for status updates."
@@ -6661,19 +6613,11 @@ msgstr "ステータス更新は<0>{BLUESKY_PROVIDER_NAME} ({FLUXER_BLUESKY_HAND
 msgid "Check out my custom theme!"
 msgstr "カスタムテーマをチェック！"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:686
-msgid "Check permission, preview video, and select a camera."
-msgstr ""
-
 #. Error-state description in the channel and chat gif picker view.
 #: src/features/channel/components/pickers/gif/GifPickerView.tsx:44
 #: src/features/user/components/modals/tabs/applications_tab/index.tsx:96
 msgid "Check your connection and try again."
 msgstr "接続を確認して、もう一度お試しください。"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:481
-msgid "Check your connection, devices, app version, and the services this client depends on."
-msgstr ""
 
 #. Empty-state hint in Discovery shown under the heading when the request for communities failed.
 #: src/features/discovery/discovery/DiscoveryEmptyState.tsx:32
@@ -6699,10 +6643,6 @@ msgstr "受信トレイに確認メールが届いているかご確認くださ
 #: src/features/user/components/modals/tabs/component_gallery_tab/SelectionsTab.tsx:250
 msgid "Checkboxes"
 msgstr "チェックボックス"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:82
-msgid "Checking"
-msgstr ""
 
 #. Loading label shown while permissions are being verified.
 #. Loading label shown while permissions are being verified.
@@ -6853,10 +6793,6 @@ msgstr "オプションを選択"
 #: src/features/theme/components/modals/BackgroundImageGalleryModal.tsx:120
 msgid "Choose background"
 msgstr "背景を選択"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:677
-msgid "Choose devices, check levels, and test your microphone."
-msgstr ""
 
 #. OAuth authorize page error shown when a bot invite request provides both guild_id and channel_id. Keep the parameter names literal.
 #: src/features/auth/components/pages/oauth_authorize_page/state/useAuthorizeFlow.ts:86
@@ -7073,7 +7009,7 @@ msgstr "アカウントを登録"
 msgid "Claim your account and verify your email to send reports."
 msgstr "レポートを送信するには、アカウントを申請してメールアドレスを確認してください。"
 
-#: src/features/auth/components/modals/ClaimAccountModal.tsx:144
+#: src/features/auth/components/modals/ClaimAccountModal.tsx:138
 msgid "Claim your account by adding an email and password. We will send a verification code to confirm your email before finishing."
 msgstr "メールアドレスとパスワードを追加してアカウントを登録してください。登録完了前に、確認コードをメールでお送りします。"
 
@@ -7661,7 +7597,7 @@ msgid "Collapse"
 msgstr "折りたたむ"
 
 #. Short label in the sidebar navigation guild folder item. Preserve {folderName}; it is inserted by code.
-#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:97
+#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:98
 msgid "Collapse {folderName}"
 msgstr "{folderName}を折りたたむ"
 
@@ -7705,8 +7641,8 @@ msgstr "{channelHeading}の未読メッセージを折りたたむ"
 
 #. Lowercase screen-reader fragment in the sidebar navigation guild folder item.
 #. Lowercase state label used inside channel-list accessible text for a collapsed category.
-#: src/features/app/components/layout/ChannelItem.tsx:100
-#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:85
+#: src/features/app/components/layout/ChannelItem.tsx:95
+#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:86
 msgid "collapsed"
 msgstr "折りたたまれています"
 
@@ -8330,7 +8266,7 @@ msgid "Connect with {providerName}"
 msgstr "{providerName}と連携"
 
 #. Lowercase state label used inside channel-list accessible text for the current voice channel.
-#: src/features/app/components/layout/ChannelItem.tsx:116
+#: src/features/app/components/layout/ChannelItem.tsx:111
 msgid "connected"
 msgstr "接続済み"
 
@@ -8453,7 +8389,7 @@ msgid "Connections"
 msgstr "連携サービス"
 
 #. User settings tab for linked external accounts.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:112
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:111
 msgctxt "user-settings-tab"
 msgid "Connections"
 msgstr "連携済みアカウント"
@@ -8947,10 +8883,6 @@ msgstr "スタンプIDをコピー"
 #: src/features/ui/action_menu/items/StickerContextMenuItems.tsx:36
 msgid "Copy sticker URL"
 msgstr "スタンプのURLをコピー"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:881
-msgid "Copy support summary"
-msgstr ""
 
 #. Action label that copies a message body / selected text to the clipboard.
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
@@ -9625,10 +9557,6 @@ msgstr "新しいコミュニティを作成、または既存のコミュニテ
 #: src/features/channel/components/bottomsheets/channel_details_bottom_sheet/DMMembersList.tsx:19
 msgid "Create a new group with {userName}"
 msgstr "{userName}との新しいグループを作成"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:841
-msgid "Create a small, privacy-reviewed snapshot for someone helping you troubleshoot."
-msgstr ""
 
 #. Generic authentication action label for starting or submitting account creation.
 #: src/features/auth/components/pages/RegisterPage.tsx:46
@@ -10586,7 +10514,7 @@ msgstr "区切り線"
 #: src/features/ui/action_menu/items/SearchMenuData.tsx:43
 #: src/features/ui/action_menu/items/SearchProviderMenuItems.tsx:14
 #: src/features/user/components/modals/tabs/component_gallery_tab/MarkdownTab.tsx:117
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:71
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:72
 #: src/features/voice/components/VoiceSettingsMenus.tsx:121
 #: src/features/voice/utils/SettingsDeviceOptions.ts:11
 msgid "Default"
@@ -11090,7 +11018,7 @@ msgid "Description must be no more than {discoveryDescriptionMaxLength} characte
 msgstr "説明は{discoveryDescriptionMaxLength}文字以内にする必要があります。"
 
 #. Developer settings tab showing UI component examples.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:158
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:153
 msgid "Design system"
 msgstr "デザインシステム"
 
@@ -11104,8 +11032,8 @@ msgstr "デスクトップ"
 
 #. User settings tab for desktop app integration and platform settings.
 #. User settings tab label shown on desktop builds when the OS could not be identified (fallback for the per-OS labels).
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:87
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:142
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:86
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:141
 msgid "Desktop app"
 msgstr "デスクトップアプリ"
 
@@ -11128,10 +11056,6 @@ msgstr "このバージョンのWindowsでは、デスクトップ音声は利�
 #: src/features/user/components/settings_utils/search_index/NotificationsIndex.ts:74
 msgid "Desktop away"
 msgstr "デスクトップ (離席中)"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:769
-msgid "Desktop build"
-msgstr ""
 
 #. Aria label on a participant tile icon that indicates the participant is on desktop.
 #: src/features/voice/components/voice_participant_tile/shared.ts:83
@@ -11242,15 +11166,11 @@ msgstr "詳細"
 msgid "Detect while typing"
 msgstr "入力中に検出"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:791
-msgid "Detecting…"
-msgstr ""
-
 #. Advanced settings category tag.
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:20
 #: src/features/user/components/settings_utils/search_index/SharedDescriptors.ts:25
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:216
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:211
 msgid "Developer"
 msgstr "開発者向け"
 
@@ -11275,13 +11195,13 @@ msgstr "開発者向けステータス"
 #. Short label in the channel and chat utility buttons. Keep it concise.
 #. Title of the info alert shown when clicking an internal developer-tools deep link.
 #: src/features/channel/components/channel_header_components/UtilityButtons.tsx:20
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:123
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:122
 #: src/features/ui/action_menu/items/StaffDeveloperUserControlsMenuItem.tsx:13
 msgid "Developer tools"
 msgstr "開発者ツール"
 
 #. Body of the developer-tools info alert. Refers to the staff badge button in the channel header.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:127
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:126
 msgid "Developer tools are available from the staff badge in the channel header."
 msgstr "開発者ツールは、チャンネルヘッダーのスタッフバッジから利用できます。"
 
@@ -11342,20 +11262,10 @@ msgstr "デバイス:"
 #: src/features/user/components/modals/tabs/DevicesTab.tsx:528
 #: src/features/user/components/settings_utils/search_index/DevicesIndex.ts:11
 #: src/features/user/components/settings_utils/section_registry/AppearanceSections.ts:82
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:63
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:62
 #: src/features/voice/components/modals/ScreenSharePickerModal.tsx:133
 msgid "Devices"
 msgstr "デバイス"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:605
-msgid "Devices & permissions"
-msgstr ""
-
-#. Support Center section for previewing and exporting privacy-safe diagnostics.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:840
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:90
-msgid "Diagnostics to share"
-msgstr ""
 
 #. Description for the Custom streaming preset. Lightly playful prose; keep tone casual.
 #: src/features/voice/components/StreamSettingsMenuContent.tsx:94
@@ -11747,7 +11657,7 @@ msgid "Discovery application withdrawn"
 msgstr "発見タブへの掲載申請を取り下げました"
 
 #. Accessible label for the category tabs in the Discovery page.
-#: src/features/discovery/discovery/DiscoveryNavbar.tsx:24
+#: src/features/discovery/discovery/DiscoveryNavbar.tsx:23
 msgid "Discovery categories"
 msgstr "見つけるカテゴリ"
 
@@ -11761,12 +11671,12 @@ msgid "Discovery navigation"
 msgstr "見つけるナビゲーション"
 
 #. Accessible label for the Discovery community results region.
-#: src/features/discovery/discovery/DiscoveryPage.tsx:30
+#: src/features/discovery/discovery/DiscoveryPage.tsx:29
 msgid "Discovery results"
 msgstr "見つかったコミュニティ"
 
 #. Accessible label for the search form in the Discovery navigation bar.
-#: src/features/discovery/discovery/DiscoveryNavbar.tsx:32
+#: src/features/discovery/discovery/DiscoveryNavbar.tsx:31
 msgid "Discovery search"
 msgstr "Discovery検索"
 
@@ -12159,10 +12069,6 @@ msgstr "デスクトップ版アップデート {version} をダウンロード"
 msgid "Download desktop update {version} ({formatBytes})"
 msgstr "デスクトップアップデート {version} をダウンロード ({formatBytes})"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:907
-msgid "Download diagnostics"
-msgstr ""
-
 #. Media context menu action that downloads a file attachment.
 #: src/features/ui/action_menu/items/MediaMenuData.tsx:125
 msgid "Download file"
@@ -12460,7 +12366,7 @@ msgstr "添付ファイルを編集"
 #. Action that opens the edit-category modal.
 #. Action that opens the edit-category modal.
 #. Tooltip and accessible label for the category settings button in the channel list.
-#: src/features/app/components/layout/ChannelItem.tsx:120
+#: src/features/app/components/layout/ChannelItem.tsx:115
 #: src/features/ui/action_menu/items/CategoryMenuData.tsx:85
 #: src/features/ui/action_menu/items/CategoryMenuItems.tsx:62
 msgid "Edit category"
@@ -12664,7 +12570,7 @@ msgid "Education"
 msgstr "教育"
 
 #. Inline notice in the camera preview modal when the native effects preview cannot start and the raw camera feed is shown instead.
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:84
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:85
 msgid "Effects preview unavailable — showing unprocessed camera"
 msgstr "エフェクトプレビューを開始できません。処理されていないカメラ映像を表示します。"
 
@@ -12777,7 +12683,7 @@ msgstr "埋め込み"
 #. Developer settings tab for testing URL unfurls and rendered embeds.
 #. Settings search entry label for the developer embed debugger.
 #: src/features/user/components/settings_utils/search_index/EmbedDebuggerIndex.ts:7
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:154
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:149
 msgid "Embed debugger"
 msgstr "埋め込みデバッガー"
 
@@ -12979,7 +12885,7 @@ msgid "Emoticons"
 msgstr "絵文字"
 
 #. Short label in the app layout favorites channel list content.
-#: src/features/app/components/layout/FavoritesChannelListContent.tsx:70
+#: src/features/app/components/layout/FavoritesChannelListContent.tsx:65
 msgid "Empty favorites"
 msgstr "お気に入りはありません"
 
@@ -13559,7 +13465,7 @@ msgstr "アプリに表示されているコードを入力して続行してく
 msgid "Enter the code we emailed to your new address."
 msgstr "新しいメールアドレスに送信されたコードを入力してください。"
 
-#: src/features/auth/components/modals/ClaimAccountModal.tsx:181
+#: src/features/auth/components/modals/ClaimAccountModal.tsx:175
 msgid "Enter the code we sent to your email to verify it. Your password will be set once the code is confirmed."
 msgstr "メールアドレスに送信されたコードを入力して認証してください。コードが確認されると、パスワードが設定されます。"
 
@@ -13789,10 +13695,6 @@ msgstr "全員がプレミアム"
 msgid "Everything"
 msgstr "すべて"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:913
-msgid "Exact contents of the diagnostic file"
-msgstr ""
-
 #. Hint shown beside -in: (negation). Sentence case, no trailing punctuation.
 #: src/features/search/utils/SearchUtils.ts:121
 msgid "exclude a channel"
@@ -13900,8 +13802,8 @@ msgstr "{channelHeading}の未読メッセージを展開"
 
 #. Lowercase screen-reader fragment in the sidebar navigation guild folder item.
 #. Lowercase state label used inside channel-list accessible text for an expanded category.
-#: src/features/app/components/layout/ChannelItem.tsx:104
-#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:81
+#: src/features/app/components/layout/ChannelItem.tsx:99
+#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:82
 msgid "expanded"
 msgstr "展開中"
 
@@ -14013,7 +13915,7 @@ msgid "Explicit content filter setting"
 msgstr "不適切なコンテンツフィルター設定"
 
 #. Short label in the app layout discovery guild header.
-#: src/features/app/components/layout/DiscoveryGuildHeader.tsx:9
+#: src/features/app/components/layout/DiscoveryGuildHeader.tsx:10
 msgid "Explore"
 msgstr "見つける"
 
@@ -14074,7 +13976,7 @@ msgstr "表現のオートコンプリート"
 #. User settings tab for purchased or owned emoji/sticker expression packs.
 #: src/features/user/components/modals/tabs/ExpressionPacksTab.tsx:166
 #: src/features/user/components/settings_utils/search_index/ExpressionPacksIndex.ts:7
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:55
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:54
 msgid "Expression packs"
 msgstr "表現パック"
 
@@ -14218,7 +14120,7 @@ msgid "Failed to delete channel"
 msgstr "チャンネルを削除できませんでした"
 
 #. Toast / inline error in the camera preview modal when enabling the camera fails.
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:63
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:64
 msgid "Failed to enable camera."
 msgstr "カメラを有効にできませんでした。"
 
@@ -14402,7 +14304,7 @@ msgid "Failed to start"
 msgstr "起動できませんでした"
 
 #. Error text in the camera preview modal when the camera stream cannot be opened. Prompts user to check OS / browser permissions.
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:58
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:59
 msgid "Failed to start camera preview. Check your camera permissions."
 msgstr "カメラのプレビューを開始できませんでした。カメラの権限を確認してください。"
 
@@ -14699,7 +14601,7 @@ msgid "Filter by join method"
 msgstr "参加方法で絞り込む"
 
 #. Short label in the discovery page. Keep it concise.
-#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:33
+#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:31
 msgid "Filter by language"
 msgstr "言語で絞り込む"
 
@@ -14740,7 +14642,7 @@ msgstr "メンションを絞り込む"
 msgid "Filtering"
 msgstr "フィルター"
 
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:865
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:912
 msgid "Finalizing camera..."
 msgstr "カメラを準備中…"
 
@@ -14821,12 +14723,6 @@ msgstr "非アクティブ時にクリックを透過"
 msgid "First option"
 msgstr "最初のオプション"
 
-#. Support Center section linking to common troubleshooting settings.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:664
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:82
-msgid "Fix a common problem"
-msgstr ""
-
 #. Unicode emoji category label.
 #: src/features/expressions/utils/UnicodeEmojis.ts:49
 msgid "Flags"
@@ -14905,7 +14801,7 @@ msgstr "音声にフォーカス"
 
 #. Folder icon option in the community-folder settings modal: a generic folder shape. Short standalone label.
 #. Short label in the sidebar navigation guild folder item.
-#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:73
+#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:74
 #: src/features/guild/components/modals/GuildFolderSettingsModal.tsx:39
 msgid "Folder"
 msgstr "フォルダー"
@@ -15189,7 +15085,7 @@ msgstr "メッセージを転送しました"
 msgid "Forwarded from"
 msgstr "転送元"
 
-#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:271
+#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:269
 msgid "Found {resultCount} results in {categoryCount} categories"
 msgstr "{categoryCount}個のカテゴリで{resultCount}件の結果が見つかりました"
 
@@ -15783,7 +15679,7 @@ msgstr "贈呈済み: <0/><1>{giftEndDate}</1>まで。自動更新されませ�
 #. Settings search entry label. Also used as a search synonym in the settings search bar.
 #. User settings tab for gift inventory and redemption codes.
 #: src/features/user/components/settings_utils/search_index/SharedDescriptors.ts:37
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:100
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:99
 msgid "Gifts"
 msgstr "ギフト"
 
@@ -15833,10 +15729,6 @@ msgstr "戻る"
 #: src/features/moderation/components/pages/ReportPage.tsx:84
 msgid "Go back and enter a valid email."
 msgstr "戻って有効なメールアドレスを入力してください。"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:665
-msgid "Go straight to the settings and tests that can resolve it."
-msgstr ""
 
 #. CTA label that opens the premium settings tab from gift inventory.
 #: src/features/user/components/modals/tabs/GiftInventoryTab.tsx:95
@@ -16717,11 +16609,6 @@ msgstr "GIFのお気に入りを保存する方法を選択してください?"
 msgid "How this works"
 msgstr "仕組み"
 
-#. Support Center endpoint check returned a non-success HTTP status.
-#: src/features/support/SupportCenterCopy.ts:16
-msgid "HTTP {httpStatus}"
-msgstr ""
-
 #. Accessible label in the language and locale names. Keep it concise.
 #: src/features/user/utils/LocaleUtils.ts:72
 msgid "Hungarian"
@@ -16784,10 +16671,6 @@ msgstr "更新された利用規約に同意します"
 #: src/features/user/components/modals/tabs/component_gallery_tab/OverlaysTab.tsx:19
 msgid "I am a tooltip"
 msgstr "ツールチップです"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:676
-msgid "I can't hear or be heard"
-msgstr ""
 
 #. Gift redemption pre-filled DM message for a sender who already owns lifetime premium.
 #: src/features/expressions/components/modals/GiftSendToFriendModal.tsx:26
@@ -17492,7 +17375,7 @@ msgstr "引き継ぎ"
 msgid "Inherited from {inheritedFromLabel}"
 msgstr "{inheritedFromLabel}から継承"
 
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:867
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:914
 msgid "Initializing camera..."
 msgstr "カメラを初期化しています…"
 
@@ -17649,11 +17532,6 @@ msgstr "デスクトップアップデート {version} をインストール中�
 #: src/features/channel/components/channel_header_components/UpdaterIcon.tsx:22
 msgid "Installing desktop update…"
 msgstr "デスクトップ版をアップデート中…"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:537
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:727
-msgid "Instance"
-msgstr ""
 
 #. Audit log operation flag label for invite creation.
 #: src/features/guild/utils/guild_tabs/GuildAuditLogTabUtils.ts:170
@@ -17856,7 +17734,7 @@ msgid "Invite link is hidden while sharing:"
 msgstr "共有中は招待リンクが非表示になります:"
 
 #. Inline replacement text shown for invite links while streaming privacy is active.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:139
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:138
 msgid "Invite link masked while sharing"
 msgstr "共有中は招待リンクがマスクされます"
 
@@ -17878,7 +17756,7 @@ msgstr "招待のマスク"
 #. Action label that opens the invite flow.
 #. Button or menu action label in the guild header popout. Keep it concise.
 #. Tooltip and accessible label for the invite button shown beside a channel in the channel list.
-#: src/features/app/components/layout/ChannelItem.tsx:124
+#: src/features/app/components/layout/ChannelItem.tsx:119
 #: src/features/guild/components/popouts/GuildHeaderPopout.tsx:58
 #: src/features/ui/action_menu/items/GuildMenuData.tsx:84
 msgid "Invite members"
@@ -18284,7 +18162,7 @@ msgid "Jump to {displayName}"
 msgstr "{displayName}へジャンプ"
 
 #. Accessible label for an inline channel mention link. labelText is the channel display name.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:94
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:93
 msgid "Jump to {labelText}"
 msgstr "{labelText}へジャンプ"
 
@@ -18341,12 +18219,12 @@ msgid "Jump to the current call"
 msgstr "通話に移動"
 
 #. Fallback accessible label for an inline channel mention when the target name is not known.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:98
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:97
 msgid "Jump to the linked channel"
 msgstr "リンク先のチャンネルに移動"
 
 #. Fallback accessible label for an inline message link when the target channel is not known.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:90
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:89
 msgid "Jump to the linked message"
 msgstr "リンクされたメッセージに移動"
 
@@ -18356,7 +18234,7 @@ msgid "Jump to the message from {authorNickname}"
 msgstr "{authorNickname} からのメッセージに移動"
 
 #. Accessible label for an inline message link that jumps to a specific message in a channel. labelText is the channel display name.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:85
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:84
 msgid "Jump to the message in {labelText}"
 msgstr "{labelText}のメッセージに移動"
 
@@ -18520,7 +18398,7 @@ msgstr "韓国語"
 #. User settings tab for language, locale, and time display preferences.
 #: src/features/app/components/setup/SetupWizardSteps.tsx:56
 #: src/features/user/components/settings_utils/search_index/LanguageIndex.ts:6
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:138
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:137
 msgid "Language"
 msgstr "言語"
 
@@ -18564,11 +18442,6 @@ msgstr "最終変更日: {0}"
 #: src/features/user/components/modals/tabs/account_security_tab/AccountTab.tsx:155
 msgid "Last changed: never"
 msgstr "最終変更：なし"
-
-#. Support Center timestamp of the most recent desktop update check.
-#: src/features/support/SupportCenterCopy.ts:48
-msgid "Last checked: {lastUpdateCheck}"
-msgstr ""
 
 #: src/features/user/components/modals/tabs/DevicesTab.tsx:173
 msgid "Last used"
@@ -18782,10 +18655,6 @@ msgstr "開いているチャンネルに新しいメッセージが届いたと
 msgid "Let the community self-moderate"
 msgstr "コミュニティに自主的なモデレーションを許可する"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:478
-msgid "Let's get everything working"
-msgstr ""
-
 #: src/features/theme_studio/sections/ThemeStudioSettingsSection.tsx:259
 msgid "Lets custom CSS reveal transparent window regions after restarting the desktop app."
 msgstr "デスクトップアプリの再起動後、カスタムCSSでウィンドウの透明な領域を表示します。"
@@ -18843,7 +18712,7 @@ msgid "Light theme"
 msgstr "ライトテーマ"
 
 #. Singular external-post stat label on a social post embed. Lowercase to appear after the count.
-#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:70
+#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:75
 msgid "like"
 msgstr "いいね"
 
@@ -18853,7 +18722,7 @@ msgid "Liked."
 msgstr "いいねしました。"
 
 #. Plural external-post stat label on a social post embed. Lowercase to appear after the count.
-#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:74
+#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:79
 msgid "likes"
 msgstr "いいね"
 
@@ -18950,7 +18819,7 @@ msgid "Link styling"
 msgstr "リンクのスタイル"
 
 #. Title of the alert shown when clicking an internal link that is not available to the current account.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:131
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:130
 msgid "Link unavailable"
 msgstr "リンクを利用できません"
 
@@ -19000,7 +18869,7 @@ msgid "Links"
 msgstr "リンク"
 
 #. User settings tab label shown on Linux desktop builds.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:79
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:78
 msgid "Linux app"
 msgstr "Linuxアプリ"
 
@@ -19043,10 +18912,6 @@ msgstr "リトアニア語"
 msgid "Live"
 msgstr "ライブ"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:553
-msgid "Live message connection is ready."
-msgstr ""
-
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/AccessibilityIndex.ts:181
@@ -19063,7 +18928,7 @@ msgid "Loading banned users"
 msgstr "利用停止中のユーザーを読み込んでいます"
 
 #. Screen-reader status text shown while Discovery communities are loading.
-#: src/features/discovery/discovery/DiscoveryPage.tsx:38
+#: src/features/discovery/discovery/DiscoveryPage.tsx:37
 msgid "Loading communities"
 msgstr "コミュニティを読み込んでいます"
 
@@ -19316,7 +19181,7 @@ msgid "macOS"
 msgstr "macOS"
 
 #. User settings tab label shown on macOS desktop builds.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:83
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:82
 msgid "macOS app"
 msgstr "macOS アプリ"
 
@@ -19935,11 +19800,6 @@ msgstr "メディアプレビュー"
 msgid "Media progress"
 msgstr "メディアの再生位置"
 
-#. Support Center summary of the voice and video media endpoint check.
-#: src/features/support/SupportCenterCopy.ts:35
-msgid "Media service {mediaSummary}."
-msgstr ""
-
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/section_registry/ChatSettingsSections.ts:114
 msgid "Media size"
@@ -20360,7 +20220,7 @@ msgid "Message layout"
 msgstr "メッセージレイアウト"
 
 #. Type chip suffix in tooltips for inline rendered message links. Lowercase because it follows the channel name.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:75
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:74
 msgid "message link"
 msgstr "メッセージリンク"
 
@@ -20495,10 +20355,6 @@ msgstr "コミュニティチャンネルのメッセージ"
 msgid "Messages shortcuts"
 msgstr "メッセージショートカット"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:550
-msgid "Messaging"
-msgstr ""
-
 #: src/features/channel/components/barriers/BarrierComponents.tsx:272
 msgid "Messaging is temporarily paused in this community."
 msgstr "このコミュニティでのメッセージ送信は一時停止されています。"
@@ -20622,7 +20478,7 @@ msgstr "未成年者の危険、不適切な場所での成人向けコンテン
 #. Switch label in the screen-share device picker for flipping shared camera/device video horizontally.
 #. Switch label in the video tab for flipping the local camera preview horizontally.
 #: src/features/user/components/modals/tabs/UserVideoTab.tsx:78
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:75
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:76
 #: src/features/voice/components/modals/ScreenSharePickerModal.tsx:181
 #: src/features/voice/components/VoiceSettingsMenus.tsx:135
 msgid "Mirror camera"
@@ -21158,8 +21014,8 @@ msgstr "ストリーム音声をミュート"
 #. Lowercase screen-reader fragment in the sidebar navigation guild list item.
 #. Lowercase state label used inside channel-list accessible text when a channel is muted.
 #. Screen-reader fragment announcing that the DM list row is muted. Lowercase fragment.
-#: src/features/app/components/layout/ChannelItem.tsx:112
-#: src/features/app/components/layout/sidebar_nav/GuildListDMItem.tsx:62
+#: src/features/app/components/layout/ChannelItem.tsx:107
+#: src/features/app/components/layout/sidebar_nav/GuildListDMItem.tsx:60
 #: src/features/app/components/layout/sidebar_nav/UseGuildListItemState.ts:39
 #: src/features/channel/components/direct_message/DMListItem.tsx:75
 msgid "muted"
@@ -21278,10 +21134,6 @@ msgstr "マイメディア"
 #: src/features/expressions/components/modals/sticker_form/StickerFormFields.tsx:32
 msgid "My awesome sticker"
 msgstr "マイスタンプ"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:685
-msgid "My camera isn't working"
-msgstr ""
 
 #. Channel overview settings tab label, control, or validation message (name, topic, slowmode, voice region, mature content gate).
 #: src/features/channel/components/modals/channel_tabs/ChannelOverviewTab.tsx:65
@@ -21475,10 +21327,6 @@ msgstr "ナビゲーションショートカット"
 msgid "Need an account?"
 msgstr "アカウントをお持ちでない場合?"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:104
-msgid "Needs attention"
-msgstr ""
-
 #. Settings search synonym. Proper name of the optional cat sprite that chases the cursor.
 #: src/features/user/components/settings_utils/section_registry/SharedDescriptors.ts:61
 msgid "Neko"
@@ -21541,7 +21389,7 @@ msgid "New"
 msgstr "NEW"
 
 #. Small badge on a new or recently added app navigation item.
-#: src/features/app/components/layout/GuildsLayout.tsx:136
+#: src/features/app/components/layout/GuildsLayout.tsx:131
 msgctxt "navigation-badge"
 msgid "New"
 msgstr "新規"
@@ -21729,7 +21577,7 @@ msgid "No {sendMessagesPermission} permission"
 msgstr "{sendMessagesPermission}の権限がありません"
 
 #. Inline text shown inside a custom message link pill when the linked message cannot be accessed.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:119
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:118
 msgid "No access"
 msgstr "アクセス権がありません"
 
@@ -21822,10 +21670,6 @@ msgstr "ブックマークなし"
 #: src/features/user/components/modals/tabs/applications_tab/application_detail/BotProfileSection.tsx:64
 msgid "No bot banner"
 msgstr "ボットバナーなし"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:579
-msgid "No call is active right now."
-msgstr ""
 
 #: src/features/user/components/modals/tabs/UserVideoTab.tsx:212
 msgid "No camera found"
@@ -22190,7 +22034,7 @@ msgstr "Linux の画面共有ポータルから画面またはウィンドウが
 msgid "No search results"
 msgstr "検索結果なし"
 
-#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:253
+#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:251
 #: src/features/app/components/dialogs/components/DesktopSettingsView.tsx:549
 msgid "No settings found"
 msgstr "設定が見つかりませんでした"
@@ -22284,10 +22128,6 @@ msgstr "信頼済みドメインがありません"
 #: src/features/app/components/floating/UnreadChannelsContent.tsx:81
 msgid "No unread messages"
 msgstr "未読メッセージはありません"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:805
-msgid "No update found"
-msgstr ""
 
 #. Empty-state text in the channel and chat add friend form.
 #: src/features/channel/components/direct_message/AddFriendForm.tsx:28
@@ -22401,10 +22241,6 @@ msgstr "メンバーになってからの期間が短すぎます"
 msgid "Not available"
 msgstr "利用できません"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:642
-msgid "Not checked yet."
-msgstr ""
-
 #. Short label in the app constants.
 #: src/features/app/constants/AppConstants.ts:57
 msgid "Not connected"
@@ -22433,15 +22269,6 @@ msgstr "今はしない"
 #: src/features/channel/components/modals/UnaddableRecipientsConfirmModal.tsx:19
 msgid "Not on your friends list"
 msgstr "友だちリストにいません"
-
-#. Browser media permission has not been requested yet.
-#: src/features/support/SupportCenterCopy.ts:26
-msgid "not requested"
-msgstr ""
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:126
-msgid "Not required"
-msgstr ""
 
 #. Option in the profile timezone picker. Means no timezone has been selected.
 #. Status chip for a macOS permission that has not been requested.
@@ -22541,14 +22368,10 @@ msgid "Notifications"
 msgstr "通知"
 
 #. User settings tab for notification and alert sound controls.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:133
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:132
 msgctxt "user-settings-tab"
 msgid "Notifications"
 msgstr "通知"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:706
-msgid "Notifications are missing"
-msgstr ""
 
 #. Notification toast title shown when the OS has blocked notifications.
 #: src/features/ui/commands/NotificationCommands.tsx:14
@@ -22693,10 +22516,6 @@ msgstr "添付ファイルの一部が読み込めなかったか、アップロ
 #: src/features/messaging/components/alerts/FileSizeTooLargeModal.tsx:27
 msgid "One or more files you're trying to upload exceed the maximum size limit of {maxSizeFormatted} per file."
 msgstr "アップロードしようとしているファイルの中に、1ファイルあたりの最大サイズ{maxSizeFormatted}を超過しているものがあります。"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:497
-msgid "One or more items may need your attention."
-msgstr ""
 
 #. Required-action modal carousel step title. Introduces why account verification is required.
 #: src/features/auth/components/modals/required_action/RequiredActionDescriptors.ts:206
@@ -22864,7 +22683,7 @@ msgid "Open {displayName}"
 msgstr "{displayName}を開く"
 
 #. Accessible label for an inline settings deep-link pill. labelText is the resolved settings tab and section breadcrumb.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:102
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:101
 msgid "Open {labelText} in settings"
 msgstr "設定で{labelText}を開く"
 
@@ -22984,7 +22803,7 @@ msgstr "{channelName}のチャンネル詳細を開く"
 
 #. Context-menu action that opens a voice channel's embedded chat view without connecting to voice.
 #. Tooltip and accessible label for the chat icon shown beside a voice channel in the channel list.
-#: src/features/app/components/layout/ChannelItem.tsx:128
+#: src/features/app/components/layout/ChannelItem.tsx:123
 #: src/features/ui/action_menu/items/ChannelMenuData.tsx:152
 msgid "Open chat"
 msgstr "チャットを開く"
@@ -23359,7 +23178,7 @@ msgstr "OS"
 msgid "Opt into experimental per-community and per-channel unread badge controls"
 msgstr "コミュニティごと、チャンネルごとの未読バッジ表示設定を有効にする"
 
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:863
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:910
 msgid "Optimizing camera..."
 msgstr "カメラを最適化中…"
 
@@ -24639,10 +24458,6 @@ msgstr "プレビューボタン"
 msgid "Preview camera"
 msgstr "カメラをプレビュー"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:893
-msgid "Preview diagnostics"
-msgstr ""
-
 #. Status text on the placeholder shown in the voice call view when the user has hidden a remote stream preview.
 #: src/features/voice/components/HiddenStreamPlaceholder.tsx:10
 msgid "Preview hidden"
@@ -24798,7 +24613,7 @@ msgstr "優先スピーカー"
 #. User settings tab for privacy and safety controls.
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:12
 #: src/features/user/components/settings_utils/section_registry/PrivacySafetySections.ts:60
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:104
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:103
 msgid "Privacy"
 msgstr "プライバシー"
 
@@ -24857,10 +24672,6 @@ msgstr "プライベートメッセージ"
 msgid "Pro tip:"
 msgstr "ヒント:"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:115
-msgid "Problem found"
-msgstr ""
-
 #. Generic action label that confirms proceeding past a content warning or mature-content gate.
 #: src/features/i18n/utils/CommonMessageDescriptors.ts:294
 msgid "Proceed"
@@ -24878,7 +24689,7 @@ msgid "Product name"
 msgstr "プロダクト名"
 
 #. User settings tab for editing the current user profile.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:92
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:91
 msgid "Profile"
 msgstr "プロフィール"
 
@@ -25342,12 +25153,12 @@ msgid "Quit {appName}"
 msgstr "{appName}を終了"
 
 #. Singular external-post stat label on a social post embed. Lowercase to appear after the count.
-#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:62
+#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:67
 msgid "quote"
 msgstr "引用"
 
 #. Plural external-post stat label on a social post embed. Lowercase to appear after the count.
-#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:66
+#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:71
 msgid "quotes"
 msgstr "引用"
 
@@ -25467,10 +25278,6 @@ msgstr "ドキュメントを読む（{domain}）"
 #: src/features/user/components/settings_utils/section_registry/AccessibilitySections.ts:163
 msgid "Reading speed"
 msgstr "読む速さ"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:93
-msgid "Ready"
-msgstr ""
 
 #: src/features/app/components/dialogs/components/plutonium/BottomCTASection.tsx:64
 msgid "Ready to buy a gift?"
@@ -25837,20 +25644,12 @@ msgstr "関係"
 msgid "Relative"
 msgstr "相対"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:755
-msgid "Release channel"
-msgstr ""
-
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #. Short label for push-to-talk release delay.
 #: src/features/user/components/modals/tabs/UserVoiceTab.tsx:62
 #: src/features/user/components/settings_utils/section_registry/VoiceVideoSections.ts:89
 msgid "Release delay"
 msgstr "リリース遅延"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:717
-msgid "Release identity helps support confirm exactly which client you are using."
-msgstr ""
 
 #. Tooltip on the hold-to-record button while the user is actively holding to record.
 #: src/features/channel/components/textarea/HoldToRecordButton.tsx:38
@@ -26535,12 +26334,12 @@ msgid "Reported user tag (optional)"
 msgstr "報告対象ユーザーのタグ（任意）"
 
 #. Singular external-post stat label on a social post embed (e.g. Twitter/X). Lowercase to appear after the count.
-#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:52
+#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:57
 msgid "repost"
 msgstr "再投稿"
 
 #. Plural external-post stat label on a social post embed (e.g. Twitter/X). Lowercase to appear after the count.
-#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:57
+#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:62
 msgid "reposts"
 msgstr "再投稿"
 
@@ -26671,7 +26470,7 @@ msgstr "中レベルのすべての条件に加え、コミュニティのメン
 msgid "Reschedule message"
 msgstr "メッセージを再スケジュール"
 
-#: src/features/auth/components/modals/ClaimAccountModal.tsx:240
+#: src/features/auth/components/modals/ClaimAccountModal.tsx:234
 #: src/features/user/components/modals/EmailChangeModal.tsx:296
 #: src/features/user/components/modals/EmailChangeModal.tsx:333
 #: src/features/user/components/modals/PasswordChangeModal.tsx:244
@@ -26690,7 +26489,7 @@ msgstr "再送 ({originalSecondsRemaining}秒)"
 msgid "Resend ({resendCooldownSeconds}s)"
 msgstr "再送 ({resendCooldownSeconds}秒)"
 
-#: src/features/auth/components/modals/ClaimAccountModal.tsx:240
+#: src/features/auth/components/modals/ClaimAccountModal.tsx:234
 msgid "Resend ({resendSecondsRemaining}s)"
 msgstr "再送 ({resendSecondsRemaining}秒)"
 
@@ -27134,14 +26933,6 @@ msgstr "内容を確認して確定"
 msgid "Review apps that can access your account."
 msgstr "アカウントにアクセスできるアプリを確認してください。"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:707
-msgid "Review desktop, push, sound, and mention settings."
-msgstr ""
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:695
-msgid "Review display, motion, accessibility, and performance settings."
-msgstr ""
-
 #. Settings row description for reviewing macOS permissions.
 #: src/features/permissions/system/components/MacPermissionsSettingsRow.tsx:16
 msgid "Review microphone, camera, screen recording, and Input Monitoring access."
@@ -27412,14 +27203,6 @@ msgstr "ページあたりの行数"
 msgid "Run {productName} automatically when your computer starts"
 msgstr "コンピューターの起動時に{productName}を自動的に実行する"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:502
-msgid "Run a check to see your setup status."
-msgstr ""
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:523
-msgid "Run again"
-msgstr ""
-
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/DesktopSettingsIndex.ts:114
 msgid "Run at login"
@@ -27429,10 +27212,6 @@ msgstr "ログイン時に起動"
 #: src/features/app/components/setup/SetupWizardSteps.tsx:191
 msgid "Run the instance as one community instead of many. This can only be enabled now, during setup."
 msgstr "多くのコミュニティではなく、1つのコミュニティとしてインスタンスを実行します。これは、セットアップ中のみ有効にできます。"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:501
-msgid "Running a fresh check now."
-msgstr ""
 
 #. Developer tools debug menu label. Internal-only surface for developers; translators may keep this terse.
 #: src/features/channel/components/channel_header_components/developer_tools/ToolsMenu.tsx:100
@@ -27471,7 +27250,7 @@ msgid "Saturation"
 msgstr "彩度"
 
 #. Singular external-post stat label on a social post embed. Lowercase to appear after the count.
-#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:78
+#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:83
 msgid "save"
 msgstr "保存"
 
@@ -27591,7 +27370,7 @@ msgid "Saved."
 msgstr "保存しました。"
 
 #. Plural external-post stat label on a social post embed. Lowercase to appear after the count.
-#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:82
+#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:87
 msgid "saves"
 msgstr "保存"
 
@@ -27940,7 +27719,7 @@ msgid "Search channels or DMs"
 msgstr "チャンネルまたはDMを検索"
 
 #. Accessible label and placeholder for the community search field in the Discovery page.
-#: src/features/discovery/discovery/DiscoveryNavbar.tsx:28
+#: src/features/discovery/discovery/DiscoveryNavbar.tsx:27
 msgid "Search communities"
 msgstr "コミュニティを検索"
 
@@ -27979,7 +27758,7 @@ msgstr "検索フィルター: {filter}"
 #. Section header in the message search popout listing available filter operators.
 #: src/features/channel/components/message_search_bar/FilterOption.tsx:14
 #: src/features/channel/components/message_search_bar/HistorySection.tsx:17
-#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:17
+#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:15
 msgid "Search filters"
 msgstr "検索フィルター"
 
@@ -28073,7 +27852,7 @@ msgid "Search results"
 msgstr "検索結果"
 
 #. Heading in the Discovery navigation bar when a search is active. {query} is the text the user searched for.
-#: src/features/discovery/discovery/DiscoveryNavbar.tsx:36
+#: src/features/discovery/discovery/DiscoveryNavbar.tsx:35
 msgid "Search results for “{query}”"
 msgstr "「{query}」の検索結果"
 
@@ -28453,8 +28232,8 @@ msgstr "テキスト選択"
 #. Lowercase screen-reader fragment in the sidebar navigation guild list item.
 #. Lowercase state label used inside channel-list accessible text for the selected channel.
 #. Screen-reader suffix announcing that the DM list row is the active selection. Lowercase fragment.
-#: src/features/app/components/layout/ChannelItem.tsx:96
-#: src/features/app/components/layout/sidebar_nav/GuildListDMItem.tsx:54
+#: src/features/app/components/layout/ChannelItem.tsx:91
+#: src/features/app/components/layout/sidebar_nav/GuildListDMItem.tsx:52
 #: src/features/app/components/layout/sidebar_nav/UseGuildListItemState.ts:35
 #: src/features/channel/components/direct_message/DMListItem.tsx:67
 msgid "selected"
@@ -28586,7 +28365,7 @@ msgid "Send button"
 msgstr "送信ボタン"
 
 #. Primary button in the required-action modal. Requests a verification code.
-#: src/features/auth/components/modals/ClaimAccountModal.tsx:219
+#: src/features/auth/components/modals/ClaimAccountModal.tsx:213
 #: src/features/auth/components/modals/required_action/RequiredActionDescriptors.ts:190
 #: src/features/user/components/modals/EmailChangeModal.tsx:318
 msgid "Send code"
@@ -28736,7 +28515,7 @@ msgid "Sending malware or dangerous links"
 msgstr "マルウェアや危険なリンクの送信"
 
 #. Short label in the settings dialog forward channel selection.
-#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:14
+#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:13
 msgid "Sending messages is disabled in this community"
 msgstr "このコミュニティではメッセージを送信できません"
 
@@ -29098,7 +28877,7 @@ msgid "Settings"
 msgstr "設定"
 
 #. Type chip suffix in tooltips for inline rendered fluxer://settings/user deep links. Lowercase.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:107
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:106
 msgid "settings link"
 msgstr "設定へのリンク"
 
@@ -29322,7 +29101,7 @@ msgstr "ショートカットの競合"
 #. User settings tab for keyboard shortcuts and custom bindings.
 #: src/features/user/components/settings_utils/search_index/KeybindsIndex.ts:18
 #: src/features/user/components/settings_utils/section_registry/AccessibilitySections.ts:175
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:129
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:128
 msgid "Shortcuts"
 msgstr "ショートカット"
 
@@ -30069,7 +29848,7 @@ msgid "Skip this step"
 msgstr "スキップ"
 
 #. Accessible skip-link label for keyboard users.
-#: src/app/App.tsx:76
+#: src/app/App.tsx:75
 msgid "Skip to content"
 msgstr "コンテンツにスキップ"
 
@@ -30156,7 +29935,7 @@ msgid "Slowmode"
 msgstr "スローモード"
 
 #. Short label in the settings dialog forward channel selection. Preserve {remaining}; it is inserted by code.
-#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:37
+#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:36
 msgid "Slowmode · wait {remaining}"
 msgstr "低速モード · 残り{remaining}"
 
@@ -31498,20 +31277,6 @@ msgstr "候補"
 msgid "Summary"
 msgstr "概要"
 
-#. User settings tab for troubleshooting, diagnostics, version information, and updates.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:150
-msgid "Support"
-msgstr ""
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:471
-msgid "Support center"
-msgstr ""
-
-#. Toast-like button state after the support summary is copied.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:65
-msgid "Support summary copied"
-msgstr ""
-
 #. Switch label in the community notification settings modal. Suppresses @everyone and @here notifications in this community. The two placeholders render the literal @everyone and @here tokens and must not be translated.
 #. Toggle label that suppresses @everyone and @here mentions; placeholders are the localized mention tags.
 #. Toggle label that suppresses @everyone and @here mentions; placeholders are the localized mention tags.
@@ -31820,7 +31585,6 @@ msgid "Syntax highlighting"
 msgstr "構文ハイライト"
 
 #: src/features/channel/components/ChannelUserTag.tsx:27
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:783
 msgid "System"
 msgstr "システム"
 
@@ -32062,14 +31826,6 @@ msgstr "利用規約URL"
 msgid "Terrorism or violent extremism"
 msgstr "テロまたは暴力的過激主義"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:592
-msgid "Test audio"
-msgstr ""
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:622
-msgid "Test camera"
-msgstr ""
-
 #. Button that validates SMTP credentials.
 #: src/features/app/components/setup/SetupWizardSteps.tsx:1001
 msgid "Test SMTP"
@@ -32285,10 +32041,6 @@ msgstr "アプリがクラッシュしました"
 msgid "The app has crashed. Checking for updates that might fix this issue…"
 msgstr "アプリがクラッシュしました。この問題を解決する可能性のあるアップデートを確認しています…"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:694
-msgid "The app looks or feels wrong"
-msgstr ""
-
 #: src/features/auth/flow/HandoffApprovalFlow.tsx:254
 msgid "The app should now be signed in to your account."
 msgstr "アプリにアカウントがサインインされました。"
@@ -32334,10 +32086,6 @@ msgstr "ダウンロードされたファイルはコンピューターに保存
 msgid "The file contains the verification token we will fetch from <0>{dnsUrl}</0>."
 msgstr "ファイルには、<0>{dnsUrl}</0> から取得する検証トークンが含まれています。"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:859
-msgid "The file includes versions, operating system, service-check results, permission states, and device counts. It does not include passwords, tokens, cookies, messages, attachments, account IDs, community or channel names, participant identities, device IDs, or raw server responses."
-msgstr ""
-
 #. Body of the file-too-large alert when a single file exceeds the per-file size limit.
 #: src/features/messaging/components/alerts/FileSizeTooLargeModal.tsx:23
 msgid "The file you're trying to upload exceeds the maximum size limit of {maxSizeFormatted}."
@@ -32355,10 +32103,6 @@ msgstr "コミュニティで最も話されている言語です。見つけや
 #: src/features/invite/components/alerts/InviteRevokeFailedModal.tsx:12
 msgid "The link may still work. Try again in a moment."
 msgstr "リンクがまだ有効な可能性があります。しばらくしてからもう一度お試しください。"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:555
-msgid "The live message connection is not ready."
-msgstr ""
 
 #. Body copy on the mature content check callback page after the check was canceled.
 #: src/features/auth/components/pages/MatureContentCheckCallbackPage.tsx:23
@@ -33051,7 +32795,7 @@ msgid "This link channel is marked for mature content and may open material that
 msgstr "このリンクチャンネルは成人向けコンテンツとして設定されており、一部のユーザーには不適切と思われる内容が表示される可能性があります。"
 
 #. Body of the link-unavailable alert.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:135
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:134
 msgid "This link is not available for your account."
 msgstr "このリンクはあなたのアカウントでは利用できません。"
 
@@ -33477,11 +33221,6 @@ msgstr "期間"
 #: src/features/voice/components/media_player/components/MediaTimeDisplay.tsx:9
 msgid "Time: {currentFormatted} of {durationFormatted}"
 msgstr "時間: {currentFormatted}/{durationFormatted}"
-
-#. Support Center endpoint check timed out.
-#: src/features/support/SupportCenterCopy.ts:15
-msgid "timed out"
-msgstr ""
 
 #. Short label in the channel and chat message timeout indicator. Keep it concise.
 #: src/features/channel/components/MessageTimeoutIndicator.tsx:15
@@ -34046,7 +33785,7 @@ msgstr "もう一度メッセージを編集してください。"
 msgid "TRY gifts are one-time payments. Cards charged in TRY still need to be issued in Türkiye for the purchase to stay eligible."
 msgstr "TRYギフトは1回限りの支払いです。購入の対象資格を維持するには、TRYで請求されるカードはトルコで発行されている必要があります。"
 
-#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:256
+#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:254
 msgid "Try searching for something like \"theme\", \"notifications\", or \"privacy\""
 msgstr "「テーマ」「通知」「プライバシー」などを検索してみてください"
 
@@ -34598,11 +34337,6 @@ msgstr "招待リンク"
 msgid "Universal fallback. Lowest quality, but it works everywhere."
 msgstr "汎用フォールバック。音質は最低ですが、どこでも動作します。"
 
-#. Browser media permission state is unknown.
-#: src/features/support/SupportCenterCopy.ts:30
-msgid "unknown"
-msgstr ""
-
 #. Fallback uploader label when the user who uploaded an emoji is unavailable.
 #. Fallback version label when the installed desktop version is unknown.
 #. Generic fallback label when a more specific value is unavailable.
@@ -34977,19 +34711,14 @@ msgstr "グループのピン留めを解除"
 msgid "Unpinned group DM"
 msgstr "グループDMのピン留めを解除"
 
-#. Support Center endpoint could not be reached.
-#: src/features/support/SupportCenterCopy.ts:20
-msgid "unreachable"
-msgstr ""
-
 #. Lowercase screen-reader fragment in the sidebar navigation guild folder item.
 #. Lowercase screen-reader fragment in the sidebar navigation guild list DM item.
 #. Lowercase screen-reader fragment in the sidebar navigation guild list item.
 #. Lowercase state label used inside channel-list accessible text when a channel has unread messages.
 #. Screen-reader fragment announcing that the DM list row has unread messages. Lowercase fragment.
-#: src/features/app/components/layout/ChannelItem.tsx:108
-#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:89
-#: src/features/app/components/layout/sidebar_nav/GuildListDMItem.tsx:58
+#: src/features/app/components/layout/ChannelItem.tsx:103
+#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:90
+#: src/features/app/components/layout/sidebar_nav/GuildListDMItem.tsx:56
 #: src/features/app/components/layout/sidebar_nav/UseGuildListItemState.ts:27
 #: src/features/channel/components/direct_message/DMListItem.tsx:71
 msgid "unread"
@@ -35142,7 +34871,6 @@ msgstr "最大4K/60fps"
 
 #. Confirm button label on the reschedule scheduled-message alert.
 #: src/features/channel/components/channel_textarea/shared.ts:28
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:831
 msgid "Update"
 msgstr "更新"
 
@@ -35155,10 +34883,6 @@ msgstr "このメッセージを表示するには、{productName}をアップ�
 #: src/features/app/components/ErrorFallback.tsx:140
 msgid "Update app"
 msgstr "アプリを更新"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:805
-msgid "Update available"
-msgstr ""
 
 #. Primary button in the required-action modal. Submits a code to update the account email.
 #: src/features/auth/components/modals/required_action/RequiredActionDescriptors.ts:186
@@ -35173,10 +34897,6 @@ msgstr "ステータスを更新"
 #: src/features/app/components/dialogs/components/MobileSettingsView.tsx:56
 msgid "Update service worker"
 msgstr "サービスワーカーを更新"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:799
-msgid "Update status"
-msgstr ""
 
 #. Short label in the timeout member sheet. Keep it concise.
 #: src/features/moderation/components/modals/TimeoutMemberSheet.tsx:36
@@ -35282,10 +35002,6 @@ msgstr "ウェブフックのアバターを更新しました。"
 #: src/features/channel/components/channel_header_components/developer_tools/DeveloperOptionLabels.ts:85
 msgid "Updater state"
 msgstr "アップデーターの状態"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:635
-msgid "Updates"
-msgstr ""
 
 #. Short label in the channel and chat gif picker grid item. Keep it concise.
 #: src/features/channel/components/pickers/gif/GifPickerGridItem.tsx:43
@@ -36002,7 +35718,7 @@ msgid "User record"
 msgstr "ユーザーレコード"
 
 #. Root label for the current user settings modal and settings search paths.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:363
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:352
 msgid "User settings"
 msgstr "ユーザー設定"
 
@@ -36446,17 +36162,6 @@ msgstr "リセットリンクを確認中…"
 #: src/features/theme_studio/sections/LibrarySection.tsx:113
 msgid "Version"
 msgstr "バージョン"
-
-#. Support Center update status when a newer desktop version is available.
-#: src/features/support/SupportCenterCopy.ts:44
-msgid "Version {version} is available."
-msgstr ""
-
-#. Support Center section showing release identity and update controls.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:716
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:86
-msgid "Version & updates"
-msgstr ""
 
 #. Member verification level option in the community moderation settings tab. Short standalone severity label.
 #: src/features/guild/components/modals/guild_tabs/GuildModerationTab.tsx:84
@@ -36942,7 +36647,7 @@ msgstr "音声 (アダルト)"
 
 #. User settings tab for microphone, speaker, camera, and call stats.
 #. User settings tab for microphone, speaker, camera, and call stats.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:125
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:124
 #: src/features/voice/utils/VoiceMessageDescriptors.ts:30
 msgid "Voice & video"
 msgstr "音声とビデオ"
@@ -36954,7 +36659,7 @@ msgstr "音声起動"
 
 #. Lowercase screen-reader fragment in the sidebar navigation guild folder item.
 #. Lowercase screen-reader fragment in the sidebar navigation guild list item.
-#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:93
+#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:94
 #: src/features/app/components/layout/sidebar_nav/UseGuildListItemState.ts:47
 msgid "voice activity"
 msgstr "音声アクティビティ"
@@ -37011,7 +36716,7 @@ msgstr "音声通話 {statusText}."
 
 #. Generic channel-type token used inside a wider delete confirmation string.
 #. Lowercase channel type label used inside channel-list accessible text.
-#: src/features/app/components/layout/ChannelItem.tsx:88
+#: src/features/app/components/layout/ChannelItem.tsx:83
 #: src/features/ui/action_menu/items/ChannelMenuItems.tsx:79
 msgid "voice channel"
 msgstr "ボイスチャンネル"
@@ -37077,10 +36782,6 @@ msgstr "音声接続を切断しました"
 msgid "Voice entrance sound"
 msgstr "入室サウンド"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:572
-msgid "Voice is disabled on this instance."
-msgstr ""
-
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/section_registry/AppearanceSections.ts:394
 msgid "Voice join"
@@ -37140,10 +36841,6 @@ msgstr "このブラウザでは音声録音に対応していません。"
 #: src/features/voice/components/VoiceSettingsMenus.tsx:131
 msgid "Voice region"
 msgstr "音声地域"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:569
-msgid "Voice service"
-msgstr ""
 
 #. Developer control label for the voice-session-restore banner.
 #: src/features/devtools/components/NagbarControls.ts:63
@@ -37211,11 +36908,6 @@ msgstr "メッセージ間の待機時間。\"{bypassSlowmodePermissionLabel}\" 
 #: src/features/auth/components/modals/required_action/RequiredActionDescriptors.ts:354
 msgid "Wait here"
 msgstr "そのままお待ちください"
-
-#. Support Center endpoint check has not run yet.
-#: src/features/support/SupportCenterCopy.ts:7
-msgid "waiting"
-msgstr ""
 
 #. Tooltip explaining that video / screen share controls are gated while the voice connection is not yet ready.
 #: src/features/voice/components/voice_connection_status/LocalParticipantControls.tsx:56
@@ -37365,10 +37057,6 @@ msgstr "アカウントを削除できませんでした。もう一度お試し
 msgid "We found an existing {premiumProductFullName} subscription for this account. Manage it in the secure billing portal to update payment details or check renewal status. If you just paid, wait a minute and reopen this page."
 msgstr "このアカウントには、既存の{premiumProductFullName}サブスクリプションが見つかりました。支払い情報の更新や更新状況の確認は、安全な請求ポータルで行ってください。お支払いいただいたばかりの場合は、1分ほど待ってからこのページを再度開いてください。"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:499
-msgid "We found something that may stop the app working correctly."
-msgstr ""
-
 #. Required-action modal intro text for a generic verification requirement. productName is inserted by code. Keep it calm and concise.
 #: src/features/auth/components/modals/required_action/RequiredActionDescriptors.ts:210
 msgid "We need one verification step before you continue. This helps protect accounts and keep spam off {productName}."
@@ -37506,10 +37194,6 @@ msgstr "Web {buildVersion}"
 #: src/features/user/components/settings_utils/search_index/AccountSecurityIndex.ts:98
 msgid "Web authentication"
 msgstr "ウェブ認証"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:741
-msgid "Web build"
-msgstr ""
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/ChatSettingsIndex.ts:235
@@ -37922,7 +37606,7 @@ msgid "Window state"
 msgstr "ウィンドウの状態"
 
 #. User settings tab label shown on Windows desktop builds. Refers to the Microsoft Windows OS.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:75
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:74
 msgid "Windows app"
 msgstr "Windowsアプリ"
 
@@ -38080,10 +37764,6 @@ msgstr "コミュニティの所有権を<0>{0}</0>に移行します。この�
 #: src/features/moderation/components/alerts/UserBannedFromGuildModal.tsx:12
 msgid "You are banned from this community and cannot join."
 msgstr "このコミュニティから追放されたため、参加できません。"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:577
-msgid "You are connected to a call."
-msgstr ""
 
 #. Voice participant status tooltip for the current user. They cannot hear voice chat. Distinct from muted.
 #: src/features/voice/utils/VoiceMessageDescriptors.ts:74
@@ -38330,7 +38010,7 @@ msgstr "このチャンネルでは発言できません"
 #. Tooltip / error shown in the camera preview modal when the user lacks Video permission in the current channel. Tone stays plain.
 #. Tooltip in the voice control bar when the user lacks the Video permission in this channel. Tone stays plain.
 #. Tooltip shown when the user lacks the Video permission in the voice channel. Tone stays plain.
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:79
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:80
 #: src/features/voice/components/voice_connection_status/LocalParticipantControls.tsx:61
 #: src/features/voice/components/VoiceControlBar.tsx:131
 msgid "You can't turn on your camera in this channel"
@@ -38404,7 +38084,7 @@ msgid "You changed your tag while on {PREMIUM_PRODUCT_NAME}. It will reroll rand
 msgstr "{PREMIUM_PRODUCT_NAME}をご利用中にタグを変更しました。{PREMIUM_PRODUCT_NAME}の有効期限が切れると（更新されない限り）ランダムに再抽選されます。"
 
 #. Body of the access-denied alert for clicked message links.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:115
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:114
 msgid "You do not have access to the channel where this message was sent."
 msgstr "このメッセージが送信されたチャンネルにアクセスできません。"
 
@@ -38551,12 +38231,12 @@ msgid "You need access to your current email to change it from here. Use phone v
 msgstr "メールアドレスを変更するには、現在のメールアドレスにアクセスできる必要があります。電話番号認証を利用するか、サポートにお問い合わせください。"
 
 #. Forward dialog error shown when the forwarded message has attachments and the user lacks Attach Files in the target channel.
-#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:32
+#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:31
 msgid "You need the \"{attachFilesPermissionLabel}\" permission to attach files in this channel"
 msgstr "このチャンネルでファイルを添付するには、「{attachFilesPermissionLabel}」の権限が必要です"
 
 #. Forward dialog error shown when the forwarded message contains embeds and the user lacks Embed Links in the target channel.
-#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:27
+#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:26
 msgid "You need the \"{embedLinksPermissionLabel}\" permission to embed links in this channel"
 msgstr "このチャンネルにリンクを埋め込むには、「{embedLinksPermissionLabel}」の権限が必要です"
 
@@ -38594,7 +38274,7 @@ msgid "You need the \"{permissionLabel}\" permission to use stickers from other 
 msgstr "ここで他のコミュニティのスタンプを使用するには、「{permissionLabel}」の権限が必要です。"
 
 #. Forward dialog error shown when the user lacks the Send Messages permission in the target channel. Permission name is interpolated.
-#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:22
+#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:21
 msgid "You need the \"{sendMessagesPermissionLabel}\" permission to send messages in this channel"
 msgstr "このチャンネルでメッセージを送信するには、「{sendMessagesPermissionLabel}」の権限が必要です"
 
@@ -38647,10 +38327,6 @@ msgstr "このコミュニティでメッセージを送信するには、メー
 #: src/features/app/components/alerts/DmActionErrorModal.tsx:60
 msgid "You or someone you're adding already has the maximum number of group DMs open. Leave one and try again."
 msgstr "あなた、または追加しようとしているメンバーの誰かが、グループDMを最大数まで開いています。どれか1つを閉じてから、もう一度お試しください。"
-
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:856
-msgid "You stay in control"
-msgstr ""
 
 #. Voice chat status tooltip for the current user. A moderator deafened them so they cannot hear voice chat.
 #: src/features/voice/utils/VoiceMessageDescriptors.ts:61
@@ -38838,7 +38514,7 @@ msgid "You're on a legacy rate. The current price for this plan is {currentSubsc
 msgstr "お客様はレガシー料金をご利用中です。このプランの現在の価格は{currentSubscriptionListPriceLabel}です。"
 
 #. Short label in the settings dialog forward channel selection. Keep the tone plain and specific.
-#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:18
+#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:17
 msgid "You're on timeout in this community"
 msgstr "このコミュニティではタイムアウト中です"
 
@@ -38965,7 +38641,7 @@ msgstr "{premiumProductName}のサブスクリプションが期限切れにな�
 msgid "Your {productName} session expired. Sign in again to continue authorizing this application."
 msgstr "{productName}のセッションの有効期限が切れました。このアプリケーションの認証を続行するには、もう一度サインインしてください。"
 
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:210
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:205
 msgid "Your account"
 msgstr "アカウント"
 
