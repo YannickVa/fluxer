@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {readFileSync} from 'node:fs';
 import {
 	formatSupportDeviceSummary,
 	formatSupportInstanceSummary,
@@ -22,6 +23,19 @@ const passingCheck = (service: 'app' | 'api' | 'media', durationMs: number) => (
 });
 
 describe('SupportCenterCopy', () => {
+	test('keeps parameterized Support Center copy in the production source catalog', () => {
+		const sourceCatalog = readFileSync(new URL('../i18n/locales/en-US/messages.po', import.meta.url), 'utf8');
+		for (const message of [
+			'App {appSummary} · API {apiSummary}',
+			'Media service {mediaSummary}.',
+			'{inputCount} microphone(s), {outputCount} speaker(s), {cameraCount} camera(s). Microphone {microphonePermission}; camera {cameraPermission}.',
+			'Version {version} is available.',
+			'Last checked: {lastUpdateCheck}',
+		]) {
+			expect(sourceCatalog).toContain(`msgid "${message}"`);
+		}
+	});
+
 	test('interpolates endpoint summaries without positional placeholders', () => {
 		expect(formatSupportInstanceSummary(i18n, passingCheck('app', 12), passingCheck('api', 34))).toBe(
 			'App 12 ms · API 34 ms',

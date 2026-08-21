@@ -49,7 +49,7 @@ msgid "(you)"
 msgstr "(εσείς)"
 
 #. placeholder {0}: guild.member_count
-#: src/features/discovery/discovery/DiscoveryGuildCard.tsx:146
+#: src/features/discovery/discovery/DiscoveryGuildCard.tsx:184
 msgid "{0, plural, one {# member} other {# members}}"
 msgstr "{0, plural, one {# μέλος} other {# μέλη}}"
 
@@ -288,7 +288,7 @@ msgid "{blikPaymentMethod} does not support subscriptions in {paymentProviderNam
 msgstr "Το {blikPaymentMethod} δεν υποστηρίζει συνδρομές στην ολοκλήρωση αγοράς {paymentProviderName}."
 
 #. Accessible label for a category row in the Discovery search sidebar. {categoryLabel} is the category name and {count} is how many communities match the current search in it. Both are inserted by code.
-#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:35
+#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:37
 msgid "{categoryLabel}, {count, plural, one {# community} other {# communities}}"
 msgstr "{categoryLabel}, {count, plural, one {# κοινότητα} other {# κοινότητες}}"
 
@@ -356,11 +356,11 @@ msgid "{count, plural, one {# bookmark} other {# bookmarks}}"
 msgstr "{count, plural, one {# σελιδοδείκτη} other {# σελιδοδείκτες}}"
 
 #. Screen-reader status text in Discovery. {count} is the total number of matching communities.
-#: src/features/discovery/discovery/DiscoveryPage.tsx:33
+#: src/features/discovery/discovery/DiscoveryPage.tsx:34
 msgid "{count, plural, one {# community found} other {# communities found}}"
 msgstr "{count, plural, one {# κοινότητα βρέθηκε} other {# κοινότητες βρέθηκαν}}"
 
-#: src/features/app/components/layout/GuildsLayout.tsx:1926
+#: src/features/app/components/layout/GuildsLayout.tsx:1949
 msgid "{count, plural, one {# community is temporarily unavailable due to a flux capacitor malfunction.} other {# communities are temporarily unavailable due to a flux capacitor malfunction.}}"
 msgstr "{count, plural, one {# κοινότητα είναι προσωρινά μη διαθέσιμη λόγω δυσλειτουργίας του πυκνωτή ροής.} other {# κοινότητες είναι προσωρινά μη διαθέσιμες λόγω δυσλειτουργίας του πυκνωτή ροής.}}"
 
@@ -634,12 +634,12 @@ msgid "{deviceCount, plural, one {# device selected for sign out} other {# devic
 msgstr "{deviceCount, plural, one {# συσκευή επιλέχθηκε για αποσύνδεση} other {# συσκευές επιλέχθηκαν για αποσύνδεση}}"
 
 #. Sidebar Fluxer-home button tooltip showing how many incoming friend requests are pending. Count is interpolated.
-#: src/features/app/components/layout/sidebar_nav/FluxerButton.tsx:50
+#: src/features/app/components/layout/sidebar_nav/FluxerButton.tsx:49
 msgid "{displayedIncomingFriendRequestCount} friend requests"
 msgstr "{displayedIncomingFriendRequestCount} αιτήματα φιλίας"
 
 #. Short label in the sidebar navigation fluxer button. Preserve {displayedUnreadDmCount}; it is inserted by code.
-#: src/features/app/components/layout/sidebar_nav/FluxerButton.tsx:41
+#: src/features/app/components/layout/sidebar_nav/FluxerButton.tsx:40
 msgid "{displayedUnreadDmCount} unread DMs"
 msgstr "{displayedUnreadDmCount} μη αναγνωσμένα DM"
 
@@ -662,6 +662,11 @@ msgstr "{duration} μπροστά από εσάς"
 #: src/features/user/components/popouts/UserProfileShared.tsx:71
 msgid "{duration} behind you"
 msgstr "{duration} πίσω σας"
+
+#. Support Center endpoint response duration in milliseconds.
+#: src/features/support/SupportCenterCopy.ts:11
+msgid "{durationMs} ms"
+msgstr ""
 
 #. Gift duration label. PREMIUM_PRODUCT_NAME is the paid plan name.
 #: src/features/gift/utils/GiftUtils.ts:12
@@ -726,7 +731,7 @@ msgid "{fifteenMinutes} minutes"
 msgstr "{fifteenMinutes} λεπτά"
 
 #. Short label in the sidebar navigation guild folder item. Preserve {folderName}; it is inserted by code.
-#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:78
+#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:77
 msgid "{folderName} folder"
 msgstr "Φάκελος {folderName}"
 
@@ -805,6 +810,11 @@ msgstr "{hours, plural, one {# ώρα} other {# ώρες}} και {minutes, plur
 msgid "{hours, plural, one {This invite expires in # hour.} other {This invite expires in # hours.}}"
 msgstr "{hours, plural, one {Αυτή η πρόσκληση λήγει σε # ώρα.} other {Αυτή η πρόσκληση λήγει σε # ώρες.}}"
 
+#. Support Center device counts and browser microphone and camera permission states.
+#: src/features/support/SupportCenterCopy.ts:39
+msgid "{inputCount} microphone(s), {outputCount} speaker(s), {cameraCount} camera(s). Microphone {microphonePermission}; camera {cameraPermission}."
+msgstr ""
+
 #. Accessible label for a disabled Discovery sidebar navigation item. {itemLabel} is the section name.
 #: src/features/discovery/discovery/DiscoverySidebar.tsx:31
 msgid "{itemLabel}, coming soon"
@@ -874,7 +884,7 @@ msgstr "{length} παρακολουθούν"
 msgid "{lineCount, plural, one {# line} other {# lines}}"
 msgstr "{lineCount, plural, one {# γραμμή} other {# γραμμές}}"
 
-#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:145
+#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:147
 msgid "{matchCount, plural, one {# match} other {# matches}}"
 msgstr "{matchCount, plural, one {# αντιστοιχία} other {# αντιστοιχίες}}"
 
@@ -1567,7 +1577,7 @@ msgid "1 day"
 msgstr "1 ημέρα"
 
 #. Short label in the sidebar navigation fluxer button.
-#: src/features/app/components/layout/sidebar_nav/FluxerButton.tsx:46
+#: src/features/app/components/layout/sidebar_nav/FluxerButton.tsx:45
 msgid "1 friend request"
 msgstr "1 αίτημα φιλίας"
 
@@ -1622,7 +1632,7 @@ msgid "1 unread"
 msgstr "1 μη αναγνωσμένο"
 
 #. Short label in the sidebar navigation fluxer button.
-#: src/features/app/components/layout/sidebar_nav/FluxerButton.tsx:37
+#: src/features/app/components/layout/sidebar_nav/FluxerButton.tsx:36
 msgid "1 unread DM"
 msgstr "1 μη αναγνωσμένο μήνυμα"
 
@@ -1943,6 +1953,10 @@ msgstr "ένα όνομα κεντρικού υπολογιστή, π.χ. {examp
 msgid "A Linux desktop update is available. Choose the package format for this system and {productName} will save it locally."
 msgstr "Μια ενημέρωση για την επιφάνεια εργασίας Linux είναι διαθέσιμη. Επιλέξτε τη μορφή πακέτου για αυτό το σύστημα και το {productName} θα το αποθηκεύσει τοπικά."
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:511
+msgid "A live path through the systems needed for chat, calls, and updates."
+msgstr ""
+
 #. Duration label component for an elapsed call. Shown when the call lasted about a minute.
 #: src/features/channel/components/CallMessage.tsx:35
 msgid "a minute"
@@ -2101,7 +2115,7 @@ msgstr "Πρόσβαση στις βασικές πληροφορίες του �
 #. User settings tab for accessibility preferences (visual, motion, screen reader, etc.).
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:14
 #: src/features/user/components/settings_utils/section_registry/SharedDescriptors.ts:93
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:66
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:67
 msgid "Accessibility"
 msgstr "Προσβασιμότητα"
 
@@ -2115,7 +2129,7 @@ msgstr "Προσβάσιμη ζωντανή περιοχή"
 #. User settings tab for account login, password, MFA, and security.
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:11
 #: src/features/user/components/settings_utils/section_registry/AccountSecuritySections.ts:129
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:95
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:96
 msgid "Account"
 msgstr "Λογαριασμός"
 
@@ -2254,7 +2268,7 @@ msgid "Active account"
 msgstr "Ενεργός λογαριασμός"
 
 #. Lowercase screen-reader fragment in the sidebar navigation guild list DM item.
-#: src/features/app/components/layout/sidebar_nav/GuildListDMItem.tsx:64
+#: src/features/app/components/layout/sidebar_nav/GuildListDMItem.tsx:66
 msgid "active call"
 msgstr "ενεργή κλήση"
 
@@ -2827,7 +2841,7 @@ msgstr "Οι διαχειριστές έχουν θέσει σε παύση τι
 #: src/features/channel/components/modals/channel_tabs/ChannelOverviewTab.tsx:337
 #: src/features/guild/components/modals/guild_tabs/guild_overview_tab/index.tsx:28
 #: src/features/ui/action_menu/items/VoiceParticipantMenuData.tsx:178
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:145
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:146
 #: src/features/voice/components/voice_connection_status/VoiceDetailsPopout.tsx:60
 msgid "Advanced"
 msgstr "Για προχωρημένους"
@@ -2907,8 +2921,8 @@ msgstr "Οι ρυθμίσεις στοίχισης είναι διαθέσιμε
 #: src/features/channel/components/MobileMemesPicker.tsx:40
 #: src/features/channel/components/pickers/memes/MemesPickerHeader.tsx:12
 #: src/features/discovery/components/bottomsheets/DiscoveryCategoryBottomSheet.tsx:11
-#: src/features/discovery/discovery/DiscoveryNavbar.tsx:19
-#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:23
+#: src/features/discovery/discovery/DiscoveryNavbar.tsx:20
+#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:25
 #: src/features/guild/components/modals/GuildNotificationSettingsModal.tsx:131
 msgid "All"
 msgstr "Όλα"
@@ -2933,6 +2947,10 @@ msgstr "Όλα <0/>, για πάντα. Χωρίς χρέωση, χωρίς αν
 #: src/features/guild/components/modals/guild_tabs/GuildAuditLogTab.tsx:85
 msgid "All actions"
 msgstr "Όλες οι ενέργειες"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:496
+msgid "All checked systems look healthy."
+msgstr ""
 
 #. Message search scope menu item. Searches across every joined community.
 #. Short label in the entrance sound section. Keep it concise.
@@ -2985,7 +3003,7 @@ msgid "All inputs are fully interactive, so type away."
 msgstr "Όλα τα πεδία είναι πλήρως διαδραστικά, οπότε μπορείτε να πληκτρολογήσετε ελεύθερα."
 
 #. Short label in the discovery page. Keep it concise.
-#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:27
+#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:29
 msgid "All languages"
 msgstr "Όλες οι γλώσσες"
 
@@ -3176,6 +3194,11 @@ msgstr "Να επιτρέπεται στους φίλους σου να βλέπ
 #: src/features/user/components/modals/tabs/my_profile_tab/TimezoneProfileSettings.tsx:67
 msgid "Allow your friends to see your profile local time"
 msgstr "Να επιτρέπεται στους φίλους σας να βλέπουν την τοπική ώρα του προφίλ σας"
+
+#. Browser media permission is granted.
+#: src/features/support/SupportCenterCopy.ts:24
+msgid "allowed"
+msgstr ""
 
 #. placeholder {0}: renderInline(addedLabels, i18nInstance)
 #. placeholder {1}: renderInline(removedLabels, i18nInstance)
@@ -3691,6 +3714,11 @@ msgstr "Οποιοσδήποτε μπορεί να ζητήσει λογαρια
 msgid "API key"
 msgstr "Κλειδί API"
 
+#. Support Center summary of the web app and API endpoint checks.
+#: src/features/support/SupportCenterCopy.ts:31
+msgid "App {appSummary} · API {apiSummary}"
+msgstr ""
+
 #. Inline notice on Windows when per-window audio capture is not supported. Title text.
 #: src/features/voice/components/modals/screen_share_picker_modal/PerWindowAudioNotice.tsx:9
 msgid "App audio isn't available on this build of Windows."
@@ -3706,7 +3734,7 @@ msgstr "Εικονίδιο εφαρμογής με σήμα"
 msgid "App language: {format}"
 msgstr "Γλώσσα εφαρμογής: {format}"
 
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:209
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:214
 msgid "App settings"
 msgstr "Ρυθμίσεις εφαρμογής"
 
@@ -3733,7 +3761,7 @@ msgstr "Επίπεδο ζουμ εφαρμογής"
 #. Advanced settings category tag.
 #. User settings tab for app appearance and layout options.
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:13
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:116
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:117
 msgid "Appearance"
 msgstr "Εμφάνιση"
 
@@ -3807,7 +3835,7 @@ msgstr "Η εφαρμογή ενημερώθηκε"
 #: src/features/user/components/modals/tabs/applications_tab/index.tsx:129
 #: src/features/user/components/settings_utils/search_index/SharedDescriptors.ts:29
 #: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:74
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:70
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:71
 msgid "Applications"
 msgstr "Εφαρμογές"
 
@@ -4348,7 +4376,7 @@ msgstr "Εξουσιοδοτημένες εφαρμογές"
 #: src/features/user/components/settings_utils/search_index/AuthorizedAppsIndex.ts:10
 #: src/features/user/components/settings_utils/section_registry/AccountSecuritySections.ts:148
 #: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:34
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:107
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:108
 msgid "Authorized apps"
 msgstr "Εξουσιοδοτημένες εφαρμογές"
 
@@ -4801,7 +4829,7 @@ msgstr "Οι premium παροχές του backend είναι απενεργοπ
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/theme/components/modals/BackgroundImageGalleryModal.tsx:52
 #: src/features/user/components/settings_utils/search_index/SharedDescriptors.ts:5
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:847
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:800
 msgid "Background"
 msgstr "Φόντο"
 
@@ -5037,7 +5065,7 @@ msgstr "Μεταξύ 1 και 32 χαρακτήρων"
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/PlutoniumIndex.ts:27
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:207
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:212
 msgid "Billing"
 msgstr "Χρέωση"
 
@@ -5158,6 +5186,11 @@ msgstr "Αποκλεισμός χρήστη"
 msgid "Block user"
 msgstr "Αποκλεισμός χρήστη"
 
+#. Browser media permission is denied.
+#: src/features/support/SupportCenterCopy.ts:25
+msgid "blocked"
+msgstr ""
+
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/BlockedUsersIndex.ts:10
 msgid "Blocked"
@@ -5173,7 +5206,7 @@ msgstr "Αποκλεισμένοι"
 #: src/features/user/components/settings_utils/search_index/BlockedUsersIndex.ts:6
 #: src/features/user/components/settings_utils/section_registry/AccountSecuritySections.ts:152
 #: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:26
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:58
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:59
 msgid "Blocked users"
 msgstr "Αποκλεισμένοι χρήστες"
 
@@ -5211,7 +5244,7 @@ msgid "Blur"
 msgstr "Θάμπωμα"
 
 #. Slider label in the camera preview modal controlling how strong the background blur effect is.
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:90
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:89
 msgid "Blur strength"
 msgstr "Ένταση θολώματος"
 
@@ -5425,6 +5458,10 @@ msgstr "Προεπισκόπηση στοιχείου επωνυμίας"
 #: src/features/user/components/settings_utils/section_registry/AppearanceSections.ts:150
 msgid "Brightness"
 msgstr "Φωτεινότητα"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:775
+msgid "Browser"
+msgstr ""
 
 #. Title of the modal shown when the browser autoplay policy blocks voice audio until the user interacts.
 #: src/features/voice/components/modals/AudioPlaybackPermissionModal.tsx:8
@@ -5682,7 +5719,7 @@ msgstr "Συσκευή κάμερας"
 msgid "Camera effects"
 msgstr "Εφέ κάμερας"
 
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:933
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:886
 msgid "Camera error"
 msgstr "Σφάλμα κάμερας"
 
@@ -5725,7 +5762,7 @@ msgstr "Απαιτείται άδεια κάμερας"
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #. Title of the camera preview modal.
 #: src/features/user/components/settings_utils/section_registry/VoiceVideoSections.ts:181
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:68
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:67
 msgid "Camera preview"
 msgstr "Προεπισκόπηση κάμερας"
 
@@ -5785,8 +5822,8 @@ msgstr "Δεν μπορείς να ανεβάσεις αρχεία εδώ"
 #: src/features/auth/components/modals/AccountDisableModal.tsx:45
 #: src/features/auth/components/modals/BackupCodesRegenerateModal.tsx:78
 #: src/features/auth/components/modals/BackupCodesViewModal.tsx:61
-#: src/features/auth/components/modals/ClaimAccountModal.tsx:210
-#: src/features/auth/components/modals/ClaimAccountModal.tsx:226
+#: src/features/auth/components/modals/ClaimAccountModal.tsx:216
+#: src/features/auth/components/modals/ClaimAccountModal.tsx:232
 #: src/features/auth/components/modals/DeviceRevokeModal.tsx:74
 #: src/features/auth/components/modals/PasskeyNameModal.tsx:80
 #: src/features/auth/components/modals/PasskeyPinModal.tsx:104
@@ -5812,7 +5849,7 @@ msgstr "Δεν μπορείς να ανεβάσεις αρχεία εδώ"
 #: src/features/messaging/components/modals/AttachmentEditModal.tsx:133
 #: src/features/messaging/components/modals/EditAltTextModal.tsx:190
 #: src/features/messaging/components/modals/ExternalLinkWarningModal.tsx:111
-#: src/features/messaging/components/modals/ForwardModal.tsx:627
+#: src/features/messaging/components/modals/ForwardModal.tsx:628
 #: src/features/messaging/components/modals/ImageCropModal.tsx:925
 #: src/features/messaging/components/modals/MessageHistoryThresholdModal.tsx:107
 #: src/features/messaging/components/popouts/ScheduledMessagesContent.tsx:47
@@ -5831,7 +5868,7 @@ msgstr "Δεν μπορείς να ανεβάσεις αρχεία εδώ"
 #: src/features/user/components/modals/PhoneAddModal.tsx:391
 #: src/features/user/components/modals/tabs/AuthorizedAppsTab.tsx:173
 #: src/features/voice/components/EntranceSoundTrimmerModal.tsx:31
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:969
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:922
 #: src/features/voice/components/VoiceMessageComposerModal.tsx:80
 msgid "Cancel"
 msgstr "Ακύρωση"
@@ -5998,12 +6035,12 @@ msgstr "Οι κάρτες μπορούν να διατηρήσουν την τι
 #. Heading above the category filter list in the Discovery search sidebar.
 #. Short label in the discovery category bottom sheet. Keep it concise.
 #: src/features/discovery/components/bottomsheets/DiscoveryCategoryBottomSheet.tsx:15
-#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:19
+#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:21
 msgid "Categories"
 msgstr "Κατηγορίες"
 
 #. Lowercase channel type label used inside channel-list accessible text.
-#: src/features/app/components/layout/ChannelItem.tsx:79
+#: src/features/app/components/layout/ChannelItem.tsx:84
 msgid "category"
 msgstr "κατηγορία"
 
@@ -6094,7 +6131,7 @@ msgstr "Στο κέντρο"
 msgid "Change avatar"
 msgstr "Αλλαγή avatar"
 
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:860
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:813
 msgid "Change background"
 msgstr "Αλλαγή φόντου"
 
@@ -6313,7 +6350,7 @@ msgstr "Οι αλλαγές εφαρμόζονται άμεσα στο πρόγ�
 
 #. Fallback channel-name placeholder used inside the textarea message hint when no name is available. Lowercase.
 #. Lowercase generic channel type label used inside channel-list accessible text.
-#: src/features/app/components/layout/ChannelItem.tsx:87
+#: src/features/app/components/layout/ChannelItem.tsx:92
 #: src/features/channel/components/channel_textarea/shared.ts:11
 msgid "channel"
 msgstr "Κανάλι"
@@ -6333,7 +6370,7 @@ msgid "Channel"
 msgstr "Κανάλι"
 
 #. Short label in the settings dialog forward channel selection. Preserve {id}; it is inserted by code.
-#: src/features/app/components/dialogs/shared/UseForwardChannelObservations.ts:22
+#: src/features/app/components/dialogs/shared/UseForwardChannelObservations.ts:26
 msgid "Channel {id}"
 msgstr "Κανάλι {id}"
 
@@ -6343,7 +6380,7 @@ msgid "Channel access"
 msgstr "Πρόσβαση σε κανάλι"
 
 #. Title of the alert shown when clicking a message link the user does not have permission to view.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:110
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:111
 msgid "Channel access denied"
 msgstr "Δεν επιτρέπεται η πρόσβαση στο κανάλι"
 
@@ -6408,7 +6445,7 @@ msgstr "Το αναγνωριστικό καναλιού αντιγράφηκε 
 
 #. Short label in the messaging mention renderer. Keep it concise.
 #. Type chip suffix in tooltips for inline rendered channel mentions. Lowercase because it follows the channel name.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:79
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:80
 #: src/features/messaging/components/markdown/renderers/MentionRenderer.tsx:39
 msgid "channel link"
 msgstr "σύνδεσμος καναλιού"
@@ -6566,7 +6603,7 @@ msgstr "Έχετε υπερβεί το όριο χαρακτήρων κατά {r
 #: src/features/input/components/modals/KeyboardShortcutsCheatsheetModal.tsx:40
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:15
 #: src/features/user/components/modals/tabs/keybinds_tab/DefaultKeybindsList.tsx:39
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:120
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:121
 msgid "Chat"
 msgstr "Συνομιλία"
 
@@ -6601,8 +6638,19 @@ msgstr "Συντομεύσεις συνομιλίας"
 
 #. Tray menu item. Triggers the auto-updater to look for a new desktop build.
 #: src/features/platform/utils/DesktopLocaleBridge.ts:160
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:823
 msgid "Check for updates"
 msgstr "Έλεγχος για ενημερώσεις"
+
+#. Support Center section for live service, connection, device, and update checks.
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:510
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:78
+msgid "Check my setup"
+msgstr ""
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:654
+msgid "Check now"
+msgstr ""
 
 #: src/features/app/components/BootstrapErrorScreen.tsx:56
 msgid "Check our <0>{BLUESKY_PROVIDER_NAME} ({FLUXER_BLUESKY_HANDLE})</0> for status updates."
@@ -6613,11 +6661,19 @@ msgstr "Ελέγξτε το <0>{BLUESKY_PROVIDER_NAME} ({FLUXER_BLUESKY_HANDLE})
 msgid "Check out my custom theme!"
 msgstr "Δες το προσαρμοσμένο θέμα μου!"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:686
+msgid "Check permission, preview video, and select a camera."
+msgstr ""
+
 #. Error-state description in the channel and chat gif picker view.
 #: src/features/channel/components/pickers/gif/GifPickerView.tsx:44
 #: src/features/user/components/modals/tabs/applications_tab/index.tsx:96
 msgid "Check your connection and try again."
 msgstr "Έλεγξε τη σύνδεσή σου και δοκίμασε ξανά."
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:481
+msgid "Check your connection, devices, app version, and the services this client depends on."
+msgstr ""
 
 #. Empty-state hint in Discovery shown under the heading when the request for communities failed.
 #: src/features/discovery/discovery/DiscoveryEmptyState.tsx:32
@@ -6643,6 +6699,10 @@ msgstr "Ελέγξτε τα εισερχόμενά σας για ένα email ε
 #: src/features/user/components/modals/tabs/component_gallery_tab/SelectionsTab.tsx:250
 msgid "Checkboxes"
 msgstr "Πλαίσια επιλογής"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:82
+msgid "Checking"
+msgstr ""
 
 #. Loading label shown while permissions are being verified.
 #. Loading label shown while permissions are being verified.
@@ -6793,6 +6853,10 @@ msgstr "Επιλέξτε μια επιλογή"
 #: src/features/theme/components/modals/BackgroundImageGalleryModal.tsx:120
 msgid "Choose background"
 msgstr "Επιλέξτε φόντο"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:677
+msgid "Choose devices, check levels, and test your microphone."
+msgstr ""
 
 #. OAuth authorize page error shown when a bot invite request provides both guild_id and channel_id. Keep the parameter names literal.
 #: src/features/auth/components/pages/oauth_authorize_page/state/useAuthorizeFlow.ts:86
@@ -7009,7 +7073,7 @@ msgstr "Διεκδίκησε τον λογαριασμό σου"
 msgid "Claim your account and verify your email to send reports."
 msgstr "Διεκδικήστε τον λογαριασμό σας και επαληθεύστε το email σας για να στείλετε αναφορές."
 
-#: src/features/auth/components/modals/ClaimAccountModal.tsx:138
+#: src/features/auth/components/modals/ClaimAccountModal.tsx:144
 msgid "Claim your account by adding an email and password. We will send a verification code to confirm your email before finishing."
 msgstr "Διεκδικήστε τον λογαριασμό σας προσθέτοντας ένα email και έναν κωδικό πρόσβασης. Θα στείλουμε έναν κωδικό επαλήθευσης για να επιβεβαιώσουμε το email σας πριν ολοκληρώσουμε τη διαδικασία."
 
@@ -7597,7 +7661,7 @@ msgid "Collapse"
 msgstr "Σύμπτυξη"
 
 #. Short label in the sidebar navigation guild folder item. Preserve {folderName}; it is inserted by code.
-#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:98
+#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:97
 msgid "Collapse {folderName}"
 msgstr "Σύμπτυξη {folderName}"
 
@@ -7641,8 +7705,8 @@ msgstr "Σύμπτυξη μη αναγνωσμένων μηνυμάτων για
 
 #. Lowercase screen-reader fragment in the sidebar navigation guild folder item.
 #. Lowercase state label used inside channel-list accessible text for a collapsed category.
-#: src/features/app/components/layout/ChannelItem.tsx:95
-#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:86
+#: src/features/app/components/layout/ChannelItem.tsx:100
+#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:85
 msgid "collapsed"
 msgstr "συμπτυγμένο"
 
@@ -8266,7 +8330,7 @@ msgid "Connect with {providerName}"
 msgstr "Σύνδεση με {providerName}"
 
 #. Lowercase state label used inside channel-list accessible text for the current voice channel.
-#: src/features/app/components/layout/ChannelItem.tsx:111
+#: src/features/app/components/layout/ChannelItem.tsx:116
 msgid "connected"
 msgstr "συνδέθηκε"
 
@@ -8389,7 +8453,7 @@ msgid "Connections"
 msgstr "Συνδέσεις"
 
 #. User settings tab for linked external accounts.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:111
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:112
 msgctxt "user-settings-tab"
 msgid "Connections"
 msgstr "Συνδέσεις"
@@ -8883,6 +8947,10 @@ msgstr "Αντιγραφή αναγνωριστικού αυτοκόλλητου
 #: src/features/ui/action_menu/items/StickerContextMenuItems.tsx:36
 msgid "Copy sticker URL"
 msgstr "Αντιγραφή URL αυτοκόλλητου"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:881
+msgid "Copy support summary"
+msgstr ""
 
 #. Action label that copies a message body / selected text to the clipboard.
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
@@ -9557,6 +9625,10 @@ msgstr "Δημιουργία νέας κοινότητας ή συμμετοχή
 #: src/features/channel/components/bottomsheets/channel_details_bottom_sheet/DMMembersList.tsx:19
 msgid "Create a new group with {userName}"
 msgstr "Δημιουργία νέας ομάδας με τον/την {userName}"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:841
+msgid "Create a small, privacy-reviewed snapshot for someone helping you troubleshoot."
+msgstr ""
 
 #. Generic authentication action label for starting or submitting account creation.
 #: src/features/auth/components/pages/RegisterPage.tsx:46
@@ -10514,7 +10586,7 @@ msgstr "Διακοσμητικό διαχωριστικό"
 #: src/features/ui/action_menu/items/SearchMenuData.tsx:43
 #: src/features/ui/action_menu/items/SearchProviderMenuItems.tsx:14
 #: src/features/user/components/modals/tabs/component_gallery_tab/MarkdownTab.tsx:117
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:72
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:71
 #: src/features/voice/components/VoiceSettingsMenus.tsx:121
 #: src/features/voice/utils/SettingsDeviceOptions.ts:11
 msgid "Default"
@@ -11018,7 +11090,7 @@ msgid "Description must be no more than {discoveryDescriptionMaxLength} characte
 msgstr "Η περιγραφή δεν πρέπει να υπερβαίνει τους {discoveryDescriptionMaxLength} χαρακτήρες."
 
 #. Developer settings tab showing UI component examples.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:153
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:158
 msgid "Design system"
 msgstr "Σύστημα σχεδίασης"
 
@@ -11032,8 +11104,8 @@ msgstr "Υπολογιστής"
 
 #. User settings tab for desktop app integration and platform settings.
 #. User settings tab label shown on desktop builds when the OS could not be identified (fallback for the per-OS labels).
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:86
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:141
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:87
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:142
 msgid "Desktop app"
 msgstr "Εφαρμογή για επιτραπέζιους υπολογιστές"
 
@@ -11056,6 +11128,10 @@ msgstr "Ο ήχος επιφάνειας εργασίας δεν είναι δι
 #: src/features/user/components/settings_utils/search_index/NotificationsIndex.ts:74
 msgid "Desktop away"
 msgstr "Μακριά από υπολογιστή"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:769
+msgid "Desktop build"
+msgstr ""
 
 #. Aria label on a participant tile icon that indicates the participant is on desktop.
 #: src/features/voice/components/voice_participant_tile/shared.ts:83
@@ -11166,11 +11242,15 @@ msgstr "Λεπτομέρειες"
 msgid "Detect while typing"
 msgstr "Αυτόματη ανίχνευση κατά την πληκτρολόγηση"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:791
+msgid "Detecting…"
+msgstr ""
+
 #. Advanced settings category tag.
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:20
 #: src/features/user/components/settings_utils/search_index/SharedDescriptors.ts:25
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:211
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:216
 msgid "Developer"
 msgstr "Προγραμματιστής"
 
@@ -11195,13 +11275,13 @@ msgstr "Κατάσταση προγραμματιστή"
 #. Short label in the channel and chat utility buttons. Keep it concise.
 #. Title of the info alert shown when clicking an internal developer-tools deep link.
 #: src/features/channel/components/channel_header_components/UtilityButtons.tsx:20
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:122
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:123
 #: src/features/ui/action_menu/items/StaffDeveloperUserControlsMenuItem.tsx:13
 msgid "Developer tools"
 msgstr "Εργαλεία προγραμματιστή"
 
 #. Body of the developer-tools info alert. Refers to the staff badge button in the channel header.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:126
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:127
 msgid "Developer tools are available from the staff badge in the channel header."
 msgstr "Τα εργαλεία προγραμματιστή είναι διαθέσιμα από το σήμα προσωπικού στην κεφαλίδα του καναλιού."
 
@@ -11262,10 +11342,20 @@ msgstr "Συσκευή:"
 #: src/features/user/components/modals/tabs/DevicesTab.tsx:528
 #: src/features/user/components/settings_utils/search_index/DevicesIndex.ts:11
 #: src/features/user/components/settings_utils/section_registry/AppearanceSections.ts:82
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:62
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:63
 #: src/features/voice/components/modals/ScreenSharePickerModal.tsx:133
 msgid "Devices"
 msgstr "Συσκευές"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:605
+msgid "Devices & permissions"
+msgstr ""
+
+#. Support Center section for previewing and exporting privacy-safe diagnostics.
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:840
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:90
+msgid "Diagnostics to share"
+msgstr ""
 
 #. Description for the Custom streaming preset. Lightly playful prose; keep tone casual.
 #: src/features/voice/components/StreamSettingsMenuContent.tsx:94
@@ -11657,7 +11747,7 @@ msgid "Discovery application withdrawn"
 msgstr "Η αίτηση ανακάλυψης αποσύρθηκε"
 
 #. Accessible label for the category tabs in the Discovery page.
-#: src/features/discovery/discovery/DiscoveryNavbar.tsx:23
+#: src/features/discovery/discovery/DiscoveryNavbar.tsx:24
 msgid "Discovery categories"
 msgstr "Κατηγορίες ανακάλυψης"
 
@@ -11671,12 +11761,12 @@ msgid "Discovery navigation"
 msgstr "Πλοήγηση στην ανακάλυψη"
 
 #. Accessible label for the Discovery community results region.
-#: src/features/discovery/discovery/DiscoveryPage.tsx:29
+#: src/features/discovery/discovery/DiscoveryPage.tsx:30
 msgid "Discovery results"
 msgstr "Αποτελέσματα ανακάλυψης"
 
 #. Accessible label for the search form in the Discovery navigation bar.
-#: src/features/discovery/discovery/DiscoveryNavbar.tsx:31
+#: src/features/discovery/discovery/DiscoveryNavbar.tsx:32
 msgid "Discovery search"
 msgstr "Αναζήτηση Ανακάλυψης"
 
@@ -12069,6 +12159,10 @@ msgstr "Λήψη ενημέρωσης επιτραπέζιου υπολογισ�
 msgid "Download desktop update {version} ({formatBytes})"
 msgstr "Λήψη ενημέρωσης επιτραπέζιου υπολογιστή {version} ({formatBytes})"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:907
+msgid "Download diagnostics"
+msgstr ""
+
 #. Media context menu action that downloads a file attachment.
 #: src/features/ui/action_menu/items/MediaMenuData.tsx:125
 msgid "Download file"
@@ -12366,7 +12460,7 @@ msgstr "Επεξεργασία συνημμένου"
 #. Action that opens the edit-category modal.
 #. Action that opens the edit-category modal.
 #. Tooltip and accessible label for the category settings button in the channel list.
-#: src/features/app/components/layout/ChannelItem.tsx:115
+#: src/features/app/components/layout/ChannelItem.tsx:120
 #: src/features/ui/action_menu/items/CategoryMenuData.tsx:85
 #: src/features/ui/action_menu/items/CategoryMenuItems.tsx:62
 msgid "Edit category"
@@ -12570,7 +12664,7 @@ msgid "Education"
 msgstr "Εκπαίδευση"
 
 #. Inline notice in the camera preview modal when the native effects preview cannot start and the raw camera feed is shown instead.
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:85
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:84
 msgid "Effects preview unavailable — showing unprocessed camera"
 msgstr "Η προεπισκόπηση εφέ δεν είναι διαθέσιμη — εμφανίζεται η μη επεξεργασμένη κάμερα"
 
@@ -12683,7 +12777,7 @@ msgstr "Ενσωμάτωση"
 #. Developer settings tab for testing URL unfurls and rendered embeds.
 #. Settings search entry label for the developer embed debugger.
 #: src/features/user/components/settings_utils/search_index/EmbedDebuggerIndex.ts:7
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:149
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:154
 msgid "Embed debugger"
 msgstr "Εντοπισμός σφαλμάτων ενσωματώσεων"
 
@@ -12885,7 +12979,7 @@ msgid "Emoticons"
 msgstr "Emoji"
 
 #. Short label in the app layout favorites channel list content.
-#: src/features/app/components/layout/FavoritesChannelListContent.tsx:65
+#: src/features/app/components/layout/FavoritesChannelListContent.tsx:70
 msgid "Empty favorites"
 msgstr "Κενά αγαπημένα"
 
@@ -13465,7 +13559,7 @@ msgstr "Εισαγάγετε τον κωδικό που εμφανίζεται �
 msgid "Enter the code we emailed to your new address."
 msgstr "Εισάγετε τον κωδικό που στείλαμε στην καινούργια σας διεύθυνση email."
 
-#: src/features/auth/components/modals/ClaimAccountModal.tsx:175
+#: src/features/auth/components/modals/ClaimAccountModal.tsx:181
 msgid "Enter the code we sent to your email to verify it. Your password will be set once the code is confirmed."
 msgstr "Εισάγετε τον κωδικό που στείλαμε στο email σας για να το επαληθεύσετε. Ο κωδικός πρόσβασής σας θα οριστεί μόλις επιβεβαιωθεί ο κωδικός."
 
@@ -13695,6 +13789,10 @@ msgstr "Όλοι είναι premium"
 msgid "Everything"
 msgstr "Τα πάντα"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:913
+msgid "Exact contents of the diagnostic file"
+msgstr ""
+
 #. Hint shown beside -in: (negation). Sentence case, no trailing punctuation.
 #: src/features/search/utils/SearchUtils.ts:121
 msgid "exclude a channel"
@@ -13802,8 +13900,8 @@ msgstr "Ανάπτυξη μη αναγνωσμένων μηνυμάτων για
 
 #. Lowercase screen-reader fragment in the sidebar navigation guild folder item.
 #. Lowercase state label used inside channel-list accessible text for an expanded category.
-#: src/features/app/components/layout/ChannelItem.tsx:99
-#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:82
+#: src/features/app/components/layout/ChannelItem.tsx:104
+#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:81
 msgid "expanded"
 msgstr "αναπτυγμένο"
 
@@ -13915,7 +14013,7 @@ msgid "Explicit content filter setting"
 msgstr "Ρύθμιση φίλτρου ρητού περιεχομένου"
 
 #. Short label in the app layout discovery guild header.
-#: src/features/app/components/layout/DiscoveryGuildHeader.tsx:10
+#: src/features/app/components/layout/DiscoveryGuildHeader.tsx:9
 msgid "Explore"
 msgstr "Εξερεύνηση"
 
@@ -13976,7 +14074,7 @@ msgstr "Αυτόματη συμπλήρωση εκφράσεων"
 #. User settings tab for purchased or owned emoji/sticker expression packs.
 #: src/features/user/components/modals/tabs/ExpressionPacksTab.tsx:166
 #: src/features/user/components/settings_utils/search_index/ExpressionPacksIndex.ts:7
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:54
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:55
 msgid "Expression packs"
 msgstr "Πακέτα εκφράσεων"
 
@@ -14120,7 +14218,7 @@ msgid "Failed to delete channel"
 msgstr "Αποτυχία διαγραφής καναλιού"
 
 #. Toast / inline error in the camera preview modal when enabling the camera fails.
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:64
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:63
 msgid "Failed to enable camera."
 msgstr "Αποτυχία ενεργοποίησης κάμερας."
 
@@ -14304,7 +14402,7 @@ msgid "Failed to start"
 msgstr "Αποτυχία εκκίνησης"
 
 #. Error text in the camera preview modal when the camera stream cannot be opened. Prompts user to check OS / browser permissions.
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:59
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:58
 msgid "Failed to start camera preview. Check your camera permissions."
 msgstr "Αποτυχία έναρξης προεπισκόπησης κάμερας. Ελέγξτε τα δικαιώματα της κάμεράς σας."
 
@@ -14601,7 +14699,7 @@ msgid "Filter by join method"
 msgstr "Φιλτράρισμα κατά μέθοδο σύνδεσης"
 
 #. Short label in the discovery page. Keep it concise.
-#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:31
+#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:33
 msgid "Filter by language"
 msgstr "Φιλτράρισμα ανά γλώσσα"
 
@@ -14642,7 +14740,7 @@ msgstr "Φιλτράρισμα αναφορών"
 msgid "Filtering"
 msgstr "Φιλτράρισμα"
 
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:912
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:865
 msgid "Finalizing camera..."
 msgstr "Ολοκλήρωση κάμερας..."
 
@@ -14723,6 +14821,12 @@ msgstr "Πρώτο κλικ διαπερατό όταν δεν είναι εστ
 msgid "First option"
 msgstr "Πρώτη επιλογή"
 
+#. Support Center section linking to common troubleshooting settings.
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:664
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:82
+msgid "Fix a common problem"
+msgstr ""
+
 #. Unicode emoji category label.
 #: src/features/expressions/utils/UnicodeEmojis.ts:49
 msgid "Flags"
@@ -14801,7 +14905,7 @@ msgstr "Εστιασμένη φωνή"
 
 #. Folder icon option in the community-folder settings modal: a generic folder shape. Short standalone label.
 #. Short label in the sidebar navigation guild folder item.
-#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:74
+#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:73
 #: src/features/guild/components/modals/GuildFolderSettingsModal.tsx:39
 msgid "Folder"
 msgstr "Φάκελος"
@@ -15085,7 +15189,7 @@ msgstr "Προωθήθηκε ένα μήνυμα"
 msgid "Forwarded from"
 msgstr "Προωθήθηκε από"
 
-#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:269
+#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:271
 msgid "Found {resultCount} results in {categoryCount} categories"
 msgstr "Βρέθηκαν {resultCount} αποτελέσματα σε {categoryCount} κατηγορίες"
 
@@ -15679,7 +15783,7 @@ msgstr "Δωρεά <0/> έως <1>{giftEndDate}</1>. Δεν ανανεώνετα
 #. Settings search entry label. Also used as a search synonym in the settings search bar.
 #. User settings tab for gift inventory and redemption codes.
 #: src/features/user/components/settings_utils/search_index/SharedDescriptors.ts:37
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:99
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:100
 msgid "Gifts"
 msgstr "Δώρα"
 
@@ -15729,6 +15833,10 @@ msgstr "Πίσω"
 #: src/features/moderation/components/pages/ReportPage.tsx:84
 msgid "Go back and enter a valid email."
 msgstr "Επιστρέψτε και εισαγάγετε ένα έγκυρο email."
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:665
+msgid "Go straight to the settings and tests that can resolve it."
+msgstr ""
 
 #. CTA label that opens the premium settings tab from gift inventory.
 #: src/features/user/components/modals/tabs/GiftInventoryTab.tsx:95
@@ -16609,6 +16717,11 @@ msgstr "Πώς να αποθηκεύσουμε τα αγαπημένα σου GI
 msgid "How this works"
 msgstr "Πώς λειτουργεί"
 
+#. Support Center endpoint check returned a non-success HTTP status.
+#: src/features/support/SupportCenterCopy.ts:16
+msgid "HTTP {httpStatus}"
+msgstr ""
+
 #. Accessible label in the language and locale names. Keep it concise.
 #: src/features/user/utils/LocaleUtils.ts:72
 msgid "Hungarian"
@@ -16671,6 +16784,10 @@ msgstr "Συμφωνώ με τους ενημερωμένους όρους"
 #: src/features/user/components/modals/tabs/component_gallery_tab/OverlaysTab.tsx:19
 msgid "I am a tooltip"
 msgstr "Είμαι μια επεξήγηση εργαλείου"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:676
+msgid "I can't hear or be heard"
+msgstr ""
 
 #. Gift redemption pre-filled DM message for a sender who already owns lifetime premium.
 #: src/features/expressions/components/modals/GiftSendToFriendModal.tsx:26
@@ -17375,7 +17492,7 @@ msgstr "Κληρονομημένο"
 msgid "Inherited from {inheritedFromLabel}"
 msgstr "Κληρονομήθηκε από {inheritedFromLabel}"
 
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:914
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:867
 msgid "Initializing camera..."
 msgstr "Αρχικοποίηση κάμερας..."
 
@@ -17532,6 +17649,11 @@ msgstr "Εγκατάσταση ενημέρωσης επιφάνειας εργ�
 #: src/features/channel/components/channel_header_components/UpdaterIcon.tsx:22
 msgid "Installing desktop update…"
 msgstr "Εγκατάσταση ενημέρωσης για υπολογιστή…"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:537
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:727
+msgid "Instance"
+msgstr ""
 
 #. Audit log operation flag label for invite creation.
 #: src/features/guild/utils/guild_tabs/GuildAuditLogTabUtils.ts:170
@@ -17734,7 +17856,7 @@ msgid "Invite link is hidden while sharing:"
 msgstr "Ο σύνδεσμος πρόσκλησης είναι κρυφός κατά την κοινή χρήση:"
 
 #. Inline replacement text shown for invite links while streaming privacy is active.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:138
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:139
 msgid "Invite link masked while sharing"
 msgstr "Ο σύνδεσμος πρόσκλησης αποκρύφτηκε κατά την κοινή χρήση"
 
@@ -17756,7 +17878,7 @@ msgstr "Μάσκα προσκλήσεων"
 #. Action label that opens the invite flow.
 #. Button or menu action label in the guild header popout. Keep it concise.
 #. Tooltip and accessible label for the invite button shown beside a channel in the channel list.
-#: src/features/app/components/layout/ChannelItem.tsx:119
+#: src/features/app/components/layout/ChannelItem.tsx:124
 #: src/features/guild/components/popouts/GuildHeaderPopout.tsx:58
 #: src/features/ui/action_menu/items/GuildMenuData.tsx:84
 msgid "Invite members"
@@ -18162,7 +18284,7 @@ msgid "Jump to {displayName}"
 msgstr "Μετάβαση στο/στη {displayName}"
 
 #. Accessible label for an inline channel mention link. labelText is the channel display name.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:93
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:94
 msgid "Jump to {labelText}"
 msgstr "Μετάβαση σε {labelText}"
 
@@ -18219,12 +18341,12 @@ msgid "Jump to the current call"
 msgstr "Μετάβαση στην τρέχουσα κλήση"
 
 #. Fallback accessible label for an inline channel mention when the target name is not known.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:97
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:98
 msgid "Jump to the linked channel"
 msgstr "Μετάβαση στο συνδεδεμένο κανάλι"
 
 #. Fallback accessible label for an inline message link when the target channel is not known.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:89
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:90
 msgid "Jump to the linked message"
 msgstr "Μετάβαση στο μήνυμα του συνδέσμου"
 
@@ -18234,7 +18356,7 @@ msgid "Jump to the message from {authorNickname}"
 msgstr "Μετάβαση στο μήνυμα από τον {authorNickname}"
 
 #. Accessible label for an inline message link that jumps to a specific message in a channel. labelText is the channel display name.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:84
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:85
 msgid "Jump to the message in {labelText}"
 msgstr "Μετάβαση στο μήνυμα στο {labelText}"
 
@@ -18398,7 +18520,7 @@ msgstr "Κορεατικά"
 #. User settings tab for language, locale, and time display preferences.
 #: src/features/app/components/setup/SetupWizardSteps.tsx:56
 #: src/features/user/components/settings_utils/search_index/LanguageIndex.ts:6
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:137
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:138
 msgid "Language"
 msgstr "Γλώσσα"
 
@@ -18442,6 +18564,11 @@ msgstr "Τελευταία αλλαγή: {0}"
 #: src/features/user/components/modals/tabs/account_security_tab/AccountTab.tsx:155
 msgid "Last changed: never"
 msgstr "Τελευταία αλλαγή: ποτέ"
+
+#. Support Center timestamp of the most recent desktop update check.
+#: src/features/support/SupportCenterCopy.ts:48
+msgid "Last checked: {lastUpdateCheck}"
+msgstr ""
 
 #: src/features/user/components/modals/tabs/DevicesTab.tsx:173
 msgid "Last used"
@@ -18655,6 +18782,10 @@ msgstr "Οι αναγνώστες οθόνης να ανακοινώνουν τ�
 msgid "Let the community self-moderate"
 msgstr "Άσε την κοινότητα να αυτο-συντονίζεται"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:478
+msgid "Let's get everything working"
+msgstr ""
+
 #: src/features/theme_studio/sections/ThemeStudioSettingsSection.tsx:259
 msgid "Lets custom CSS reveal transparent window regions after restarting the desktop app."
 msgstr "Το προσαρμοσμένο CSS αποκαλύπτει διαφανείς περιοχές παραθύρων μετά την επανεκκίνηση της εφαρμογής υπολογιστή."
@@ -18712,7 +18843,7 @@ msgid "Light theme"
 msgstr "Ανοιχτό θέμα"
 
 #. Singular external-post stat label on a social post embed. Lowercase to appear after the count.
-#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:75
+#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:70
 msgid "like"
 msgstr "μου αρέσει"
 
@@ -18722,7 +18853,7 @@ msgid "Liked."
 msgstr "Δηλώθηκε ως αγαπημένο."
 
 #. Plural external-post stat label on a social post embed. Lowercase to appear after the count.
-#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:79
+#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:74
 msgid "likes"
 msgstr "μου αρέσει"
 
@@ -18819,7 +18950,7 @@ msgid "Link styling"
 msgstr "Στιλ συνδέσμου"
 
 #. Title of the alert shown when clicking an internal link that is not available to the current account.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:130
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:131
 msgid "Link unavailable"
 msgstr "Ο σύνδεσμος δεν είναι διαθέσιμος"
 
@@ -18869,7 +19000,7 @@ msgid "Links"
 msgstr "Σύνδεσμοι"
 
 #. User settings tab label shown on Linux desktop builds.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:78
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:79
 msgid "Linux app"
 msgstr "Εφαρμογή Linux"
 
@@ -18912,6 +19043,10 @@ msgstr "Λιθουανικά"
 msgid "Live"
 msgstr "Ζωντανά"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:553
+msgid "Live message connection is ready."
+msgstr ""
+
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/AccessibilityIndex.ts:181
@@ -18928,7 +19063,7 @@ msgid "Loading banned users"
 msgstr "Φόρτωση αποκλεισμένων χρηστών"
 
 #. Screen-reader status text shown while Discovery communities are loading.
-#: src/features/discovery/discovery/DiscoveryPage.tsx:37
+#: src/features/discovery/discovery/DiscoveryPage.tsx:38
 msgid "Loading communities"
 msgstr "Φόρτωση κοινοτήτων"
 
@@ -19181,7 +19316,7 @@ msgid "macOS"
 msgstr "macOS"
 
 #. User settings tab label shown on macOS desktop builds.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:82
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:83
 msgid "macOS app"
 msgstr "Εφαρμογή macOS"
 
@@ -19800,6 +19935,11 @@ msgstr "Προεπισκόπηση μέσων"
 msgid "Media progress"
 msgstr "Πρόοδος πολυμέσων"
 
+#. Support Center summary of the voice and video media endpoint check.
+#: src/features/support/SupportCenterCopy.ts:35
+msgid "Media service {mediaSummary}."
+msgstr ""
+
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/section_registry/ChatSettingsSections.ts:114
 msgid "Media size"
@@ -20220,7 +20360,7 @@ msgid "Message layout"
 msgstr "Διάταξη μηνυμάτων"
 
 #. Type chip suffix in tooltips for inline rendered message links. Lowercase because it follows the channel name.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:74
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:75
 msgid "message link"
 msgstr "σύνδεσμος μηνύματος"
 
@@ -20355,6 +20495,10 @@ msgstr "Μηνύματα σε κανάλια κοινότητας"
 msgid "Messages shortcuts"
 msgstr "Συντομεύσεις μηνυμάτων"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:550
+msgid "Messaging"
+msgstr ""
+
 #: src/features/channel/components/barriers/BarrierComponents.tsx:272
 msgid "Messaging is temporarily paused in this community."
 msgstr "Η ανταλλαγή μηνυμάτων έχει προσωρινά τεθεί σε παύση σε αυτήν την κοινότητα."
@@ -20478,7 +20622,7 @@ msgstr "Ανήλικοι σε κίνδυνο, ακατάλληλο περιεχ�
 #. Switch label in the screen-share device picker for flipping shared camera/device video horizontally.
 #. Switch label in the video tab for flipping the local camera preview horizontally.
 #: src/features/user/components/modals/tabs/UserVideoTab.tsx:78
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:76
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:75
 #: src/features/voice/components/modals/ScreenSharePickerModal.tsx:181
 #: src/features/voice/components/VoiceSettingsMenus.tsx:135
 msgid "Mirror camera"
@@ -21014,8 +21158,8 @@ msgstr "Σίγαση ήχου ροής"
 #. Lowercase screen-reader fragment in the sidebar navigation guild list item.
 #. Lowercase state label used inside channel-list accessible text when a channel is muted.
 #. Screen-reader fragment announcing that the DM list row is muted. Lowercase fragment.
-#: src/features/app/components/layout/ChannelItem.tsx:107
-#: src/features/app/components/layout/sidebar_nav/GuildListDMItem.tsx:60
+#: src/features/app/components/layout/ChannelItem.tsx:112
+#: src/features/app/components/layout/sidebar_nav/GuildListDMItem.tsx:62
 #: src/features/app/components/layout/sidebar_nav/UseGuildListItemState.ts:39
 #: src/features/channel/components/direct_message/DMListItem.tsx:75
 msgid "muted"
@@ -21134,6 +21278,10 @@ msgstr "Τα τέλεια πολυμέσα μου"
 #: src/features/expressions/components/modals/sticker_form/StickerFormFields.tsx:32
 msgid "My awesome sticker"
 msgstr "Το τέλειο αυτοκόλλητό μου"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:685
+msgid "My camera isn't working"
+msgstr ""
 
 #. Channel overview settings tab label, control, or validation message (name, topic, slowmode, voice region, mature content gate).
 #: src/features/channel/components/modals/channel_tabs/ChannelOverviewTab.tsx:65
@@ -21327,6 +21475,10 @@ msgstr "Συντομεύσεις πλοήγησης"
 msgid "Need an account?"
 msgstr "Χρειάζεστε λογαριασμό;"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:104
+msgid "Needs attention"
+msgstr ""
+
 #. Settings search synonym. Proper name of the optional cat sprite that chases the cursor.
 #: src/features/user/components/settings_utils/section_registry/SharedDescriptors.ts:61
 msgid "Neko"
@@ -21389,7 +21541,7 @@ msgid "New"
 msgstr "Νέα"
 
 #. Small badge on a new or recently added app navigation item.
-#: src/features/app/components/layout/GuildsLayout.tsx:131
+#: src/features/app/components/layout/GuildsLayout.tsx:136
 msgctxt "navigation-badge"
 msgid "New"
 msgstr "Νέο"
@@ -21577,7 +21729,7 @@ msgid "No {sendMessagesPermission} permission"
 msgstr "Δεν υπάρχει δικαίωμα {sendMessagesPermission}"
 
 #. Inline text shown inside a custom message link pill when the linked message cannot be accessed.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:118
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:119
 msgid "No access"
 msgstr "Δεν υπάρχει πρόσβαση"
 
@@ -21670,6 +21822,10 @@ msgstr "Χωρίς σελιδοδείκτες"
 #: src/features/user/components/modals/tabs/applications_tab/application_detail/BotProfileSection.tsx:64
 msgid "No bot banner"
 msgstr "Χωρίς banner bot"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:579
+msgid "No call is active right now."
+msgstr ""
 
 #: src/features/user/components/modals/tabs/UserVideoTab.tsx:212
 msgid "No camera found"
@@ -22034,7 +22190,7 @@ msgstr "Δεν επιστράφηκαν διαθέσιμες οθόνες ή π�
 msgid "No search results"
 msgstr "Κανένα αποτέλεσμα αναζήτησης"
 
-#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:251
+#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:253
 #: src/features/app/components/dialogs/components/DesktopSettingsView.tsx:549
 msgid "No settings found"
 msgstr "Δεν βρέθηκαν ρυθμίσεις"
@@ -22128,6 +22284,10 @@ msgstr "Δεν υπάρχουν αξιόπιστοι τομείς"
 #: src/features/app/components/floating/UnreadChannelsContent.tsx:81
 msgid "No unread messages"
 msgstr "Δεν υπάρχουν μη αναγνωσμένα μηνύματα"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:805
+msgid "No update found"
+msgstr ""
 
 #. Empty-state text in the channel and chat add friend form.
 #: src/features/channel/components/direct_message/AddFriendForm.tsx:28
@@ -22241,6 +22401,10 @@ msgstr "Δεν είστε μέλος για αρκετό καιρό"
 msgid "Not available"
 msgstr "Μη διαθέσιμο"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:642
+msgid "Not checked yet."
+msgstr ""
+
 #. Short label in the app constants.
 #: src/features/app/constants/AppConstants.ts:57
 msgid "Not connected"
@@ -22269,6 +22433,15 @@ msgstr "Όχι τώρα"
 #: src/features/channel/components/modals/UnaddableRecipientsConfirmModal.tsx:19
 msgid "Not on your friends list"
 msgstr "Δεν είναι στη λίστα φίλων σου"
+
+#. Browser media permission has not been requested yet.
+#: src/features/support/SupportCenterCopy.ts:26
+msgid "not requested"
+msgstr ""
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:126
+msgid "Not required"
+msgstr ""
 
 #. Option in the profile timezone picker. Means no timezone has been selected.
 #. Status chip for a macOS permission that has not been requested.
@@ -22368,10 +22541,14 @@ msgid "Notifications"
 msgstr "Ειδοποιήσεις"
 
 #. User settings tab for notification and alert sound controls.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:132
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:133
 msgctxt "user-settings-tab"
 msgid "Notifications"
 msgstr "Ειδοποιήσεις"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:706
+msgid "Notifications are missing"
+msgstr ""
 
 #. Notification toast title shown when the OS has blocked notifications.
 #: src/features/ui/commands/NotificationCommands.tsx:14
@@ -22516,6 +22693,10 @@ msgstr "Δεν ήταν δυνατή η ανάγνωση ή η μεταφόρτ�
 #: src/features/messaging/components/alerts/FileSizeTooLargeModal.tsx:27
 msgid "One or more files you're trying to upload exceed the maximum size limit of {maxSizeFormatted} per file."
 msgstr "Ένα ή περισσότερα αρχεία που προσπαθείτε να ανεβάσετε υπερβαίνουν το μέγιστο επιτρεπόμενο μέγεθος των {maxSizeFormatted} ανά αρχείο."
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:497
+msgid "One or more items may need your attention."
+msgstr ""
 
 #. Required-action modal carousel step title. Introduces why account verification is required.
 #: src/features/auth/components/modals/required_action/RequiredActionDescriptors.ts:206
@@ -22683,7 +22864,7 @@ msgid "Open {displayName}"
 msgstr "Άνοιγμα {displayName}"
 
 #. Accessible label for an inline settings deep-link pill. labelText is the resolved settings tab and section breadcrumb.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:101
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:102
 msgid "Open {labelText} in settings"
 msgstr "Άνοιξε τις {labelText} στις ρυθμίσεις"
 
@@ -22803,7 +22984,7 @@ msgstr "Άνοιγμα λεπτομερειών καναλιού για {channel
 
 #. Context-menu action that opens a voice channel's embedded chat view without connecting to voice.
 #. Tooltip and accessible label for the chat icon shown beside a voice channel in the channel list.
-#: src/features/app/components/layout/ChannelItem.tsx:123
+#: src/features/app/components/layout/ChannelItem.tsx:128
 #: src/features/ui/action_menu/items/ChannelMenuData.tsx:152
 msgid "Open chat"
 msgstr "Άνοιγμα συνομιλίας"
@@ -23178,7 +23359,7 @@ msgstr "Λειτουργικό σύστημα"
 msgid "Opt into experimental per-community and per-channel unread badge controls"
 msgstr "Επιλέξτε για να ενεργοποιήσετε τις πειραματικές ρυθμίσεις ελέγχου των μη αναγνωσμένων ειδοποιήσεων ανά κοινότητα και κανάλι"
 
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:910
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:863
 msgid "Optimizing camera..."
 msgstr "Βελτιστοποίηση κάμερας..."
 
@@ -24458,6 +24639,10 @@ msgstr "Κουμπί προεπισκόπησης"
 msgid "Preview camera"
 msgstr "Προεπισκόπηση κάμερας"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:893
+msgid "Preview diagnostics"
+msgstr ""
+
 #. Status text on the placeholder shown in the voice call view when the user has hidden a remote stream preview.
 #: src/features/voice/components/HiddenStreamPlaceholder.tsx:10
 msgid "Preview hidden"
@@ -24613,7 +24798,7 @@ msgstr "Ομιλητής προτεραιότητας"
 #. User settings tab for privacy and safety controls.
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:12
 #: src/features/user/components/settings_utils/section_registry/PrivacySafetySections.ts:60
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:103
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:104
 msgid "Privacy"
 msgstr "Απόρρητο"
 
@@ -24672,6 +24857,10 @@ msgstr "Ιδιωτικό μήνυμα"
 msgid "Pro tip:"
 msgstr "Συμβουλή:"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:115
+msgid "Problem found"
+msgstr ""
+
 #. Generic action label that confirms proceeding past a content warning or mature-content gate.
 #: src/features/i18n/utils/CommonMessageDescriptors.ts:294
 msgid "Proceed"
@@ -24689,7 +24878,7 @@ msgid "Product name"
 msgstr "Όνομα προϊόντος"
 
 #. User settings tab for editing the current user profile.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:91
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:92
 msgid "Profile"
 msgstr "Προφίλ"
 
@@ -25153,12 +25342,12 @@ msgid "Quit {appName}"
 msgstr "Έξοδος από το {appName}"
 
 #. Singular external-post stat label on a social post embed. Lowercase to appear after the count.
-#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:67
+#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:62
 msgid "quote"
 msgstr "παράθεση"
 
 #. Plural external-post stat label on a social post embed. Lowercase to appear after the count.
-#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:71
+#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:66
 msgid "quotes"
 msgstr "αποσπάσματα"
 
@@ -25278,6 +25467,10 @@ msgstr "Διαβάστε την τεκμηρίωση ({domain})"
 #: src/features/user/components/settings_utils/section_registry/AccessibilitySections.ts:163
 msgid "Reading speed"
 msgstr "Ταχύτητα ανάγνωσης"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:93
+msgid "Ready"
+msgstr ""
 
 #: src/features/app/components/dialogs/components/plutonium/BottomCTASection.tsx:64
 msgid "Ready to buy a gift?"
@@ -25644,12 +25837,20 @@ msgstr "Σχέση"
 msgid "Relative"
 msgstr "Σχετική"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:755
+msgid "Release channel"
+msgstr ""
+
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #. Short label for push-to-talk release delay.
 #: src/features/user/components/modals/tabs/UserVoiceTab.tsx:62
 #: src/features/user/components/settings_utils/section_registry/VoiceVideoSections.ts:89
 msgid "Release delay"
 msgstr "Καθυστέρηση απελευθέρωσης"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:717
+msgid "Release identity helps support confirm exactly which client you are using."
+msgstr ""
 
 #. Tooltip on the hold-to-record button while the user is actively holding to record.
 #: src/features/channel/components/textarea/HoldToRecordButton.tsx:38
@@ -26334,12 +26535,12 @@ msgid "Reported user tag (optional)"
 msgstr "Ετικέτα αναφερόμενου χρήστη (προαιρετικό)"
 
 #. Singular external-post stat label on a social post embed (e.g. Twitter/X). Lowercase to appear after the count.
-#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:57
+#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:52
 msgid "repost"
 msgstr "αναδημοσίευση"
 
 #. Plural external-post stat label on a social post embed (e.g. Twitter/X). Lowercase to appear after the count.
-#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:62
+#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:57
 msgid "reposts"
 msgstr "αναδημοσιεύσεις"
 
@@ -26470,7 +26671,7 @@ msgstr "Απαιτεί ό,τι και το \"Μεσαίο\", συν να είσ�
 msgid "Reschedule message"
 msgstr "Επαναπρογραμματισμός μηνύματος"
 
-#: src/features/auth/components/modals/ClaimAccountModal.tsx:234
+#: src/features/auth/components/modals/ClaimAccountModal.tsx:240
 #: src/features/user/components/modals/EmailChangeModal.tsx:296
 #: src/features/user/components/modals/EmailChangeModal.tsx:333
 #: src/features/user/components/modals/PasswordChangeModal.tsx:244
@@ -26489,7 +26690,7 @@ msgstr "Επανάληψη αποστολής ({originalSecondsRemaining}δ)"
 msgid "Resend ({resendCooldownSeconds}s)"
 msgstr "Επανάληψη αποστολής ({resendCooldownSeconds}δ)"
 
-#: src/features/auth/components/modals/ClaimAccountModal.tsx:234
+#: src/features/auth/components/modals/ClaimAccountModal.tsx:240
 msgid "Resend ({resendSecondsRemaining}s)"
 msgstr "Επανάληψη αποστολής ({resendSecondsRemaining}δ)"
 
@@ -26933,6 +27134,14 @@ msgstr "Επισκόπηση και επιβεβαίωση"
 msgid "Review apps that can access your account."
 msgstr "Ελέγξτε τις εφαρμογές που έχουν πρόσβαση στον λογαριασμό σας."
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:707
+msgid "Review desktop, push, sound, and mention settings."
+msgstr ""
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:695
+msgid "Review display, motion, accessibility, and performance settings."
+msgstr ""
+
 #. Settings row description for reviewing macOS permissions.
 #: src/features/permissions/system/components/MacPermissionsSettingsRow.tsx:16
 msgid "Review microphone, camera, screen recording, and Input Monitoring access."
@@ -27203,6 +27412,14 @@ msgstr "Σειρές ανά σελίδα"
 msgid "Run {productName} automatically when your computer starts"
 msgstr "Αυτόματη εκκίνηση του {productName} με τον υπολογιστή σας"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:502
+msgid "Run a check to see your setup status."
+msgstr ""
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:523
+msgid "Run again"
+msgstr ""
+
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/DesktopSettingsIndex.ts:114
 msgid "Run at login"
@@ -27212,6 +27429,10 @@ msgstr "Εκτέλεση κατά την είσοδο"
 #: src/features/app/components/setup/SetupWizardSteps.tsx:191
 msgid "Run the instance as one community instead of many. This can only be enabled now, during setup."
 msgstr "Εκτέλεσε την παρουσία ως μία κοινότητα αντί για πολλές. Αυτό μπορεί να ενεργοποιηθεί μόνο τώρα, κατά την εγκατάσταση."
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:501
+msgid "Running a fresh check now."
+msgstr ""
 
 #. Developer tools debug menu label. Internal-only surface for developers; translators may keep this terse.
 #: src/features/channel/components/channel_header_components/developer_tools/ToolsMenu.tsx:100
@@ -27250,7 +27471,7 @@ msgid "Saturation"
 msgstr "Κορεσμός"
 
 #. Singular external-post stat label on a social post embed. Lowercase to appear after the count.
-#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:83
+#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:78
 msgid "save"
 msgstr "Αποθήκευση"
 
@@ -27370,7 +27591,7 @@ msgid "Saved."
 msgstr "Αποθηκεύτηκε."
 
 #. Plural external-post stat label on a social post embed. Lowercase to appear after the count.
-#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:87
+#: src/features/channel/components/embeds/channel_embed/ChannelEmbedShared.ts:82
 msgid "saves"
 msgstr "αποθηκεύσεις"
 
@@ -27719,7 +27940,7 @@ msgid "Search channels or DMs"
 msgstr "Αναζήτηση καναλιών ή προσωπικών μηνυμάτων"
 
 #. Accessible label and placeholder for the community search field in the Discovery page.
-#: src/features/discovery/discovery/DiscoveryNavbar.tsx:27
+#: src/features/discovery/discovery/DiscoveryNavbar.tsx:28
 msgid "Search communities"
 msgstr "Αναζήτηση κοινοτήτων"
 
@@ -27758,7 +27979,7 @@ msgstr "Φίλτρο αναζήτησης: {filter}"
 #. Section header in the message search popout listing available filter operators.
 #: src/features/channel/components/message_search_bar/FilterOption.tsx:14
 #: src/features/channel/components/message_search_bar/HistorySection.tsx:17
-#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:15
+#: src/features/discovery/discovery/DiscoverySearchFilters.tsx:17
 msgid "Search filters"
 msgstr "Φίλτρα αναζήτησης"
 
@@ -27852,7 +28073,7 @@ msgid "Search results"
 msgstr "Αποτελέσματα αναζήτησης"
 
 #. Heading in the Discovery navigation bar when a search is active. {query} is the text the user searched for.
-#: src/features/discovery/discovery/DiscoveryNavbar.tsx:35
+#: src/features/discovery/discovery/DiscoveryNavbar.tsx:36
 msgid "Search results for “{query}”"
 msgstr "Αποτελέσματα αναζήτησης για «{query}»"
 
@@ -28232,8 +28453,8 @@ msgstr "Επιλέξιμο κείμενο"
 #. Lowercase screen-reader fragment in the sidebar navigation guild list item.
 #. Lowercase state label used inside channel-list accessible text for the selected channel.
 #. Screen-reader suffix announcing that the DM list row is the active selection. Lowercase fragment.
-#: src/features/app/components/layout/ChannelItem.tsx:91
-#: src/features/app/components/layout/sidebar_nav/GuildListDMItem.tsx:52
+#: src/features/app/components/layout/ChannelItem.tsx:96
+#: src/features/app/components/layout/sidebar_nav/GuildListDMItem.tsx:54
 #: src/features/app/components/layout/sidebar_nav/UseGuildListItemState.ts:35
 #: src/features/channel/components/direct_message/DMListItem.tsx:67
 msgid "selected"
@@ -28365,7 +28586,7 @@ msgid "Send button"
 msgstr "Κουμπί αποστολής"
 
 #. Primary button in the required-action modal. Requests a verification code.
-#: src/features/auth/components/modals/ClaimAccountModal.tsx:213
+#: src/features/auth/components/modals/ClaimAccountModal.tsx:219
 #: src/features/auth/components/modals/required_action/RequiredActionDescriptors.ts:190
 #: src/features/user/components/modals/EmailChangeModal.tsx:318
 msgid "Send code"
@@ -28515,7 +28736,7 @@ msgid "Sending malware or dangerous links"
 msgstr "Αποστολή κακόβουλου λογισμικού ή επικίνδυνων συνδέσμων"
 
 #. Short label in the settings dialog forward channel selection.
-#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:13
+#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:14
 msgid "Sending messages is disabled in this community"
 msgstr "Η αποστολή μηνυμάτων έχει απενεργοποιηθεί σε αυτήν την κοινότητα"
 
@@ -28877,7 +29098,7 @@ msgid "Settings"
 msgstr "Ρυθμίσεις"
 
 #. Type chip suffix in tooltips for inline rendered fluxer://settings/user deep links. Lowercase.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:106
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:107
 msgid "settings link"
 msgstr "σύνδεσμος ρυθμίσεων"
 
@@ -29101,7 +29322,7 @@ msgstr "Συγκρούσεις συντομεύσεων"
 #. User settings tab for keyboard shortcuts and custom bindings.
 #: src/features/user/components/settings_utils/search_index/KeybindsIndex.ts:18
 #: src/features/user/components/settings_utils/section_registry/AccessibilitySections.ts:175
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:128
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:129
 msgid "Shortcuts"
 msgstr "Συντομεύσεις"
 
@@ -29848,7 +30069,7 @@ msgid "Skip this step"
 msgstr "Παράλειψη αυτού του βήματος"
 
 #. Accessible skip-link label for keyboard users.
-#: src/app/App.tsx:75
+#: src/app/App.tsx:76
 msgid "Skip to content"
 msgstr "Μετάβαση στο περιεχόμενο"
 
@@ -29935,7 +30156,7 @@ msgid "Slowmode"
 msgstr "Αργή λειτουργία"
 
 #. Short label in the settings dialog forward channel selection. Preserve {remaining}; it is inserted by code.
-#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:36
+#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:37
 msgid "Slowmode · wait {remaining}"
 msgstr "Αργή λειτουργία · αναμονή {remaining}"
 
@@ -31277,6 +31498,20 @@ msgstr "Προτάσεις"
 msgid "Summary"
 msgstr "Σύνοψη"
 
+#. User settings tab for troubleshooting, diagnostics, version information, and updates.
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:150
+msgid "Support"
+msgstr ""
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:471
+msgid "Support center"
+msgstr ""
+
+#. Toast-like button state after the support summary is copied.
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:65
+msgid "Support summary copied"
+msgstr ""
+
 #. Switch label in the community notification settings modal. Suppresses @everyone and @here notifications in this community. The two placeholders render the literal @everyone and @here tokens and must not be translated.
 #. Toggle label that suppresses @everyone and @here mentions; placeholders are the localized mention tags.
 #. Toggle label that suppresses @everyone and @here mentions; placeholders are the localized mention tags.
@@ -31585,6 +31820,7 @@ msgid "Syntax highlighting"
 msgstr "Επισήμανση σύνταξης"
 
 #: src/features/channel/components/ChannelUserTag.tsx:27
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:783
 msgid "System"
 msgstr "Σύστημα"
 
@@ -31826,6 +32062,14 @@ msgstr "Διεύθυνση URL όρων"
 msgid "Terrorism or violent extremism"
 msgstr "Τρομοκρατία ή βίαιος εξτρεμισμός"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:592
+msgid "Test audio"
+msgstr ""
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:622
+msgid "Test camera"
+msgstr ""
+
 #. Button that validates SMTP credentials.
 #: src/features/app/components/setup/SetupWizardSteps.tsx:1001
 msgid "Test SMTP"
@@ -32041,6 +32285,10 @@ msgstr "Η εφαρμογή έκλεισε απροσδόκητα"
 msgid "The app has crashed. Checking for updates that might fix this issue…"
 msgstr "Η εφαρμογή έχει κρασάρει. Αναζητούμε ενημερώσεις που μπορεί να διορθώσουν αυτό το πρόβλημα…"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:694
+msgid "The app looks or feels wrong"
+msgstr ""
+
 #: src/features/auth/flow/HandoffApprovalFlow.tsx:254
 msgid "The app should now be signed in to your account."
 msgstr "Η εφαρμογή θα πρέπει τώρα να έχει συνδεθεί στον λογαριασμό σας."
@@ -32086,6 +32334,10 @@ msgstr "Το αρχείο που κατεβάσατε αποθηκεύεται �
 msgid "The file contains the verification token we will fetch from <0>{dnsUrl}</0>."
 msgstr "Το αρχείο περιέχει το διακριτικό επαλήθευσης που θα ανακτήσουμε από το <0>{dnsUrl}</0>."
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:859
+msgid "The file includes versions, operating system, service-check results, permission states, and device counts. It does not include passwords, tokens, cookies, messages, attachments, account IDs, community or channel names, participant identities, device IDs, or raw server responses."
+msgstr ""
+
 #. Body of the file-too-large alert when a single file exceeds the per-file size limit.
 #: src/features/messaging/components/alerts/FileSizeTooLargeModal.tsx:23
 msgid "The file you're trying to upload exceeds the maximum size limit of {maxSizeFormatted}."
@@ -32103,6 +32355,10 @@ msgstr "Η γλώσσα που μιλάει η κοινότητά σου. Χρη
 #: src/features/invite/components/alerts/InviteRevokeFailedModal.tsx:12
 msgid "The link may still work. Try again in a moment."
 msgstr "Ο σύνδεσμος ενδέχεται να εξακολουθεί να λειτουργεί. Δοκιμάστε ξανά σε λίγο."
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:555
+msgid "The live message connection is not ready."
+msgstr ""
 
 #. Body copy on the mature content check callback page after the check was canceled.
 #: src/features/auth/components/pages/MatureContentCheckCallbackPage.tsx:23
@@ -32795,7 +33051,7 @@ msgid "This link channel is marked for mature content and may open material that
 msgstr "Αυτό το κανάλι συνδέσμων έχει επισημανθεί για ενήλικο περιεχόμενο και ενδέχεται να περιέχει υλικό που μπορεί να είναι ακατάλληλο για ορισμένους χρήστες."
 
 #. Body of the link-unavailable alert.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:134
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:135
 msgid "This link is not available for your account."
 msgstr "Αυτός ο σύνδεσμος δεν είναι διαθέσιμος για τον λογαριασμό σας."
 
@@ -33221,6 +33477,11 @@ msgstr "Εύρος χρόνου"
 #: src/features/voice/components/media_player/components/MediaTimeDisplay.tsx:9
 msgid "Time: {currentFormatted} of {durationFormatted}"
 msgstr "Ώρα: {currentFormatted} από {durationFormatted}"
+
+#. Support Center endpoint check timed out.
+#: src/features/support/SupportCenterCopy.ts:15
+msgid "timed out"
+msgstr ""
 
 #. Short label in the channel and chat message timeout indicator. Keep it concise.
 #: src/features/channel/components/MessageTimeoutIndicator.tsx:15
@@ -33785,7 +34046,7 @@ msgstr "Δοκιμάστε να επεξεργαστείτε ξανά το μή�
 msgid "TRY gifts are one-time payments. Cards charged in TRY still need to be issued in Türkiye for the purchase to stay eligible."
 msgstr "Τα δώρα σε TRY είναι εφάπαξ πληρωμές. Οι κάρτες που χρεώνονται σε TRY πρέπει να έχουν εκδοθεί στην Τουρκία για να παραμείνει επιλέξιμη η αγορά."
 
-#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:254
+#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:256
 msgid "Try searching for something like \"theme\", \"notifications\", or \"privacy\""
 msgstr "Δοκιμάστε να αναζητήσετε κάτι όπως \"θέμα\", \"ειδοποιήσεις\" ή \"απόρρητο\""
 
@@ -34337,6 +34598,11 @@ msgstr "Μοναδική πρόσκληση"
 msgid "Universal fallback. Lowest quality, but it works everywhere."
 msgstr "Καθολική εφεδρική επιλογή. Η χαμηλότερη ποιότητα, αλλά λειτουργεί παντού."
 
+#. Browser media permission state is unknown.
+#: src/features/support/SupportCenterCopy.ts:30
+msgid "unknown"
+msgstr ""
+
 #. Fallback uploader label when the user who uploaded an emoji is unavailable.
 #. Fallback version label when the installed desktop version is unknown.
 #. Generic fallback label when a more specific value is unavailable.
@@ -34711,14 +34977,19 @@ msgstr "Ομάδα που δεν είναι καρφιτσωμένη"
 msgid "Unpinned group DM"
 msgstr "Η ομαδική συνομιλία δεν είναι πλέον καρφιτσωμένη"
 
+#. Support Center endpoint could not be reached.
+#: src/features/support/SupportCenterCopy.ts:20
+msgid "unreachable"
+msgstr ""
+
 #. Lowercase screen-reader fragment in the sidebar navigation guild folder item.
 #. Lowercase screen-reader fragment in the sidebar navigation guild list DM item.
 #. Lowercase screen-reader fragment in the sidebar navigation guild list item.
 #. Lowercase state label used inside channel-list accessible text when a channel has unread messages.
 #. Screen-reader fragment announcing that the DM list row has unread messages. Lowercase fragment.
-#: src/features/app/components/layout/ChannelItem.tsx:103
-#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:90
-#: src/features/app/components/layout/sidebar_nav/GuildListDMItem.tsx:56
+#: src/features/app/components/layout/ChannelItem.tsx:108
+#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:89
+#: src/features/app/components/layout/sidebar_nav/GuildListDMItem.tsx:58
 #: src/features/app/components/layout/sidebar_nav/UseGuildListItemState.ts:27
 #: src/features/channel/components/direct_message/DMListItem.tsx:71
 msgid "unread"
@@ -34871,6 +35142,7 @@ msgstr "Έως 4K/60fps"
 
 #. Confirm button label on the reschedule scheduled-message alert.
 #: src/features/channel/components/channel_textarea/shared.ts:28
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:831
 msgid "Update"
 msgstr "Ενημέρωση"
 
@@ -34883,6 +35155,10 @@ msgstr "Ενημερώστε το {productName} για να δείτε αυτό 
 #: src/features/app/components/ErrorFallback.tsx:140
 msgid "Update app"
 msgstr "Ενημέρωση εφαρμογής"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:805
+msgid "Update available"
+msgstr ""
 
 #. Primary button in the required-action modal. Submits a code to update the account email.
 #: src/features/auth/components/modals/required_action/RequiredActionDescriptors.ts:186
@@ -34897,6 +35173,10 @@ msgstr "Ενημέρωση της κατάστασής μου"
 #: src/features/app/components/dialogs/components/MobileSettingsView.tsx:56
 msgid "Update service worker"
 msgstr "Ενημέρωση service worker"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:799
+msgid "Update status"
+msgstr ""
 
 #. Short label in the timeout member sheet. Keep it concise.
 #: src/features/moderation/components/modals/TimeoutMemberSheet.tsx:36
@@ -35002,6 +35282,10 @@ msgstr "Ενημερώθηκε η εικόνα του webhook."
 #: src/features/channel/components/channel_header_components/developer_tools/DeveloperOptionLabels.ts:85
 msgid "Updater state"
 msgstr "Κατάσταση ενημερώσεων"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:635
+msgid "Updates"
+msgstr ""
 
 #. Short label in the channel and chat gif picker grid item. Keep it concise.
 #: src/features/channel/components/pickers/gif/GifPickerGridItem.tsx:43
@@ -35718,7 +36002,7 @@ msgid "User record"
 msgstr "Εγγραφή χρήστη"
 
 #. Root label for the current user settings modal and settings search paths.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:352
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:363
 msgid "User settings"
 msgstr "Ρυθμίσεις χρήστη"
 
@@ -36162,6 +36446,17 @@ msgstr "Επαλήθευση του συνδέσμου επαναφοράς…"
 #: src/features/theme_studio/sections/LibrarySection.tsx:113
 msgid "Version"
 msgstr "Έκδοση"
+
+#. Support Center update status when a newer desktop version is available.
+#: src/features/support/SupportCenterCopy.ts:44
+msgid "Version {version} is available."
+msgstr ""
+
+#. Support Center section showing release identity and update controls.
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:716
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:86
+msgid "Version & updates"
+msgstr ""
 
 #. Member verification level option in the community moderation settings tab. Short standalone severity label.
 #: src/features/guild/components/modals/guild_tabs/GuildModerationTab.tsx:84
@@ -36647,7 +36942,7 @@ msgstr "Φωνητική (ενηλίκων)"
 
 #. User settings tab for microphone, speaker, camera, and call stats.
 #. User settings tab for microphone, speaker, camera, and call stats.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:124
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:125
 #: src/features/voice/utils/VoiceMessageDescriptors.ts:30
 msgid "Voice & video"
 msgstr "Ήχος και βίντεο"
@@ -36659,7 +36954,7 @@ msgstr "Ενεργοποίηση φωνής"
 
 #. Lowercase screen-reader fragment in the sidebar navigation guild folder item.
 #. Lowercase screen-reader fragment in the sidebar navigation guild list item.
-#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:94
+#: src/features/app/components/layout/sidebar_nav/GuildFolderItem.tsx:93
 #: src/features/app/components/layout/sidebar_nav/UseGuildListItemState.ts:47
 msgid "voice activity"
 msgstr "φωνητική δραστηριότητα"
@@ -36716,7 +37011,7 @@ msgstr "Φωνητική κλήση. {statusText}."
 
 #. Generic channel-type token used inside a wider delete confirmation string.
 #. Lowercase channel type label used inside channel-list accessible text.
-#: src/features/app/components/layout/ChannelItem.tsx:83
+#: src/features/app/components/layout/ChannelItem.tsx:88
 #: src/features/ui/action_menu/items/ChannelMenuItems.tsx:79
 msgid "voice channel"
 msgstr "κανάλι φωνητικής συνομιλίας"
@@ -36782,6 +37077,10 @@ msgstr "Η φωνητική κλήση αποσυνδέθηκε"
 msgid "Voice entrance sound"
 msgstr "Ήχος εισόδου φωνής"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:572
+msgid "Voice is disabled on this instance."
+msgstr ""
+
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/section_registry/AppearanceSections.ts:394
 msgid "Voice join"
@@ -36841,6 +37140,10 @@ msgstr "Η ηχογράφηση φωνής δεν υποστηρίζεται σ�
 #: src/features/voice/components/VoiceSettingsMenus.tsx:131
 msgid "Voice region"
 msgstr "Περιοχή φωνής"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:569
+msgid "Voice service"
+msgstr ""
 
 #. Developer control label for the voice-session-restore banner.
 #: src/features/devtools/components/NagbarControls.ts:63
@@ -36908,6 +37211,11 @@ msgstr "Χρονικό διάστημα μεταξύ των μηνυμάτων. 
 #: src/features/auth/components/modals/required_action/RequiredActionDescriptors.ts:354
 msgid "Wait here"
 msgstr "Περιμένετε εδώ"
+
+#. Support Center endpoint check has not run yet.
+#: src/features/support/SupportCenterCopy.ts:7
+msgid "waiting"
+msgstr ""
 
 #. Tooltip explaining that video / screen share controls are gated while the voice connection is not yet ready.
 #: src/features/voice/components/voice_connection_status/LocalParticipantControls.tsx:56
@@ -37057,6 +37365,10 @@ msgstr "Δεν ήταν δυνατή η κατάργηση αυτού του λ�
 msgid "We found an existing {premiumProductFullName} subscription for this account. Manage it in the secure billing portal to update payment details or check renewal status. If you just paid, wait a minute and reopen this page."
 msgstr "Βρήκαμε μια υπάρχουσα συνδρομή {premiumProductFullName} για αυτόν τον λογαριασμό. Διαχειριστείτε την στην ασφαλή πύλη χρεώσεων για να ενημερώσετε τα στοιχεία πληρωμής ή να ελέγξετε την κατάσταση ανανέωσης. Αν μόλις πληρώσατε, περιμένετε ένα λεπτό και ανοίξτε ξανά αυτήν τη σελίδα."
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:499
+msgid "We found something that may stop the app working correctly."
+msgstr ""
+
 #. Required-action modal intro text for a generic verification requirement. productName is inserted by code. Keep it calm and concise.
 #: src/features/auth/components/modals/required_action/RequiredActionDescriptors.ts:210
 msgid "We need one verification step before you continue. This helps protect accounts and keep spam off {productName}."
@@ -37194,6 +37506,10 @@ msgstr "Web {buildVersion}"
 #: src/features/user/components/settings_utils/search_index/AccountSecurityIndex.ts:98
 msgid "Web authentication"
 msgstr "Έλεγχος ταυτότητας μέσω web"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:741
+msgid "Web build"
+msgstr ""
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/ChatSettingsIndex.ts:235
@@ -37606,7 +37922,7 @@ msgid "Window state"
 msgstr "Κατάσταση παραθύρου"
 
 #. User settings tab label shown on Windows desktop builds. Refers to the Microsoft Windows OS.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:74
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:75
 msgid "Windows app"
 msgstr "Εφαρμογή Windows"
 
@@ -37764,6 +38080,10 @@ msgstr "Πρόκειται να μεταβιβάσετε την ιδιοκτησ
 #: src/features/moderation/components/alerts/UserBannedFromGuildModal.tsx:12
 msgid "You are banned from this community and cannot join."
 msgstr "Έχετε αποκλειστεί από αυτήν την κοινότητα και δεν μπορείτε να συμμετάσχετε."
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:577
+msgid "You are connected to a call."
+msgstr ""
 
 #. Voice participant status tooltip for the current user. They cannot hear voice chat. Distinct from muted.
 #: src/features/voice/utils/VoiceMessageDescriptors.ts:74
@@ -38010,7 +38330,7 @@ msgstr "Δεν μπορείτε να μιλήσετε σε αυτό το καν�
 #. Tooltip / error shown in the camera preview modal when the user lacks Video permission in the current channel. Tone stays plain.
 #. Tooltip in the voice control bar when the user lacks the Video permission in this channel. Tone stays plain.
 #. Tooltip shown when the user lacks the Video permission in the voice channel. Tone stays plain.
-#: src/features/voice/components/modals/CameraPreviewModal.tsx:80
+#: src/features/voice/components/modals/CameraPreviewModal.tsx:79
 #: src/features/voice/components/voice_connection_status/LocalParticipantControls.tsx:61
 #: src/features/voice/components/VoiceControlBar.tsx:131
 msgid "You can't turn on your camera in this channel"
@@ -38084,7 +38404,7 @@ msgid "You changed your tag while on {PREMIUM_PRODUCT_NAME}. It will reroll rand
 msgstr "Άλλαξες το tag σου ενώ είχες {PREMIUM_PRODUCT_NAME}. Θα αλλάξει τυχαία όταν λήξει το {PREMIUM_PRODUCT_NAME} σου, εκτός αν ανανεωθεί."
 
 #. Body of the access-denied alert for clicked message links.
-#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:114
+#: src/features/messaging/components/markdown/renderers/LinkRenderer.tsx:115
 msgid "You do not have access to the channel where this message was sent."
 msgstr "Δεν έχεις πρόσβαση στο κανάλι όπου στάλθηκε αυτό το μήνυμα."
 
@@ -38231,12 +38551,12 @@ msgid "You need access to your current email to change it from here. Use phone v
 msgstr "Για να αλλάξεις το email σου από εδώ, πρέπει να έχεις πρόσβαση στο τρέχον email σου. Χρησιμοποίησε την επαλήθευση μέσω τηλεφώνου, αν είναι διαθέσιμη, ή επικοινώνησε με την υποστήριξη."
 
 #. Forward dialog error shown when the forwarded message has attachments and the user lacks Attach Files in the target channel.
-#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:31
+#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:32
 msgid "You need the \"{attachFilesPermissionLabel}\" permission to attach files in this channel"
 msgstr "Χρειάζεστε την άδεια \"{attachFilesPermissionLabel}\" για να επισυνάψετε αρχεία σε αυτό το κανάλι"
 
 #. Forward dialog error shown when the forwarded message contains embeds and the user lacks Embed Links in the target channel.
-#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:26
+#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:27
 msgid "You need the \"{embedLinksPermissionLabel}\" permission to embed links in this channel"
 msgstr "Χρειάζεστε την άδεια \"{embedLinksPermissionLabel}\" για να ενσωματώσετε συνδέσμους σε αυτό το κανάλι"
 
@@ -38274,7 +38594,7 @@ msgid "You need the \"{permissionLabel}\" permission to use stickers from other 
 msgstr "Χρειάζεστε την άδεια \"{permissionLabel}\" για να χρησιμοποιήσετε αυτοκόλλητα από άλλες κοινότητες εδώ."
 
 #. Forward dialog error shown when the user lacks the Send Messages permission in the target channel. Permission name is interpolated.
-#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:21
+#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:22
 msgid "You need the \"{sendMessagesPermissionLabel}\" permission to send messages in this channel"
 msgstr "Χρειάζεστε την άδεια \"{sendMessagesPermissionLabel}\" για να στέλνετε μηνύματα σε αυτό το κανάλι"
 
@@ -38327,6 +38647,10 @@ msgstr "Πρέπει να επιβεβαιώσεις το email σου για ν
 #: src/features/app/components/alerts/DmActionErrorModal.tsx:60
 msgid "You or someone you're adding already has the maximum number of group DMs open. Leave one and try again."
 msgstr "Εσείς ή κάποιος που προσθέτετε έχετε ήδη τον μέγιστο αριθμό ανοιχτών ομαδικών DM. Αφήστε ένα και δοκιμάστε ξανά."
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:856
+msgid "You stay in control"
+msgstr ""
 
 #. Voice chat status tooltip for the current user. A moderator deafened them so they cannot hear voice chat.
 #: src/features/voice/utils/VoiceMessageDescriptors.ts:61
@@ -38514,7 +38838,7 @@ msgid "You're on a legacy rate. The current price for this plan is {currentSubsc
 msgstr "Έχετε παλιό τιμολόγιο. Η τρέχουσα τιμή για αυτό το πρόγραμμα είναι {currentSubscriptionListPriceLabel}."
 
 #. Short label in the settings dialog forward channel selection. Keep the tone plain and specific.
-#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:17
+#: src/features/app/components/dialogs/shared/ForwardChannelIndex.ts:18
 msgid "You're on timeout in this community"
 msgstr "Έχεις timeout σε αυτήν την κοινότητα"
 
@@ -38641,7 +38965,7 @@ msgstr "Η συνδρομή σας στο {premiumProductName} έληξε. Έχ�
 msgid "Your {productName} session expired. Sign in again to continue authorizing this application."
 msgstr "Η περίοδος λειτουργίας σας στο {productName} έληξε. Συνδεθείτε ξανά για να συνεχίσετε την εξουσιοδότηση αυτής της εφαρμογής."
 
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:205
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:210
 msgid "Your account"
 msgstr "Ο λογαριασμός σας"
 
