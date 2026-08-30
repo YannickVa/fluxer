@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import {messages as sourceMessages} from '@app/features/i18n/locales/en-US/messages.mjs';
+import {messages as frenchMessages} from '@app/features/i18n/locales/fr/messages.mjs';
 import {
 	formatSupportDeviceSummary,
 	formatSupportInstanceSummary,
@@ -15,6 +16,7 @@ vi.mock('@lingui/core/macro', () => ({msg: (descriptor: unknown) => descriptor})
 
 const i18n = setupI18n({locale: 'en-US', messages: {'en-US': {}}});
 const compiledI18n = setupI18n({locale: 'en-US', messages: {'en-US': sourceMessages}});
+const compiledFallbackI18n = setupI18n({locale: 'fr', messages: {fr: frenchMessages}});
 const passingCheck = (service: 'app' | 'api' | 'media', durationMs: number) => ({
 	service,
 	status: 'pass' as const,
@@ -54,6 +56,16 @@ describe('SupportCenterCopy', () => {
 		expect(formatSupportUpdateLastChecked(compiledI18n, 'Aug 20, 2026, 6:00 PM')).toBe(
 			'Last checked: Aug 20, 2026, 6:00 PM',
 		);
+	});
+
+	test('uses the compiled English fallback for untranslated locales', () => {
+		expect(formatSupportInstanceSummary(compiledFallbackI18n, passingCheck('app', 12), passingCheck('api', 34))).toBe(
+			'App 12 ms · API 34 ms',
+		);
+		expect(formatSupportDeviceSummary(compiledFallbackI18n, 1, 2, 3, 'granted', 'prompt')).toBe(
+			'1 microphone(s), 2 speaker(s), 3 camera(s). Microphone allowed; camera not requested.',
+		);
+		expect(formatSupportUpdateAvailable(compiledFallbackI18n, '2026.820.7')).toBe('Version 2026.820.7 is available.');
 	});
 
 	test('never exposes raw placeholders', () => {
