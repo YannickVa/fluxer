@@ -78,13 +78,20 @@ fn wasm_clang_candidates() -> Vec<PathBuf> {
 }
 
 fn discover_wasm_clang_from(candidates: Vec<PathBuf>) -> Result<PathBuf> {
+    discover_wasm_clang_from_with_probe(candidates, clang_targets_wasm32)
+}
+
+fn discover_wasm_clang_from_with_probe(
+    candidates: Vec<PathBuf>,
+    mut targets_wasm32: impl FnMut(&Path) -> bool,
+) -> Result<PathBuf> {
     let mut seen: Vec<PathBuf> = Vec::new();
     for candidate in candidates {
         if seen.contains(&candidate) {
             continue;
         }
         seen.push(candidate.clone());
-        if clang_targets_wasm32(&candidate) {
+        if targets_wasm32(&candidate) {
             return Ok(candidate);
         }
     }
@@ -475,11 +482,14 @@ export const MARKDOWN_PARSER_WASM_BASE64 =\n\
 
     #[test]
     fn wasm_clang_discovery_reports_an_actionable_remedy_when_nothing_supports_wasm32() {
-        let error = discover_wasm_clang_from(vec![
-            PathBuf::from("/nonexistent/xcode/clang"),
-            PathBuf::from("/nonexistent/xcode/clang"),
-            PathBuf::from("/nonexistent/other/clang"),
-        ])
+        let error = discover_wasm_clang_from_with_probe(
+            vec![
+                PathBuf::from("/nonexistent/xcode/clang"),
+                PathBuf::from("/nonexistent/xcode/clang"),
+                PathBuf::from("/nonexistent/other/clang"),
+            ],
+            |_| false,
+        )
         .expect_err("no candidate exists, so discovery must fail");
         let message = error.to_string();
 
@@ -496,19 +506,21 @@ export const MARKDOWN_PARSER_WASM_BASE64 =\n\
 
     #[test]
     fn wasm_clang_discovery_prefers_a_wasm32_capable_candidate_over_an_earlier_one() {
-        let temp = TempDir::new().expect("temp dir");
-        let clang = temp.path().join("clang");
-        fs::write(
-            &clang,
-            "#!/bin/sh\nif [ \"$1\" = \"--print-targets\" ]; then echo '    wasm32 - WebAssembly 32-bit'; fi\n",
-        )
-        .expect("write fake clang");
-        make_executable(&clang);
+        let incapable = PathBuf::from("/toolchains/xcode/clang");
+        let capable = PathBuf::from("/toolchains/llvm/clang");
+        let mut probed = Vec::new();
 
-        let found =
-            discover_wasm_clang_from(vec![PathBuf::from("/nonexistent/clang"), clang.clone()])
-                .expect("the fake clang advertises wasm32");
-        assert_eq!(found, clang);
+        let found = discover_wasm_clang_from_with_probe(
+            vec![incapable.clone(), capable.clone()],
+            |candidate| {
+                probed.push(candidate.to_path_buf());
+                candidate == capable
+            },
+        )
+        .expect("the second candidate advertises wasm32");
+
+        assert_eq!(found, capable);
+        assert_eq!(probed, vec![incapable, capable]);
     }
 
     #[test]
@@ -521,15 +533,6 @@ export const MARKDOWN_PARSER_WASM_BASE64 =\n\
 
         assert_eq!(discover_wasm_ar(&clang), Some(archiver));
     }
-
-    #[cfg(unix)]
-    fn make_executable(path: &Path) {
-        use std::os::unix::fs::PermissionsExt;
-        fs::set_permissions(path, fs::Permissions::from_mode(0o755)).expect("chmod");
-    }
-
-    #[cfg(not(unix))]
-    fn make_executable(_path: &Path) {}
 
     #[test]
     fn libfluxcore_bindgen_dts_reset_hook_is_inserted() {
