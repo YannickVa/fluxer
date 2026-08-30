@@ -60,7 +60,7 @@ function rules(css: string): Array<{selector: string; declarations: string}> {
 }
 
 function relative(file: string): string {
-	return file.slice(APP_SRC.length);
+	return file.slice(APP_SRC.length).replaceAll('\\', '/');
 }
 
 describe('text rendering', () => {

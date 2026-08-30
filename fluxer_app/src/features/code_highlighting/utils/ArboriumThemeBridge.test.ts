@@ -6,7 +6,7 @@ import {fileURLToPath} from 'node:url';
 import {describe, expect, it} from 'vitest';
 
 const require = createRequire(import.meta.url);
-const bridgeCss = readFileSync(new URL('./ArboriumThemeBridge.css', import.meta.url), 'utf8');
+const bridgeCss = readFileSync(new URL('./ArboriumThemeBridge.css', import.meta.url), 'utf8').replaceAll('\r\n', '\n');
 const highlightingSource = readFileSync(new URL('./ArboriumHighlighting.ts', import.meta.url), 'utf8');
 const upstreamBaseCss = readFileSync(require.resolve('@arborium/arborium/themes/base.css'), 'utf8');
 
