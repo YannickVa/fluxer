@@ -107,6 +107,33 @@ describe('Guild MFA level', () => {
 			.execute();
 		expect(updated.mfa_level).toBe(GuildMFALevel.NONE);
 	});
+	it('requires the owner to retain MFA for privileged actions while elevated MFA is enabled', async () => {
+		const owner = await createTestAccount(harness);
+		await enableTotp(harness, owner);
+		const loggedIn = await loginWithTotp(harness, owner);
+		const guild = await createGuild(harness, loggedIn.token, 'MFA Test Guild');
+		await createBuilder<GuildResponse>(harness, loggedIn.token)
+			.patch(`/guilds/${guild.id}`)
+			.body({mfa_level: GuildMFALevel.ELEVATED, mfa_method: 'totp', mfa_code: totpCodeNow(TOTP_SECRET)})
+			.expect(HTTP_STATUS.OK)
+			.execute();
+
+		await createBuilder(harness, loggedIn.token)
+			.post('/users/@me/mfa/totp/disable')
+			.body({
+				code: totpCodeNow(TOTP_SECRET),
+				mfa_method: 'totp',
+				mfa_code: totpCodeNow(TOTP_SECRET),
+			})
+			.expect(HTTP_STATUS.NO_CONTENT)
+			.execute();
+
+		await createBuilder(harness, loggedIn.token)
+			.patch(`/guilds/${guild.id}`)
+			.body({name: 'Blocked without MFA'})
+			.expect(HTTP_STATUS.BAD_REQUEST, 'TWO_FACTOR_REQUIRED')
+			.execute();
+	});
 	it('rejects mfa_level change from non-owner', async () => {
 		const {members, guild} = await setupTestGuildWithMembers(harness, 1);
 		const member = members[0]!;

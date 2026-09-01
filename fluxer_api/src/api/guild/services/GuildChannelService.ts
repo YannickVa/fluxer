@@ -14,9 +14,11 @@ import type {ISnowflakeService} from '../../infrastructure/ISnowflakeService';
 import type {UserCacheService} from '../../infrastructure/UserCacheService';
 import type {LimitConfigService} from '../../limits/LimitConfigService';
 import type {RequestCache} from '../../middleware/RequestCacheMiddleware';
+import type {IUserRepository} from '../../user/IUserRepository';
 import type {GuildAuditLogService} from '../GuildAuditLogService';
 import type {IGuildRepositoryAggregate} from '../repositories/IGuildRepositoryAggregate';
 import {ChannelOperationsService} from './channel/ChannelOperationsService';
+import {enforceGuildMfa} from './GuildMfaGuard';
 
 export class GuildChannelService {
 	private readonly channelOps: ChannelOperationsService;
@@ -30,6 +32,7 @@ export class GuildChannelService {
 		snowflakeService: ISnowflakeService,
 		guildAuditLogService: GuildAuditLogService,
 		limitConfigService: LimitConfigService,
+		private readonly userRepository: IUserRepository,
 	) {
 		this.channelOps = new ChannelOperationsService(
 			channelRepository,
@@ -125,11 +128,13 @@ export class GuildChannelService {
 	}
 
 	private async checkPermission(params: {userId: UserID; guildId: GuildID; permission: bigint}): Promise<void> {
-		const hasPermission = await this.gatewayService.checkPermission({
-			guildId: params.guildId,
-			userId: params.userId,
-			permission: params.permission,
-		});
+		const {guildId, userId, permission} = params;
+		const [hasPermission, guildData] = await Promise.all([
+			this.gatewayService.checkPermission({guildId, userId, permission}),
+			this.gatewayService.getGuildData({guildId, userId}),
+		]);
 		if (!hasPermission) throw new MissingPermissionsError();
+		if (!guildData) throw new UnknownGuildError();
+		await enforceGuildMfa({guildData, userId, permission, userRepository: this.userRepository});
 	}
 }

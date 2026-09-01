@@ -17,6 +17,7 @@ import {
 export const USER_SETTINGS_DEEP_LINK_PATH = '/settings/user';
 
 const USER_SETTINGS_TAB_TYPES = new Set<UserSettingsTabType>([
+	'getting_started',
 	'my_profile',
 	'account_security',
 	'plutonium',

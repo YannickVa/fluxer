@@ -41,6 +41,7 @@ import {
 	MicrophoneIcon,
 	PaintBrushIcon,
 	PaletteIcon,
+	PathIcon,
 	PersonSimpleCircleIcon,
 	ProhibitIcon,
 	RobotIcon,
@@ -92,6 +93,10 @@ const DESKTOP_SETTINGS_FALLBACK_DESCRIPTOR = msg({
 const PROFILE_DESCRIPTOR = msg({
 	message: 'Profile',
 	comment: 'User settings tab for editing the current user profile.',
+});
+const GETTING_STARTED_DESCRIPTOR = msg({
+	message: 'Getting Started',
+	comment: 'User settings tab for the private community setup checklist.',
 });
 const ACCOUNT_SECURITY_DESCRIPTOR = msg({
 	message: 'Account',
@@ -218,6 +223,13 @@ export function getCategoryLabel(category: UserSettingsTabCategories): React.Rea
 }
 
 const ALL_TABS_DESCRIPTORS: Array<SettingsTabDescriptor> = [
+	{
+		type: 'getting_started',
+		category: 'user_settings',
+		label: GETTING_STARTED_DESCRIPTOR,
+		icon: PathIcon,
+		iconWeight: 'duotone',
+	},
 	{
 		type: 'my_profile',
 		category: 'user_settings',
@@ -419,6 +431,9 @@ export const getSettingsTabs = (i18n: I18n): Array<SettingsTab> => {
 	const isSelfHosted = RuntimeConfig.isSelfHosted();
 	const showClaimedAccountUi = shouldShowClaimedAccountUi();
 	return allTabs.filter((tab) => {
+		if (tab.type === 'getting_started' && !RuntimeConfig.onboarding.enabled) {
+			return false;
+		}
 		if (!showClaimedAccountUi && (tab.type === 'my_profile' || tab.type === 'linked_accounts')) {
 			return false;
 		}

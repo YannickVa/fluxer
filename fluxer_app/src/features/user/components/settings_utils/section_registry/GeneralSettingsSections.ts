@@ -7,6 +7,10 @@ const PROFILE_CUSTOMIZATION_DESCRIPTOR = msg({
 	message: 'Profile customization',
 	comment: 'Settings section label for editing profile appearance and identity.',
 });
+const GETTING_STARTED_CHECKLIST_DESCRIPTOR = msg({
+	message: 'Your setup checklist',
+	comment: 'Getting Started section containing the private community setup trail.',
+});
 const REDEEM_A_GIFT_DESCRIPTOR = msg({
 	message: 'Redeem a gift',
 	comment: 'Settings section label for redeeming a gift code.',
@@ -83,6 +87,14 @@ const COMMON_FIXES_DESCRIPTOR = msg({
 	message: 'Fix a common problem',
 	comment: 'Support Center section linking to common troubleshooting settings.',
 });
+const HELP_STATUS_DESCRIPTOR = msg({
+	message: 'Help & service information',
+	comment: 'Support Center section for status, known issues, maintenance, and private help.',
+});
+const REPORT_PROBLEM_DESCRIPTOR = msg({
+	message: 'Report a problem or share feedback',
+	comment: 'Support Center section for preparing a structured problem report.',
+});
 const VERSION_UPDATES_DESCRIPTOR = msg({
 	message: 'Version & updates',
 	comment: 'Support Center section showing release identity and update controls.',
@@ -93,6 +105,13 @@ const SUPPORT_DIAGNOSTICS_DESCRIPTOR = msg({
 });
 
 export const generalSettingsSections = [
+	{
+		id: 'getting-started-checklist',
+		tabType: 'getting_started',
+		label: GETTING_STARTED_CHECKLIST_DESCRIPTOR,
+		keywords: ['welcome', 'setup', 'onboarding', 'profile', 'security', 'notifications', 'camera', 'microphone'],
+		isAdvanced: false,
+	},
 	{
 		id: 'profile-customization',
 		tabType: 'my_profile',
@@ -175,6 +194,20 @@ export const generalSettingsSections = [
 		tabType: 'support_center',
 		label: COMMON_FIXES_DESCRIPTOR,
 		keywords: ['help', 'troubleshoot', 'microphone', 'camera', 'notifications', 'display'],
+		isAdvanced: false,
+	},
+	{
+		id: 'help-status',
+		tabType: 'support_center',
+		label: HELP_STATUS_DESCRIPTOR,
+		keywords: ['help', 'status', 'known issues', 'maintenance', 'support', 'availability'],
+		isAdvanced: false,
+	},
+	{
+		id: 'report-problem',
+		tabType: 'support_center',
+		label: REPORT_PROBLEM_DESCRIPTOR,
+		keywords: ['report', 'problem', 'bug', 'feedback', 'suggestion', 'screenshot'],
 		isAdvanced: false,
 	},
 	{

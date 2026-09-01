@@ -474,7 +474,38 @@ const AppPublicConfigResponse = z.object({
 	registration: z.object({
 		collect_date_of_birth: z.boolean(),
 	}),
+	onboarding: z.object({
+		enabled: z.boolean(),
+		version: z.number().int().min(1),
+		enabled_at: z.iso.datetime().nullable(),
+		show_for_existing_users: z.boolean(),
+		welcome_message: z.string().nullable(),
+		operator_name: z.string().nullable(),
+		availability_message: z.string().nullable(),
+		primary_guild_id: SnowflakeStringType.nullable(),
+		rules_channel_id: SnowflakeStringType.nullable(),
+		introduction_channel_id: SnowflakeStringType.nullable(),
+		mfa_policy: z.enum(['optional', 'recommended', 'required']),
+		steps: z.object({
+			profile: z.boolean(),
+			security: z.boolean(),
+			notifications: z.boolean(),
+			media: z.boolean(),
+			community: z.boolean(),
+		}),
+	}),
+	support: z.object({
+		status_url: z.string().nullable(),
+		support_user_id: SnowflakeStringType.nullable(),
+		service_updates_channel_id: SnowflakeStringType.nullable(),
+		feedback_channel_id: SnowflakeStringType.nullable(),
+	}),
 });
+
+const PublicHttpUrl = z
+	.url()
+	.max(2048)
+	.refine((value) => /^https?:\/\//i.test(value), 'Must be an absolute http(s) URL');
 
 const AppPublicConfigUpdateRequest = z.object({
 	branding: z
@@ -502,6 +533,37 @@ const AppPublicConfigUpdateRequest = z.object({
 	registration: z
 		.object({
 			collect_date_of_birth: z.boolean().optional(),
+		})
+		.nullish(),
+	onboarding: z
+		.object({
+			enabled: z.boolean().optional(),
+			version: z.number().int().min(1).max(2_147_483_647).optional(),
+			show_for_existing_users: z.boolean().optional(),
+			welcome_message: z.string().trim().max(500).nullish(),
+			operator_name: z.string().trim().max(100).nullish(),
+			availability_message: z.string().trim().max(500).nullish(),
+			primary_guild_id: SnowflakeStringType.nullish(),
+			rules_channel_id: SnowflakeStringType.nullish(),
+			introduction_channel_id: SnowflakeStringType.nullish(),
+			mfa_policy: z.enum(['optional', 'recommended', 'required']).optional(),
+			steps: z
+				.object({
+					profile: z.boolean().optional(),
+					security: z.boolean().optional(),
+					notifications: z.boolean().optional(),
+					media: z.boolean().optional(),
+					community: z.boolean().optional(),
+				})
+				.optional(),
+		})
+		.nullish(),
+	support: z
+		.object({
+			status_url: PublicHttpUrl.nullish(),
+			support_user_id: SnowflakeStringType.nullish(),
+			service_updates_channel_id: SnowflakeStringType.nullish(),
+			feedback_channel_id: SnowflakeStringType.nullish(),
 		})
 		.nullish(),
 });

@@ -5,8 +5,10 @@ use crate::{
         client::AdminApiClient,
         types::{
             AppBrandingConfigUpdateRequest, AppLegalConfigUpdateRequest,
-            AppPublicConfigUpdateRequest, AppRegistrationConfigUpdateRequest,
-            AppSetupConfigUpdateRequest, CreateRegistrationUrlRequest,
+            AppOnboardingConfigUpdateRequest, AppOnboardingMfaPolicy,
+            AppOnboardingStepsConfigUpdateRequest, AppPublicConfigUpdateRequest,
+            AppRegistrationConfigUpdateRequest, AppSetupConfigUpdateRequest,
+            AppSupportConfigUpdateRequest, CreateRegistrationUrlRequest,
             GatewayRolloutConfigUpdateRequest, GatewayRolloutMode,
             InstanceAttachmentDecayUpdateRequest, InstanceBlueskyIntegrationUpdateRequest,
             InstanceBlueskyKeyIntegrationUpdateRequest, InstanceCaptchaIntegrationUpdateRequest,
@@ -186,6 +188,14 @@ pub async fn instance_config_post(
         }
         "update_app_registration" => {
             let update = build_app_registration_update(&form);
+            instance_config_result(client.update_instance_config(&update).await)
+        }
+        "update_app_onboarding" => {
+            let update = build_app_onboarding_update(&form);
+            instance_config_result(client.update_instance_config(&update).await)
+        }
+        "update_app_support" => {
+            let update = build_app_support_update(&form);
             instance_config_result(client.update_instance_config(&update).await)
         }
         "update_policy" => {
@@ -490,6 +500,8 @@ fn build_app_public_update(form: &MultiValueForm) -> InstanceConfigUpdateRequest
             }),
             legal: None,
             registration: None,
+            onboarding: None,
+            support: None,
         }),
         policy: None,
         integrations: None,
@@ -511,6 +523,8 @@ fn build_app_legal_update(form: &MultiValueForm) -> InstanceConfigUpdateRequest 
                 privacy_url: optional("app_privacy_url"),
             }),
             registration: None,
+            onboarding: None,
+            support: None,
         }),
         policy: None,
         integrations: None,
@@ -529,6 +543,78 @@ fn build_app_registration_update(form: &MultiValueForm) -> InstanceConfigUpdateR
             legal: None,
             registration: Some(AppRegistrationConfigUpdateRequest {
                 collect_date_of_birth: Some(form.bool_value("app_collect_date_of_birth")),
+            }),
+            onboarding: None,
+            support: None,
+        }),
+        policy: None,
+        integrations: None,
+        media: None,
+    }
+}
+
+fn build_app_onboarding_update(form: &MultiValueForm) -> InstanceConfigUpdateRequest {
+    let optional = |key: &str| Some(form.clean(key));
+    let mfa_policy = match form.first("app_onboarding_mfa_policy") {
+        Some("optional") => Some(AppOnboardingMfaPolicy::Optional),
+        Some("required") => Some(AppOnboardingMfaPolicy::Required),
+        _ => Some(AppOnboardingMfaPolicy::Recommended),
+    };
+    InstanceConfigUpdateRequest {
+        gateway_rollout: None,
+        registration: None,
+        sso: None,
+        app_public: Some(AppPublicConfigUpdateRequest {
+            branding: None,
+            setup: None,
+            legal: None,
+            registration: None,
+            onboarding: Some(AppOnboardingConfigUpdateRequest {
+                enabled: Some(form.bool_value("app_onboarding_enabled")),
+                version: form.parse_u32("app_onboarding_version"),
+                show_for_existing_users: Some(
+                    form.bool_value("app_onboarding_show_for_existing_users"),
+                ),
+                welcome_message: optional("app_onboarding_welcome_message"),
+                operator_name: optional("app_onboarding_operator_name"),
+                availability_message: optional("app_onboarding_availability_message"),
+                primary_guild_id: optional("app_onboarding_primary_guild_id"),
+                rules_channel_id: optional("app_onboarding_rules_channel_id"),
+                introduction_channel_id: optional("app_onboarding_introduction_channel_id"),
+                mfa_policy,
+                steps: Some(AppOnboardingStepsConfigUpdateRequest {
+                    profile: Some(form.bool_value("app_onboarding_step_profile")),
+                    security: Some(form.bool_value("app_onboarding_step_security")),
+                    notifications: Some(form.bool_value("app_onboarding_step_notifications")),
+                    media: Some(form.bool_value("app_onboarding_step_media")),
+                    community: Some(form.bool_value("app_onboarding_step_community")),
+                }),
+            }),
+            support: None,
+        }),
+        policy: None,
+        integrations: None,
+        media: None,
+    }
+}
+
+fn build_app_support_update(form: &MultiValueForm) -> InstanceConfigUpdateRequest {
+    let optional = |key: &str| Some(form.clean(key));
+    InstanceConfigUpdateRequest {
+        gateway_rollout: None,
+        registration: None,
+        sso: None,
+        app_public: Some(AppPublicConfigUpdateRequest {
+            branding: None,
+            setup: None,
+            legal: None,
+            registration: None,
+            onboarding: None,
+            support: Some(AppSupportConfigUpdateRequest {
+                status_url: optional("app_support_status_url"),
+                support_user_id: optional("app_support_user_id"),
+                service_updates_channel_id: optional("app_support_service_updates_channel_id"),
+                feedback_channel_id: optional("app_support_feedback_channel_id"),
             }),
         }),
         policy: None,
@@ -1020,6 +1106,65 @@ mod tests {
                 "example.org".to_owned(),
                 "example.net".to_owned()
             ])
+        );
+    }
+
+    #[test]
+    fn build_app_onboarding_update_preserves_explicit_rollout_choices() {
+        let form = MultiValueForm::parse(
+            b"app_onboarding_enabled=true&app_onboarding_version=3&app_onboarding_show_for_existing_users=true&app_onboarding_operator_name= Matskos Admin &app_onboarding_welcome_message= Welcome home &app_onboarding_mfa_policy=required&app_onboarding_step_profile=true&app_onboarding_step_notifications=true",
+        );
+        let request = build_app_onboarding_update(&form);
+        let onboarding = request
+            .app_public
+            .expect("app public update")
+            .onboarding
+            .expect("onboarding update");
+
+        assert_eq!(onboarding.enabled, Some(true));
+        assert_eq!(onboarding.version, Some(3));
+        assert_eq!(onboarding.show_for_existing_users, Some(true));
+        assert_eq!(
+            onboarding.operator_name,
+            Some(Some("Matskos Admin".to_owned()))
+        );
+        assert_eq!(
+            onboarding.welcome_message,
+            Some(Some("Welcome home".to_owned()))
+        );
+        assert!(matches!(
+            onboarding.mfa_policy,
+            Some(AppOnboardingMfaPolicy::Required)
+        ));
+        let steps = onboarding.steps.expect("onboarding steps");
+        assert_eq!(steps.profile, Some(true));
+        assert_eq!(steps.security, Some(false));
+        assert_eq!(steps.notifications, Some(true));
+        assert_eq!(steps.media, Some(false));
+        assert_eq!(steps.community, Some(false));
+    }
+
+    #[test]
+    fn build_app_support_update_clears_blank_optional_destinations() {
+        let form = MultiValueForm::parse(
+            b"app_support_status_url=https%3A%2F%2Fstatus.example.com&app_support_user_id=123456789&app_support_service_updates_channel_id=++&app_support_feedback_channel_id=987654321",
+        );
+        let request = build_app_support_update(&form);
+        let support = request
+            .app_public
+            .expect("app public update")
+            .support
+            .expect("support update");
+
+        assert_eq!(
+            support.status_url,
+            Some(Some("https://status.example.com".to_owned()))
+        );
+        assert_eq!(support.support_user_id, Some(Some("123456789".to_owned())));
+        assert_eq!(support.service_updates_channel_id, Some(None));
+        assert_eq!(
+            support.feedback_channel_id,
+            Some(Some("987654321".to_owned()))
         );
     }
 

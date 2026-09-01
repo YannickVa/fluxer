@@ -3,10 +3,12 @@
 import {PRODUCT_NAME} from '@app/features/app/config/I18nDisplayConstants';
 import {ENABLE_NOTIFICATIONS_DESCRIPTOR} from '@app/features/i18n/utils/CommonMessageDescriptors';
 import {usePushSubscriptions} from '@app/features/notification/hooks/usePushSubscriptions';
+import {formatQuietHoursTime, parseQuietHoursTime} from '@app/features/notification/NotificationQuietHours';
 import * as NotificationUtils from '@app/features/notification/utils/NotificationUtils';
 import * as PushSubscriptionService from '@app/features/platform/push/PushSubscriptionService';
 import * as NotificationCommands from '@app/features/ui/commands/NotificationCommands';
 import {Switch} from '@app/features/ui/components/form/FormSwitch';
+import NotificationState from '@app/features/ui/state/Notification';
 import {isDesktop} from '@app/features/ui/utils/NativeUtils';
 import {isInstalledPwa, isPwaOnMobileOrTablet} from '@app/features/ui/utils/PwaUtils';
 import * as UserSettingsCommands from '@app/features/user/commands/UserSettingsCommands';
@@ -14,7 +16,7 @@ import styles from '@app/features/user/components/modals/tabs/notifications_tab/
 import {PushSettings} from '@app/features/user/components/modals/tabs/notifications_tab/PushSettings';
 import UserSettings from '@app/features/user/state/UserSettings';
 import {msg, plural} from '@lingui/core/macro';
-import {useLingui} from '@lingui/react/macro';
+import {Trans, useLingui} from '@lingui/react/macro';
 import {clsx} from 'clsx';
 import {observer} from 'mobx-react-lite';
 import type {FC} from 'react';
@@ -79,6 +81,22 @@ const UNKNOWN_DEVICE_DESCRIPTOR = msg({
 	message: 'Unknown device',
 	comment: 'Short label in the notifications. Keep it concise.',
 });
+const QUIET_HOURS_DESCRIPTOR = msg({
+	message: 'Quiet hours',
+	comment: 'Notification setting that suppresses notifications during a daily local-time window.',
+});
+const QUIET_HOURS_DESCRIPTION_DESCRIPTOR = msg({
+	message: 'Silence notification banners and sounds on this device during a daily window. Unread indicators remain.',
+	comment: 'Description of device-local notification quiet hours.',
+});
+const START_TIME_DESCRIPTOR = msg({
+	message: 'Start time',
+	comment: 'Label for the beginning of notification quiet hours.',
+});
+const END_TIME_DESCRIPTOR = msg({
+	message: 'End time',
+	comment: 'Label for the end of notification quiet hours.',
+});
 
 interface NotificationsProps {
 	browserNotificationsEnabled: boolean;
@@ -135,6 +153,14 @@ export const Notifications: FC<NotificationsProps> = observer(
 			await PushSubscriptionService.unregisterAllPushSubscriptions();
 			await refresh();
 		};
+		const handleQuietHoursStartChange = (value: string) => {
+			const minutes = parseQuietHoursTime(value);
+			if (minutes !== null) NotificationState.setQuietHoursStartMinutes(minutes);
+		};
+		const handleQuietHoursEndChange = (value: string) => {
+			const minutes = parseQuietHoursTime(value);
+			if (minutes !== null) NotificationState.setQuietHoursEndMinutes(minutes);
+		};
 		const pushStatusMessage = loading
 			? i18n._(LOADING_PUSH_SUBSCRIPTIONS_DESCRIPTOR)
 			: subscriptions.length > 0
@@ -174,6 +200,35 @@ export const Notifications: FC<NotificationsProps> = observer(
 						onChange={handleToggleUnreadBadge}
 						data-flx="user.notifications-tab.notifications.switch.toggle-unread-badge"
 					/>
+					<Switch
+						label={i18n._(QUIET_HOURS_DESCRIPTOR)}
+						description={i18n._(QUIET_HOURS_DESCRIPTION_DESCRIPTOR)}
+						value={NotificationState.quietHoursEnabled}
+						onChange={NotificationState.setQuietHoursEnabled}
+					/>
+					{NotificationState.quietHoursEnabled ? (
+						<div className={styles.quietHoursTimes}>
+							<label>
+								<span>{i18n._(START_TIME_DESCRIPTOR)}</span>
+								<input
+									type="time"
+									value={formatQuietHoursTime(NotificationState.quietHoursStartMinutes)}
+									onChange={(event) => handleQuietHoursStartChange(event.target.value)}
+								/>
+							</label>
+							<label>
+								<span>{i18n._(END_TIME_DESCRIPTOR)}</span>
+								<input
+									type="time"
+									value={formatQuietHoursTime(NotificationState.quietHoursEndMinutes)}
+									onChange={(event) => handleQuietHoursEndChange(event.target.value)}
+								/>
+							</label>
+							<p>
+								<Trans>Uses this device’s local time. Matching start and end times means all day.</Trans>
+							</p>
+						</div>
+					) : null}
 				</div>
 				<PushSettings
 					afkTimeout={UserSettings.afkTimeout}

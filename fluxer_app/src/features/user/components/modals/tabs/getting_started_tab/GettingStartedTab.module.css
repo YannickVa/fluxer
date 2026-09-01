@@ -1,0 +1,315 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+
+.container {
+	gap: var(--spacing-6);
+}
+
+.hero {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) minmax(11rem, 0.34fr);
+	gap: var(--spacing-5);
+	align-items: center;
+	padding: var(--spacing-6);
+	background:
+		linear-gradient(135deg, color-mix(in srgb, var(--brand-primary) 13%, transparent), transparent 62%),
+		var(--settings-surface-background, var(--form-surface-background));
+	border: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+	border-radius: 0.75rem;
+}
+
+.brandMark {
+	display: grid;
+	place-items: center;
+	width: 3.5rem;
+	height: 3.5rem;
+	overflow: hidden;
+	color: var(--brand-primary);
+	background: color-mix(in srgb, var(--brand-primary) 13%, transparent);
+	border-radius: 0.875rem;
+}
+
+.brandMark img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.heroCopy {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-1-5);
+	min-width: 0;
+}
+
+.eyebrow {
+	font-size: var(--font-size-xs);
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--brand-primary);
+}
+
+.heroTitle {
+	margin: 0;
+	font-size: 1.625rem;
+	font-weight: 700;
+	line-height: 1.15;
+	color: var(--text-primary);
+}
+
+.heroDescription,
+.operatorLine {
+	max-width: 38rem;
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--text-secondary);
+}
+
+.operatorLine {
+	font-size: var(--font-size-xs);
+	color: var(--text-tertiary);
+}
+
+.progressPanel {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-3);
+	padding: var(--spacing-4);
+	background: color-mix(in srgb, var(--background-secondary) 78%, transparent);
+	border: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+	border-radius: 0.625rem;
+}
+
+.progressSummary {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: var(--spacing-2);
+}
+
+.progressSummary strong {
+	font-size: 1.25rem;
+	color: var(--text-primary);
+}
+
+.progressSummary span {
+	font-size: var(--font-size-xs);
+	color: var(--text-secondary);
+}
+
+.progressTrack {
+	height: 0.375rem;
+	overflow: hidden;
+	background: var(--background-modifier-accent);
+	border-radius: 999px;
+}
+
+.progressValue {
+	height: 100%;
+	background: var(--brand-primary);
+	border-radius: inherit;
+	transition: width 180ms ease;
+}
+
+.stepList {
+	overflow: hidden;
+	border: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+	border-radius: 0.625rem;
+}
+
+.stepRow {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) minmax(10rem, auto);
+	gap: var(--spacing-3);
+	align-items: center;
+	padding: var(--spacing-4);
+	background: var(--settings-surface-background, var(--form-surface-background));
+	border-top: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+}
+
+.stepRow:first-child {
+	border-top: 0;
+}
+
+.stepIcon {
+	display: grid;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	color: var(--brand-primary);
+	background: color-mix(in srgb, var(--brand-primary) 10%, transparent);
+	border-radius: 0.625rem;
+}
+
+.stepCopy {
+	min-width: 0;
+}
+
+.stepTitleRow {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--spacing-2);
+}
+
+.stepTitle {
+	margin: 0;
+	font-size: 0.9375rem;
+	font-weight: 650;
+	color: var(--text-primary);
+}
+
+.stepDescription {
+	margin: 0.1875rem 0 0;
+	font-size: 0.8125rem;
+	line-height: 1.45;
+	color: var(--text-secondary);
+}
+
+.statusPill {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--spacing-1);
+	font-size: 0.6875rem;
+	font-weight: 650;
+}
+
+.statusComplete {
+	color: var(--status-online);
+}
+
+.statusAttention {
+	color: var(--status-warning);
+}
+
+.statusSkipped {
+	color: var(--text-tertiary);
+}
+
+.stepActions,
+.footerActions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: var(--spacing-2);
+}
+
+.presetGroup {
+	display: flex;
+	overflow: hidden;
+	border: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+	border-radius: 0.5rem;
+}
+
+.presetButton {
+	padding: var(--spacing-2) var(--spacing-2-5);
+	font: inherit;
+	font-size: 0.75rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--text-secondary);
+	cursor: pointer;
+	background: transparent;
+	border: 0;
+	border-left: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+}
+
+.presetButton:first-child {
+	border-left: 0;
+}
+
+.presetButton:disabled {
+	cursor: not-allowed;
+	opacity: 0.5;
+}
+
+.presetButtonSelected {
+	color: var(--brand-primary);
+	background: color-mix(in srgb, var(--brand-primary) 12%, transparent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.presetButton:not(:disabled):hover {
+		color: var(--text-primary);
+		background: var(--background-modifier-hover);
+	}
+}
+
+.footer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--spacing-4);
+	padding: var(--spacing-4);
+	background: var(--settings-surface-background, var(--form-surface-background));
+	border: 0.0625rem solid var(--settings-border-color, var(--background-modifier-accent));
+	border-radius: 0.625rem;
+}
+
+.footerCopy {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-1);
+	font-size: 0.8125rem;
+	color: var(--text-secondary);
+}
+
+.footerCopy strong {
+	font-size: 0.9375rem;
+	color: var(--text-primary);
+}
+
+.error {
+	color: var(--status-danger);
+}
+
+@media (max-width: 48rem) {
+	.hero {
+		grid-template-columns: auto minmax(0, 1fr);
+	}
+
+	.progressPanel {
+		grid-column: 1 / -1;
+	}
+
+	.stepRow {
+		grid-template-columns: auto minmax(0, 1fr);
+	}
+
+	.stepActions {
+		grid-column: 2;
+		justify-content: flex-start;
+	}
+}
+
+@media (max-width: 35rem) {
+	.hero {
+		grid-template-columns: 1fr;
+	}
+
+	.brandMark {
+		display: none;
+	}
+
+	.stepRow {
+		grid-template-columns: 1fr;
+	}
+
+	.stepIcon {
+		display: none;
+	}
+
+	.stepActions {
+		grid-column: 1;
+	}
+
+	.footer {
+		align-items: stretch;
+		flex-direction: column;
+	}
+
+	.footerActions {
+		justify-content: flex-start;
+	}
+}

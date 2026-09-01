@@ -86,6 +86,8 @@ import GuildListState, {type OrganizedItem} from '@app/features/guild/state/Guil
 import GuildReadState from '@app/features/guild/state/GuildReadState';
 import HiddenGuildListButtons from '@app/features/guild/state/HiddenGuildListButtons';
 import {PRIMARY_NAVIGATION_LANDMARK_DESCRIPTOR} from '@app/features/i18n/utils/CommonMessageDescriptors';
+import {getPilotOnboardingProgress} from '@app/features/onboarding/PilotOnboardingPreferences';
+import {shouldAutoOpenPilotOnboarding} from '@app/features/onboarding/PilotOnboardingState';
 import {openMacPermissionsModal} from '@app/features/permissions/system/commands/MacPermissionsModalCommands';
 import MacPermissions from '@app/features/permissions/system/state/MacPermissions';
 import {useLocation} from '@app/features/platform/components/router/RouterReact';
@@ -95,6 +97,7 @@ import ReadStates from '@app/features/read_state/state/ReadStates';
 import {getRemScaleForDocument} from '@app/features/theme/layout/RemFromPx';
 import {AxisOrientation, type VerticalEdge} from '@app/features/ui/AxisOrientation';
 import * as DimensionCommands from '@app/features/ui/commands/DimensionCommands';
+import * as ModalCommands from '@app/features/ui/commands/ModalCommands';
 import {Scroller, type ScrollerHandle} from '@app/features/ui/components/Scroller';
 import {useHoverDeferredOrderedItems} from '@app/features/ui/hooks/UseHoverDeferredOrderedItems';
 import {useDragAutoScroll} from '@app/features/ui/hooks/useDragAutoScroll';
@@ -102,12 +105,14 @@ import {RelativePosition} from '@app/features/ui/RelativePosition';
 import Dimension from '@app/features/ui/state/Dimension';
 import KeyboardMode from '@app/features/ui/state/KeyboardMode';
 import MobileLayout from '@app/features/ui/state/MobileLayout';
+import ModalState from '@app/features/ui/state/Modal';
 import Nagbar from '@app/features/ui/state/Nagbar';
 import SidebarPreferences from '@app/features/ui/state/SidebarPreferences';
 import SidebarWidth from '@app/features/ui/state/SidebarWidth';
 import WhatsNew from '@app/features/ui/state/WhatsNew';
 import {Tooltip} from '@app/features/ui/tooltip/Tooltip';
 import * as UserSettingsCommands from '@app/features/user/commands/UserSettingsCommands';
+import {UserSettingsModal} from '@app/features/user/components/modals/UserSettingsModal';
 import StatusPage from '@app/features/user/state/StatusPage';
 import UserGuildSettings from '@app/features/user/state/UserGuildSettings';
 import UserSettings, {type GuildFolder} from '@app/features/user/state/UserSettings';
@@ -157,6 +162,7 @@ const GUILD_ROW_STYLE_WITH_GAP: React.CSSProperties = Object.freeze({
 	width: '100%',
 	paddingBottom: 'var(--guild-list-item-gap)',
 });
+const pilotOnboardingOpenedThisSession = new Set<string>();
 
 interface GuildsLayoutSidebarStyle extends React.CSSProperties {
 	'--layout-sidebar-width': string;
@@ -2242,6 +2248,25 @@ export const GuildsLayout = observer(({children}: {children: React.ReactNode}) =
 		MacPermissions.markOnboardingOpenedThisSession();
 		openMacPermissionsModal();
 	}, [isReady, user]);
+	const hasModalOpen = ModalState.hasModalOpen();
+	useEffect(() => {
+		if (!isReady || !user || !user.isClaimed() || !UserSettings.isHydrated()) return;
+		if (hasModalOpen) return;
+		const config = RuntimeConfig.onboarding;
+		const sessionKey = `${user.id}:${config.version}`;
+		if (pilotOnboardingOpenedThisSession.has(sessionKey)) return;
+		if (
+			!shouldAutoOpenPilotOnboarding({
+				config,
+				progress: getPilotOnboardingProgress(),
+				userCreatedAt: user.createdAt,
+			})
+		) {
+			return;
+		}
+		pilotOnboardingOpenedThisSession.add(sessionKey);
+		ModalCommands.push(ModalCommands.modal(() => <UserSettingsModal initialTab="getting_started" />));
+	}, [hasModalOpen, isReady, user]);
 	const shouldShowSidebarDivider = !mobileLayout.enabled;
 	return (
 		<div

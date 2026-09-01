@@ -2,6 +2,7 @@
 
 import {canSwitchAccountFromStalledConnection} from '@app/features/app/ConnectionRecovery';
 import {isClientBooting, isClientReconnecting} from '@app/features/app/state/ClientReadiness';
+import RuntimeConfig from '@app/features/app/state/RuntimeConfig';
 import Nagbar from '@app/features/ui/state/Nagbar';
 import StatusPage from '@app/features/user/state/StatusPage';
 import {ExternalUrls} from '@fluxer/constants/src/ExternalUrls';
@@ -40,6 +41,16 @@ const CONNECTION_LOST_DESCRIPTOR = msg({
 	comment:
 		'Banner shown when the app loses its gateway connection after having loaded. The app stays usable, so keep the tone calm.',
 });
+const PRIVATE_INSTANCE_OFFLINE_DESCRIPTOR = msg({
+	message:
+		'{productName} is currently offline. It may have been intentionally stopped; we’ll reconnect automatically when it returns.',
+	comment:
+		'Calm connection banner for a private self-hosted instance whose server or VM may have been deliberately stopped.',
+});
+const PRIVATE_INSTANCE_RECONNECTING_DESCRIPTOR = msg({
+	message: '{productName} is offline. Reconnecting automatically…',
+	comment: 'Calm connection banner shown after an established private self-hosted connection is lost.',
+});
 const VIEW_STATUS_PAGE_DESCRIPTOR = msg({
 	message: 'View status page',
 	comment: 'Button on the connection banner. Opens the external service status page.',
@@ -60,7 +71,10 @@ export interface ConnectionNoticeShape {
 
 export function resolveConnectionNoticeShape(): ConnectionNoticeShape {
 	if (isClientReconnecting()) {
-		return {tone: ConnectionNoticeTone.NEUTRAL, hasActions: false};
+		return {
+			tone: ConnectionNoticeTone.NEUTRAL,
+			hasActions: RuntimeConfig.support.status_url !== null,
+		};
 	}
 	if (StatusPage.scheduledMaintenance != null) {
 		return {tone: ConnectionNoticeTone.MAINTENANCE, hasActions: true};
@@ -74,6 +88,8 @@ export function useConnectionNotice(): ConnectionNotice | null {
 	const reconnecting = isClientReconnecting();
 	const forced = Nagbar.forceConnectionNotice;
 	const showSwitchAccount = canSwitchAccountFromStalledConnection();
+	const isSelfHosted = RuntimeConfig.isSelfHosted();
+	const configuredStatusUrl = RuntimeConfig.support.status_url;
 	const [bootStalled, setBootStalled] = useState(false);
 	useEffect(() => {
 		if (!booting) {
@@ -99,8 +115,10 @@ export function useConnectionNotice(): ConnectionNotice | null {
 	if (reconnecting) {
 		return {
 			tone: ConnectionNoticeTone.NEUTRAL,
-			message: i18n._(CONNECTION_LOST_DESCRIPTOR),
-			action: null,
+			message: isSelfHosted
+				? i18n._(PRIVATE_INSTANCE_RECONNECTING_DESCRIPTOR, {productName: RuntimeConfig.productName})
+				: i18n._(CONNECTION_LOST_DESCRIPTOR),
+			action: configuredStatusUrl ? {label: i18n._(VIEW_STATUS_PAGE_DESCRIPTOR), url: configuredStatusUrl} : null,
 			showSwitchAccount: false,
 		};
 	}
@@ -119,6 +137,14 @@ export function useConnectionNotice(): ConnectionNotice | null {
 			tone: ConnectionNoticeTone.NEUTRAL,
 			message: incident.name,
 			action: {label: i18n._(VIEW_INCIDENT_DETAILS_DESCRIPTOR), url: incident.url},
+			showSwitchAccount,
+		};
+	}
+	if (isSelfHosted) {
+		return {
+			tone: ConnectionNoticeTone.NEUTRAL,
+			message: i18n._(PRIVATE_INSTANCE_OFFLINE_DESCRIPTOR, {productName: RuntimeConfig.productName}),
+			action: configuredStatusUrl ? {label: i18n._(VIEW_STATUS_PAGE_DESCRIPTOR), url: configuredStatusUrl} : null,
 			showSwitchAccount,
 		};
 	}

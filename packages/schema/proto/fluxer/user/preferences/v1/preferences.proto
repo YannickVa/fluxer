@@ -49,6 +49,9 @@ message SyncedPreferences {
   KeybindSettings keybinds = 111;
   ChatInputSettings chat_input = 112;
 
+  // Fork extension: use a high field number to avoid collisions with upstream preferences.
+  InstanceOnboardingState instance_onboarding = 1000;
+
 }
 
 message SpellcheckSettings {
@@ -258,4 +261,10 @@ enum MfaMethod {
 
 message ChatInputSettings {
   optional bool convert_emoticons = 1;
+}
+
+message InstanceOnboardingState {
+  uint32 completed_version = 1;
+  uint32 dismissed_version = 2;
+  repeated string acknowledged_step_ids = 3;
 }

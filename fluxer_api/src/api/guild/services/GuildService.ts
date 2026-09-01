@@ -2,9 +2,8 @@
 
 import {AuditLogActionType} from '@fluxer/constants/src/AuditLogActionType';
 import {Permissions} from '@fluxer/constants/src/ChannelConstants';
-import {GuildFeatures, GuildMFALevel} from '@fluxer/constants/src/GuildConstants';
+import {GuildFeatures} from '@fluxer/constants/src/GuildConstants';
 import {ValidationErrorCodes} from '@fluxer/constants/src/ValidationErrorCodes';
-import {MfaNotEnabledError} from '@fluxer/errors/src/domains/auth/MfaNotEnabledError';
 import {InputValidationError} from '@fluxer/errors/src/domains/core/InputValidationError';
 import {MissingAccessError} from '@fluxer/errors/src/domains/core/MissingAccessError';
 import {MissingPermissionsError} from '@fluxer/errors/src/domains/core/MissingPermissionsError';
@@ -44,6 +43,7 @@ import {GuildChannelService} from './GuildChannelService';
 import {GuildContentService} from './GuildContentService';
 import {GuildDataService} from './GuildDataService';
 import {GuildMemberService} from './GuildMemberService';
+import {enforceGuildMfa, getGuildMfaFilteredPermissions, hasRequiredGuildMfa} from './GuildMfaGuard';
 import {GuildModerationService} from './GuildModerationService';
 import {GuildRoleService} from './GuildRoleService';
 import {GuildSearchService} from './GuildSearchService';
@@ -94,17 +94,6 @@ interface GuildAuth {
 	hasPermission: (permission: bigint) => Promise<boolean>;
 	canManageRoles: (targetUserId: UserID, targetRoleId: RoleID) => Promise<boolean>;
 }
-
-const ELEVATED_MFA_PERMISSIONS =
-	Permissions.KICK_MEMBERS |
-	Permissions.BAN_MEMBERS |
-	Permissions.ADMINISTRATOR |
-	Permissions.MANAGE_CHANNELS |
-	Permissions.MANAGE_GUILD |
-	Permissions.MANAGE_MESSAGES |
-	Permissions.MANAGE_ROLES |
-	Permissions.MANAGE_WEBHOOKS |
-	Permissions.MODERATE_MEMBERS;
 
 export class GuildService {
 	public readonly data: GuildDataService;
@@ -182,6 +171,7 @@ export class GuildService {
 			gatewayService,
 			guildAuditLogService,
 			limitConfigService,
+			userRepository,
 		);
 		this.moderation = new GuildModerationService(
 			guildRepository,
@@ -211,6 +201,7 @@ export class GuildService {
 			snowflakeService,
 			guildAuditLogService,
 			limitConfigService,
+			userRepository,
 		);
 		this.search = new GuildSearchService(
 			channelRepository,
@@ -561,33 +552,41 @@ export class GuildService {
 	async getGuildAuthenticated({userId, guildId}: {userId: UserID; guildId: GuildID}): Promise<GuildAuth> {
 		const guildData = await this.gatewayService.getGuildData({guildId, userId});
 		if (!guildData) throw new MissingAccessError();
-		const requiresGuildMfa = guildData.mfa_level === GuildMFALevel.ELEVATED && guildData.owner_id !== userId.toString();
-		let actorLacksMfa = false;
-		if (requiresGuildMfa) {
-			const actor = await this.userRepository.findUnique(userId);
-			actorLacksMfa = !actor || actor.authenticatorTypes.size === 0;
-		}
-		const enforceGuildMfa = (permission: bigint) => {
-			if (requiresGuildMfa && actorLacksMfa && (permission & ELEVATED_MFA_PERMISSIONS) !== 0n) {
-				throw new MfaNotEnabledError();
-			}
-		};
 		const checkPermission = async (permission: bigint) => {
 			const hasPermission = await this.gatewayService.checkPermission({guildId, userId, permission});
 			if (!hasPermission) throw new MissingPermissionsError();
-			enforceGuildMfa(permission);
+			await enforceGuildMfa({guildData, userId, permission, userRepository: this.userRepository});
 		};
 		const checkTargetMember = async (targetUserId: UserID) => {
 			const canManage = await this.gatewayService.checkTargetMember({guildId, userId, targetUserId});
 			if (!canManage) throw new MissingPermissionsError();
+			await enforceGuildMfa({
+				guildData,
+				userId,
+				permission: Permissions.MODERATE_MEMBERS,
+				userRepository: this.userRepository,
+			});
 		};
 		const getAssignableRoleIds = async () => this.gatewayService.getAssignableRoles({guildId, userId});
 		const getMaxRolePosition = async () => this.gatewayService.getUserMaxRolePosition({guildId, userId});
-		const getMyPermissions = async () => this.gatewayService.getUserPermissions({guildId, userId});
+		const getMyPermissions = async () =>
+			getGuildMfaFilteredPermissions({
+				guildData,
+				userId,
+				permissions: await this.gatewayService.getUserPermissions({guildId, userId}),
+				userRepository: this.userRepository,
+			});
 		const hasPermission = async (permission: bigint) =>
-			this.gatewayService.checkPermission({guildId, userId, permission});
+			(await this.gatewayService.checkPermission({guildId, userId, permission})) &&
+			(await hasRequiredGuildMfa({guildData, userId, permission, userRepository: this.userRepository}));
 		const canManageRoles = async (targetUserId: UserID, targetRoleId: RoleID) =>
-			this.gatewayService.canManageRoles({guildId, userId, targetUserId, roleId: targetRoleId});
+			(await this.gatewayService.canManageRoles({guildId, userId, targetUserId, roleId: targetRoleId})) &&
+			(await hasRequiredGuildMfa({
+				guildData,
+				userId,
+				permission: Permissions.MANAGE_ROLES,
+				userRepository: this.userRepository,
+			}));
 		return {
 			guildData,
 			checkPermission,

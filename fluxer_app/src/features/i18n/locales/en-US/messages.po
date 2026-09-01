@@ -338,7 +338,7 @@ msgstr "{count, plural, one {... (# row left)} other {... (# rows left)}}"
 msgid "{count, plural, one {# active override} other {# active overrides}}"
 msgstr "{count, plural, one {# active override} other {# active overrides}}"
 
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:141
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:167
 msgid "{count, plural, one {# active subscription} other {# active subscriptions}}"
 msgstr "{count, plural, one {# active subscription} other {# active subscriptions}}"
 
@@ -361,7 +361,7 @@ msgstr "{count, plural, one {# bookmark} other {# bookmarks}}"
 msgid "{count, plural, one {# community found} other {# communities found}}"
 msgstr "{count, plural, one {# community found} other {# communities found}}"
 
-#: src/features/app/components/layout/GuildsLayout.tsx:1949
+#: src/features/app/components/layout/GuildsLayout.tsx:1955
 msgid "{count, plural, one {# community is temporarily unavailable due to a flux capacitor malfunction.} other {# communities are temporarily unavailable due to a flux capacitor malfunction.}}"
 msgstr "{count, plural, one {# community is temporarily unavailable due to a flux capacitor malfunction.} other {# communities are temporarily unavailable due to a flux capacitor malfunction.}}"
 
@@ -645,12 +645,12 @@ msgid "{displayedUnreadDmCount} unread DMs"
 msgstr "{displayedUnreadDmCount} unread DMs"
 
 #. Toast title announcing a newly accepted friend request.
-#: src/features/ui/state/Notification.ts:53
+#: src/features/ui/state/Notification.ts:58
 msgid "{displayName} is now your friend!"
 msgstr "{displayName} is now your friend!"
 
 #. Toast title announcing an incoming friend request.
-#: src/features/ui/state/Notification.ts:49
+#: src/features/ui/state/Notification.ts:54
 msgid "{displayName} sent you a friend request"
 msgstr "{displayName} sent you a friend request"
 
@@ -887,7 +887,7 @@ msgstr "{length} watching"
 msgid "{lineCount, plural, one {# line} other {# lines}}"
 msgstr "{lineCount, plural, one {# line} other {# lines}}"
 
-#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:147
+#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:149
 msgid "{matchCount, plural, one {# match} other {# matches}}"
 msgstr "{matchCount, plural, one {# match} other {# matches}}"
 
@@ -1118,6 +1118,16 @@ msgstr "{productName} detected a potential raid in this community. Invites are p
 msgid "{productName} detected a potential raid, so new users can't join right now."
 msgstr "{productName} detected a potential raid, so new users can't join right now."
 
+#. Calm connection banner for a private self-hosted instance whose server or VM may have been deliberately stopped.
+#: src/features/app/hooks/useConnectionNotice.ts:44
+msgid "{productName} is currently offline. It may have been intentionally stopped; we’ll reconnect automatically when it returns."
+msgstr "{productName} is currently offline. It may have been intentionally stopped; we’ll reconnect automatically when it returns."
+
+#. Calm connection banner shown after an established private self-hosted connection is lost.
+#: src/features/app/hooks/useConnectionNotice.ts:50
+msgid "{productName} is offline. Reconnecting automatically…"
+msgstr "{productName} is offline. Reconnecting automatically…"
+
 #. Profile membership label showing when the user account was created.
 #: src/features/user/components/popouts/UserProfileShared.tsx:54
 msgid "{productName} member since"
@@ -1189,7 +1199,7 @@ msgid "{productName} Staff"
 msgstr "{productName} Staff"
 
 #. Label in the notifications.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:61
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:63
 msgid "{productName} uses push notifications when installed as a mobile PWA. Registering ensures the gateway can reach your device even when the app is backgrounded."
 msgstr "{productName} uses push notifications when installed as a mobile PWA. Registering ensures the gateway can reach your device even when the app is backgrounded."
 
@@ -1956,7 +1966,7 @@ msgstr "a hostname, e.g. {exampleDomain}"
 msgid "A Linux desktop update is available. Choose the package format for this system and {productName} will save it locally."
 msgstr "A Linux desktop update is available. Choose the package format for this system and {productName} will save it locally."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:511
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:676
 msgid "A live path through the systems needed for chat, calls, and updates."
 msgstr "A live path through the systems needed for chat, calls, and updates."
 
@@ -2118,7 +2128,7 @@ msgstr "Access your basic profile information (username, avatar, etc.)"
 #. User settings tab for accessibility preferences (visual, motion, screen reader, etc.).
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:14
 #: src/features/user/components/settings_utils/section_registry/SharedDescriptors.ts:93
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:67
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:68
 msgid "Accessibility"
 msgstr "Accessibility"
 
@@ -2132,7 +2142,7 @@ msgstr "Accessible live region"
 #. User settings tab for account login, password, MFA, and security.
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:11
 #: src/features/user/components/settings_utils/section_registry/AccountSecuritySections.ts:129
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:96
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:101
 msgid "Account"
 msgstr "Account"
 
@@ -2169,6 +2179,10 @@ msgstr "Account data"
 #: src/features/moderation/components/report_modal/IARModalCopy.ts:279
 msgid "Account exists to spam, scam, or abuse the platform."
 msgstr "Account exists to spam, scam, or abuse the platform."
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:358
+msgid "Account or access problem"
+msgstr "Account or access problem"
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/section_registry/AccountSecuritySections.ts:121
@@ -2404,6 +2418,10 @@ msgstr "Add a community"
 #: src/features/auth/flow/DesktopHandoffAccountSelector.tsx:75
 msgid "Add a different account"
 msgstr "Add a different account"
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:282
+msgid "Add a display name and avatar so friends can recognize you. Status and privacy choices remain optional."
+msgstr "Add a display name and avatar so friends can recognize you. Status and privacy choices remain optional."
 
 #. Empty-state hint in the friends list when the user has no friends yet.
 #: src/features/relationship/utils/FriendsListUtils.tsx:31
@@ -2844,7 +2862,7 @@ msgstr "Admins paused invites — you can't join right now."
 #: src/features/channel/components/modals/channel_tabs/ChannelOverviewTab.tsx:337
 #: src/features/guild/components/modals/guild_tabs/guild_overview_tab/index.tsx:28
 #: src/features/ui/action_menu/items/VoiceParticipantMenuData.tsx:178
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:146
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:151
 #: src/features/voice/components/voice_connection_status/VoiceDetailsPopout.tsx:60
 msgid "Advanced"
 msgstr "Advanced"
@@ -2951,7 +2969,7 @@ msgstr "All <0/>, forever. No billing, no renewals."
 msgid "All actions"
 msgstr "All actions"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:496
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:661
 msgid "All checked systems look healthy."
 msgstr "All checked systems look healthy."
 
@@ -3065,6 +3083,10 @@ msgstr "Allow {PRODUCT_NAME} to access your microphone. Check your browser's add
 #: src/features/guild/components/modals/guild_tabs/GuildAuditLogTabRenderers.tsx:666
 msgid "Allow @mention."
 msgstr "Allow @mention."
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:377
+msgid "Allow & test"
+msgstr "Allow & test"
 
 #. Description text in the application info section.
 #: src/features/user/components/modals/tabs/applications_tab/application_detail/ApplicationInfoSection.tsx:40
@@ -3739,7 +3761,11 @@ msgstr "App icon badge"
 msgid "App language: {format}"
 msgstr "App language: {format}"
 
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:214
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:356
+msgid "App or connection problem"
+msgstr "App or connection problem"
+
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:219
 msgid "App settings"
 msgstr "App settings"
 
@@ -3766,7 +3792,7 @@ msgstr "App zoom level"
 #. Advanced settings category tag.
 #. User settings tab for app appearance and layout options.
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:13
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:117
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:122
 msgid "Appearance"
 msgstr "Appearance"
 
@@ -3839,8 +3865,8 @@ msgstr "Application updated successfully"
 #: src/features/user/components/modals/tabs/applications_tab/index.tsx:90
 #: src/features/user/components/modals/tabs/applications_tab/index.tsx:129
 #: src/features/user/components/settings_utils/search_index/SharedDescriptors.ts:29
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:74
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:71
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:78
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:72
 msgid "Applications"
 msgstr "Applications"
 
@@ -4366,7 +4392,7 @@ msgid "Authorized"
 msgstr "Authorized"
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:30
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:34
 msgid "Authorized applications"
 msgstr "Authorized applications"
 
@@ -4380,8 +4406,8 @@ msgstr "Authorized applications"
 #: src/features/user/components/modals/tabs/AuthorizedAppsTab.tsx:506
 #: src/features/user/components/settings_utils/search_index/AuthorizedAppsIndex.ts:10
 #: src/features/user/components/settings_utils/section_registry/AccountSecuritySections.ts:148
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:34
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:108
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:38
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:113
 msgid "Authorized apps"
 msgstr "Authorized apps"
 
@@ -5070,7 +5096,7 @@ msgstr "Between 1 and 32 characters"
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/PlutoniumIndex.ts:27
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:212
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:217
 msgid "Billing"
 msgstr "Billing"
 
@@ -5211,8 +5237,8 @@ msgstr "Blocked"
 #: src/features/user/components/modals/tabs/BlockedUsersTab.tsx:210
 #: src/features/user/components/settings_utils/search_index/BlockedUsersIndex.ts:6
 #: src/features/user/components/settings_utils/section_registry/AccountSecuritySections.ts:152
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:26
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:59
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:30
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:60
 msgid "Blocked users"
 msgstr "Blocked users"
 
@@ -5465,7 +5491,7 @@ msgstr "Branding asset preview"
 msgid "Brightness"
 msgstr "Brightness"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:775
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1085
 msgid "Browser"
 msgstr "Browser"
 
@@ -6053,6 +6079,7 @@ msgstr "category"
 #. Channel type chip label for a community category container.
 #: src/features/channel/utils/ChannelUtils.tsx:35
 #: src/features/guild/components/modals/guild_tabs/GuildDiscoveryTab.tsx:458
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:947
 msgid "Category"
 msgstr "Category"
 
@@ -6609,7 +6636,7 @@ msgstr "Character limit exceeded by {remaining}"
 #: src/features/input/components/modals/KeyboardShortcutsCheatsheetModal.tsx:40
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:15
 #: src/features/user/components/modals/tabs/keybinds_tab/DefaultKeybindsList.tsx:39
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:121
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:126
 msgid "Chat"
 msgstr "Chat"
 
@@ -6642,19 +6669,24 @@ msgstr "chat input"
 msgid "Chat shortcuts"
 msgstr "Chat shortcuts"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:882
+msgid "Check current information first, or ask the operator privately."
+msgstr "Check current information first, or ask the operator privately."
+
 #. Tray menu item. Triggers the auto-updater to look for a new desktop build.
 #: src/features/platform/utils/DesktopLocaleBridge.ts:160
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:823
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1133
 msgid "Check for updates"
 msgstr "Check for updates"
 
 #. Support Center section for live service, connection, device, and update checks.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:510
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:78
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:405
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:675
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:82
 msgid "Check my setup"
 msgstr "Check my setup"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:654
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:819
 msgid "Check now"
 msgstr "Check now"
 
@@ -6667,9 +6699,13 @@ msgstr "Check our <0>{BLUESKY_PROVIDER_NAME} ({FLUXER_BLUESKY_HANDLE})</0> for s
 msgid "Check out my custom theme!"
 msgstr "Check out my custom theme!"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:686
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:851
 msgid "Check permission, preview video, and select a camera."
 msgstr "Check permission, preview video, and select a camera."
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:393
+msgid "Check voice & video"
+msgstr "Check voice & video"
 
 #. Error-state description in the channel and chat gif picker view.
 #: src/features/channel/components/pickers/gif/GifPickerView.tsx:44
@@ -6677,7 +6713,7 @@ msgstr "Check permission, preview video, and select a camera."
 msgid "Check your connection and try again."
 msgstr "Check your connection and try again."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:481
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:646
 msgid "Check your connection, devices, app version, and the services this client depends on."
 msgstr "Check your connection, devices, app version, and the services this client depends on."
 
@@ -6706,7 +6742,7 @@ msgstr "Check your inbox for a verification email."
 msgid "Checkboxes"
 msgstr "Checkboxes"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:82
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:138
 msgid "Checking"
 msgstr "Checking"
 
@@ -6812,6 +6848,10 @@ msgstr "Choose a new password."
 msgid "Choose a speed for spoken text."
 msgstr "Choose a speed for spoken text."
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:335
+msgid "Choose a starting point, then test this device. You can fine-tune each community and channel later."
+msgstr "Choose a starting point, then test this device. You can fine-tune each community and channel later."
+
 #. Settings search entry description. One-line summary of what the settings search entry controls.
 #: src/features/user/components/settings_utils/search_index/PlutoniumIndex.ts:75
 msgid "Choose a subscription plan or gift option"
@@ -6860,7 +6900,7 @@ msgstr "Choose an option"
 msgid "Choose background"
 msgstr "Choose background"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:677
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:842
 msgid "Choose devices, check levels, and test your microphone."
 msgstr "Choose devices, check levels, and test your microphone."
 
@@ -8136,6 +8176,10 @@ msgstr "Complete the required email and phone verification steps below to contin
 msgid "Complete the required verification to continue using {productName}."
 msgstr "Complete the required verification to continue using {productName}."
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:280
+msgid "Complete your profile"
+msgstr "Complete your profile"
+
 #. Label in the premium badge settings. Preserve {premiumProductName}; it is inserted by code. Keep the tone plain and specific.
 #: src/features/user/components/modals/tabs/my_profile_tab/PremiumBadgeSettings.tsx:16
 msgid "Completely hide your {premiumProductName} badge from other users"
@@ -8304,6 +8348,10 @@ msgstr "Confirm password"
 msgid "Confirm voice join"
 msgstr "Confirm voice join"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:395
+msgid "Confirm your microphone, speaker, and camera on this device. A camera is optional."
+msgstr "Confirm your microphone, speaker, and camera on this device. A camera is optional."
+
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/ChatSettingsIndex.ts:439
 msgid "Confirmation"
@@ -8390,7 +8438,7 @@ msgid "Connection ID"
 msgstr "Connection ID"
 
 #. Banner shown while the app is still loading and the connection is taking unusually long. Phrased as a question offering help.
-#: src/features/app/hooks/useConnectionNotice.ts:33
+#: src/features/app/hooks/useConnectionNotice.ts:34
 msgid "Connection issues?"
 msgstr "Connection issues?"
 
@@ -8404,7 +8452,7 @@ msgid "Connection lost"
 msgstr "Connection lost"
 
 #. Banner shown when the app loses its gateway connection after having loaded. The app stays usable, so keep the tone calm.
-#: src/features/app/hooks/useConnectionNotice.ts:38
+#: src/features/app/hooks/useConnectionNotice.ts:39
 msgid "Connection lost. Reconnecting…"
 msgstr "Connection lost. Reconnecting…"
 
@@ -8454,12 +8502,12 @@ msgstr "Connection: {connectionId}"
 #: src/features/i18n/utils/CommonMessageDescriptors.ts:410
 #: src/features/user/components/popouts/UserProfileShared.tsx:675
 #: src/features/user/components/settings_utils/search_index/LinkedAccountsIndex.ts:8
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:38
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:42
 msgid "Connections"
 msgstr "Connections"
 
 #. User settings tab for linked external accounts.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:112
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:117
 msgctxt "user-settings-tab"
 msgid "Connections"
 msgstr "Connections"
@@ -8561,6 +8609,10 @@ msgstr "Context menus can be opened with left-click (on buttons) or right-click 
 #: src/features/user/components/modals/tabs/AuthorizedAppsTab.tsx:181
 msgid "Continue"
 msgstr "Continue"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1005
+msgid "Continue privately"
+msgstr "Continue privately"
 
 #. Plutonium checkout pre-approval prompt secondary button. Continues straight to the standard checkout screen.
 #: src/features/app/components/dialogs/components/plutonium/hooks/useCheckoutActions.tsx:89
@@ -8924,6 +8976,10 @@ msgstr "Copy paused while sharing"
 msgid "Copy reference for {fileName}"
 msgstr "Copy reference for {fileName}"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:998
+msgid "Copy report"
+msgstr "Copy report"
+
 #. Developer-mode action that copies the role ID to the clipboard.
 #: src/features/ui/action_menu/items/CopyMenuItems.tsx:14
 msgid "Copy role ID"
@@ -8954,7 +9010,7 @@ msgstr "Copy sticker ID"
 msgid "Copy sticker URL"
 msgstr "Copy sticker URL"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:881
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1191
 msgid "Copy support summary"
 msgstr "Copy support summary"
 
@@ -9632,7 +9688,7 @@ msgstr "Create a new community or join an existing one."
 msgid "Create a new group with {userName}"
 msgstr "Create a new group with {userName}"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:841
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1151
 msgid "Create a small, privacy-reviewed snapshot for someone helping you troubleshoot."
 msgstr "Create a small, privacy-reviewed snapshot for someone helping you troubleshoot."
 
@@ -11062,6 +11118,11 @@ msgstr "Describe the sticker"
 msgid "Describe this media for screen readers"
 msgstr "Describe this media for screen readers"
 
+#. Validation error for an empty problem report description.
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:89
+msgid "Describe what happened before continuing."
+msgstr "Describe what happened before continuing."
+
 #. Placeholder in the Additional comments textarea on the DSA report form. Prompts the reporter to explain why the content is illegal.
 #: src/features/moderation/components/report/ReportStepDetails.tsx:77
 msgid "Describe what makes the content illegal"
@@ -11096,7 +11157,7 @@ msgid "Description must be no more than {discoveryDescriptionMaxLength} characte
 msgstr "Description must be no more than {discoveryDescriptionMaxLength} characters."
 
 #. Developer settings tab showing UI component examples.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:158
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:163
 msgid "Design system"
 msgstr "Design system"
 
@@ -11110,8 +11171,8 @@ msgstr "Desktop"
 
 #. User settings tab for desktop app integration and platform settings.
 #. User settings tab label shown on desktop builds when the OS could not be identified (fallback for the per-OS labels).
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:87
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:142
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:88
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:147
 msgid "Desktop app"
 msgstr "Desktop app"
 
@@ -11135,7 +11196,7 @@ msgstr "Desktop audio isn't available on this build of Windows."
 msgid "Desktop away"
 msgstr "Desktop away"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:769
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1079
 msgid "Desktop build"
 msgstr "Desktop build"
 
@@ -11202,7 +11263,7 @@ msgstr "Desktop version {version} is available. Download the installer, then run
 #. Settings section label for desktop window behavior.
 #: src/features/user/components/modals/tabs/DesktopSettingsTab.tsx:150
 #: src/features/user/components/settings_utils/search_index/DesktopSettingsIndex.ts:154
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:62
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:66
 msgid "Desktop window"
 msgstr "Desktop window"
 
@@ -11248,7 +11309,7 @@ msgstr "Details"
 msgid "Detect while typing"
 msgstr "Detect while typing"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:791
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1101
 msgid "Detecting…"
 msgstr "Detecting…"
 
@@ -11256,7 +11317,7 @@ msgstr "Detecting…"
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:20
 #: src/features/user/components/settings_utils/search_index/SharedDescriptors.ts:25
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:216
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:221
 msgid "Developer"
 msgstr "Developer"
 
@@ -11264,7 +11325,7 @@ msgstr "Developer"
 #. Settings section label for client developer mode.
 #: src/features/user/components/modals/tabs/ClientDeveloperSettingsTab.tsx:17
 #: src/features/user/components/settings_utils/search_index/ClientDeveloperSettingsIndex.ts:7
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:66
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:70
 msgid "Developer mode"
 msgstr "Developer mode"
 
@@ -11348,18 +11409,18 @@ msgstr "Device:"
 #: src/features/user/components/modals/tabs/DevicesTab.tsx:528
 #: src/features/user/components/settings_utils/search_index/DevicesIndex.ts:11
 #: src/features/user/components/settings_utils/section_registry/AppearanceSections.ts:82
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:63
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:64
 #: src/features/voice/components/modals/ScreenSharePickerModal.tsx:133
 msgid "Devices"
 msgstr "Devices"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:605
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:770
 msgid "Devices & permissions"
 msgstr "Devices & permissions"
 
 #. Support Center section for previewing and exporting privacy-safe diagnostics.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:840
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:90
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1150
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:102
 msgid "Diagnostics to share"
 msgstr "Diagnostics to share"
 
@@ -11953,6 +12014,14 @@ msgstr "DM sidebar"
 msgid "DNS TXT record"
 msgstr "DNS TXT record"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:86
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:299
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:324
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:384
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:435
+msgid "Do later"
+msgstr "Do later"
+
 #. Short label in the app constants.
 #. Tray status menu item. User presence that suppresses notifications.
 #: src/features/app/constants/AppConstants.ts:33
@@ -12165,7 +12234,7 @@ msgstr "Download desktop update {version}"
 msgid "Download desktop update {version} ({formatBytes})"
 msgstr "Download desktop update {version} ({formatBytes})"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:907
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1217
 msgid "Download diagnostics"
 msgstr "Download diagnostics"
 
@@ -12783,7 +12852,7 @@ msgstr "Embed"
 #. Developer settings tab for testing URL unfurls and rendered embeds.
 #. Settings search entry label for the developer embed debugger.
 #: src/features/user/components/settings_utils/search_index/EmbedDebuggerIndex.ts:7
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:154
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:159
 msgid "Embed debugger"
 msgstr "Embed debugger"
 
@@ -12939,7 +13008,7 @@ msgstr "Emoji pack limit reached"
 #. Short label in the expression packs tab. Keep it concise.
 #: src/features/user/components/modals/tabs/ExpressionPacksTab.tsx:80
 #: src/features/user/components/settings_utils/search_index/ExpressionPacksIndex.ts:23
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:18
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:22
 msgid "Emoji packs"
 msgstr "Emoji packs"
 
@@ -13063,12 +13132,12 @@ msgid "Enable Bluesky OAuth"
 msgstr "Enable Bluesky OAuth"
 
 #. Button or menu action label in the notifications. Keep it concise.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:34
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:36
 msgid "Enable browser notifications"
 msgstr "Enable browser notifications"
 
 #. Button or menu action label in the notifications. Keep it concise.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:30
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:32
 msgid "Enable desktop notifications"
 msgstr "Enable desktop notifications"
 
@@ -13174,7 +13243,7 @@ msgid "Enable or disable built-in translators. Enabled translators appear in the
 msgstr "Enable or disable built-in translators. Enabled translators appear in the message context menu when text is selected."
 
 #. Button or menu action label in the notifications. Keep it concise.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:70
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:72
 msgid "Enable push for this device"
 msgstr "Enable push for this device"
 
@@ -13244,7 +13313,7 @@ msgstr "Enable unread badge customization"
 
 #. Button or menu action label in the notifications. Keep it concise.
 #. Settings search entry label. Names the settings search entry in the settings UI.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:53
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:55
 #: src/features/user/components/settings_utils/search_index/NotificationsIndex.ts:6
 msgid "Enable unread message badge"
 msgstr "Enable unread message badge"
@@ -13335,6 +13404,11 @@ msgstr "End grace period now?"
 #: src/features/voice/components/VoiceControlBar.tsx:112
 msgid "End screen share"
 msgstr "End screen share"
+
+#. Label for the end of notification quiet hours.
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:96
+msgid "End time"
+msgstr "End time"
 
 #. Pre-join indicator shown beneath the Join button on a DM or group DM call where at least one connected participant (typically an outdated bot) does not support E2EE.
 #: src/features/voice/utils/VoiceMessageDescriptors.ts:332
@@ -13791,11 +13865,12 @@ msgid "Everyone is premium"
 msgstr "Everyone is premium"
 
 #. Scope option (radio) that exports the user every message and metadata. Default.
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:352
 #: src/features/user/components/modals/tabs/privacy_safety_tab/data_request_modal/DataRequestModal.tsx:54
 msgid "Everything"
 msgstr "Everything"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:913
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1223
 msgid "Exact contents of the diagnostic file"
 msgstr "Exact contents of the diagnostic file"
 
@@ -14080,7 +14155,7 @@ msgstr "Expression autocomplete"
 #. User settings tab for purchased or owned emoji/sticker expression packs.
 #: src/features/user/components/modals/tabs/ExpressionPacksTab.tsx:166
 #: src/features/user/components/settings_utils/search_index/ExpressionPacksIndex.ts:7
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:55
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:56
 msgid "Expression packs"
 msgstr "Expression packs"
 
@@ -14591,6 +14666,10 @@ msgstr "Feature temporarily disabled"
 msgid "Features"
 msgstr "Features"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:359
+msgid "Feedback or suggestion"
+msgstr "Feedback or suggestion"
+
 #: src/features/user/components/modals/tabs/EmbedDebuggerTab.tsx:227
 msgid "Fetch a URL and inspect the embed payload the chat renderer receives."
 msgstr "Fetch a URL and inspect the embed payload the chat renderer receives."
@@ -14777,10 +14856,15 @@ msgstr "Finish account setup"
 msgid "Finish account setup first"
 msgstr "Finish account setup first"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:445
+msgid "Finish at your own pace"
+msgstr "Finish at your own pace"
+
 #. Button that saves the configuration and completes the setup wizard.
 #. Setup wizard finish step title.
 #: src/features/app/components/setup/SelfHostedSetupWizardGate.tsx:83
 #: src/features/app/components/setup/SetupWizardSteps.tsx:327
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:460
 msgid "Finish setup"
 msgstr "Finish setup"
 
@@ -14828,8 +14912,8 @@ msgid "First option"
 msgstr "First option"
 
 #. Support Center section linking to common troubleshooting settings.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:664
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:82
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:829
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:86
 msgid "Fix a common problem"
 msgstr "Fix a common problem"
 
@@ -15130,7 +15214,7 @@ msgid "Forget authorized IPs"
 msgstr "Forget authorized IPs"
 
 #. Short label in the notifications. Keep it concise.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:74
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:76
 msgid "Forget subscriptions"
 msgstr "Forget subscriptions"
 
@@ -15195,7 +15279,7 @@ msgstr "Forwarded a message"
 msgid "Forwarded from"
 msgstr "Forwarded from"
 
-#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:271
+#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:273
 msgid "Found {resultCount} results in {categoryCount} categories"
 msgstr "Found {resultCount} results in {categoryCount} categories"
 
@@ -15277,7 +15361,7 @@ msgstr "Friend added"
 
 #. Section or status label for a friend request item.
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
-#: src/features/ui/state/Notification.ts:45
+#: src/features/ui/state/Notification.ts:50
 #: src/features/user/components/settings_utils/section_registry/PrivacySafetySections.ts:24
 msgid "Friend request"
 msgstr "Friend request"
@@ -15569,12 +15653,12 @@ msgid "Get new code"
 msgstr "Get new code"
 
 #. Label in the notifications.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:43
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:45
 msgid "Get notified when you receive messages. You may need to allow notifications for {productName} in your device settings. For per-channel/per-community controls, open notification settings from a community's menu."
 msgstr "Get notified when you receive messages. You may need to allow notifications for {productName} in your device settings. For per-channel/per-community controls, open notification settings from a community's menu."
 
 #. Label in the notifications.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:48
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:50
 msgid "Get notified when you receive messages. You may need to allow notifications in your browser settings. For per-channel/per-community controls, right-click a community icon and open notification settings."
 msgstr "Get notified when you receive messages. You may need to allow notifications in your browser settings. For per-channel/per-community controls, right-click a community icon and open notification settings."
 
@@ -15587,6 +15671,11 @@ msgstr "Get the {productName} desktop app for system-wide push-to-talk and a few
 #: src/features/voice/components/modals/screen_share_picker_modal/DesktopDownloadCta.tsx:20
 msgid "Get the desktop app"
 msgstr "Get the desktop app"
+
+#. User settings tab for the private community setup checklist.
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:97
+msgid "Getting Started"
+msgstr "Getting Started"
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #. Type label for GIF media.
@@ -15789,7 +15878,7 @@ msgstr "Gifted <0/> until <1>{giftEndDate}</1>. Does not renew automatically. Re
 #. Settings search entry label. Also used as a search synonym in the settings search bar.
 #. User settings tab for gift inventory and redemption codes.
 #: src/features/user/components/settings_utils/search_index/SharedDescriptors.ts:37
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:100
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:105
 msgid "Gifts"
 msgstr "Gifts"
 
@@ -15840,7 +15929,7 @@ msgstr "Go back"
 msgid "Go back and enter a valid email."
 msgstr "Go back and enter a valid email."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:665
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:830
 msgid "Go straight to the settings and tests that can resolve it."
 msgstr "Go straight to the settings and tests that can resolve it."
 
@@ -16353,6 +16442,12 @@ msgstr "Hello, {username}! Nice to have you here."
 msgid "Help"
 msgstr "Help"
 
+#. Support Center section for status, known issues, maintenance, and private help.
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:881
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:90
+msgid "Help & service information"
+msgstr "Help & service information"
+
 #. Short label in the sidebar navigation help button.
 #: src/features/app/components/layout/sidebar_nav/HelpButton.tsx:27
 msgid "Help center"
@@ -16792,7 +16887,7 @@ msgstr "I agree to the updated terms"
 msgid "I am a tooltip"
 msgstr "I am a tooltip"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:676
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:841
 msgid "I can't hear or be heard"
 msgstr "I can't hear or be heard"
 
@@ -16804,6 +16899,10 @@ msgstr "I can't redeem this because I already have lifetime {premiumProductName}
 #: src/features/guild/components/modals/GuildDeleteModal.tsx:56
 msgid "I changed my mind"
 msgstr "I changed my mind"
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:409
+msgid "I checked it"
+msgstr "I checked it"
 
 #. IAR modal: preference path option label for a community report.
 #: src/features/moderation/components/report_modal/IARModalCopy.ts:32
@@ -16830,6 +16929,10 @@ msgstr "I need another way"
 #: src/features/user/components/modals/tabs/UserVoiceTab.tsx:106
 msgid "I understand"
 msgstr "I understand"
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:435
+msgid "I’ve reviewed it"
+msgstr "I’ve reviewed it"
 
 #. Label for the icon branding asset.
 #. Short label in the guild icon upload field. Keep it concise.
@@ -17390,6 +17493,14 @@ msgstr "Include apps"
 msgid "Include the community ID."
 msgstr "Include the community ID."
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:980
+msgid "Include the privacy-safe support summary shown below"
+msgstr "Include the privacy-safe support summary shown below"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:964
+msgid "Include the steps you took and what you saw."
+msgstr "Include the steps you took and what you saw."
+
 #. Generic label for an incoming voice or video call.
 #. Notification sound setting label. Ringtone for an incoming DM or group DM call.
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
@@ -17657,8 +17768,8 @@ msgstr "Installing desktop update {version}…"
 msgid "Installing desktop update…"
 msgstr "Installing desktop update…"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:537
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:727
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:702
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1037
 msgid "Instance"
 msgstr "Instance"
 
@@ -17696,7 +17807,7 @@ msgstr "Interface"
 #. Settings section label for interface language selection.
 #. Settings section title in the language tab. Keep it concise.
 #: src/features/user/components/modals/tabs/LanguageTab.tsx:79
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:50
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:54
 msgid "Interface language"
 msgstr "Interface language"
 
@@ -18224,6 +18335,10 @@ msgstr "Join on this device"
 msgid "Join the call"
 msgstr "Join the call"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:418
+msgid "Join the community"
+msgstr "Join the community"
+
 #. Confirm dialog body shown before joining a voice channel from a context where confirmation is required.
 #: src/features/voice/hooks/usePendingVoiceConnection.tsx:16
 msgid "Join this voice channel?"
@@ -18527,12 +18642,12 @@ msgstr "Korean"
 #. User settings tab for language, locale, and time display preferences.
 #: src/features/app/components/setup/SetupWizardSteps.tsx:56
 #: src/features/user/components/settings_utils/search_index/LanguageIndex.ts:6
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:138
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:143
 msgid "Language"
 msgstr "Language"
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:54
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:58
 msgid "Language settings"
 msgstr "Language settings"
 
@@ -18790,9 +18905,13 @@ msgstr "Let screen readers announce new messages as they arrive in the open chan
 msgid "Let the community self-moderate"
 msgstr "Let the community self-moderate"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:478
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:643
 msgid "Let's get everything working"
 msgstr "Let's get everything working"
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:247
+msgid "Let’s make sure your account and this device are ready."
+msgstr "Let’s make sure your account and this device are ready."
 
 #: src/features/theme_studio/sections/ThemeStudioSettingsSection.tsx:259
 msgid "Lets custom CSS reveal transparent window regions after restarting the desktop app."
@@ -19008,7 +19127,7 @@ msgid "Links"
 msgstr "Links"
 
 #. User settings tab label shown on Linux desktop builds.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:79
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:80
 msgid "Linux app"
 msgstr "Linux app"
 
@@ -19051,7 +19170,7 @@ msgstr "Lithuanian"
 msgid "Live"
 msgstr "Live"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:553
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:718
 msgid "Live message connection is ready."
 msgstr "Live message connection is ready."
 
@@ -19105,7 +19224,7 @@ msgid "Loading profile"
 msgstr "Loading profile"
 
 #. Short label in the notifications. Keep it concise.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:22
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:24
 msgid "Loading push subscriptions…"
 msgstr "Loading push subscriptions…"
 
@@ -19324,7 +19443,7 @@ msgid "macOS"
 msgstr "macOS"
 
 #. User settings tab label shown on macOS desktop builds.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:83
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:84
 msgid "macOS app"
 msgstr "macOS app"
 
@@ -19965,6 +20084,11 @@ msgstr "Medium"
 msgid "Medium size (default)"
 msgstr "Medium size (default)"
 
+#. placeholder {0}: primaryGuild.name
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:418
+msgid "Meet {0}"
+msgstr "Meet {0}"
+
 #. Audit log target-type filter label. Filters entries that target a community member.
 #: src/features/app/config/AuditLogConstants.ts:156
 msgid "Member"
@@ -20176,6 +20300,10 @@ msgstr "mentioned role"
 msgid "Mentions"
 msgstr "Mentions"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:364
+msgid "Mentions & DMs"
+msgstr "Mentions & DMs"
+
 #. Short label in the markdown tab. Keep it concise.
 #: src/features/user/components/modals/tabs/component_gallery_tab/MarkdownTab.tsx:97
 msgid "Mentions and timestamps"
@@ -20233,6 +20361,11 @@ msgstr "message"
 #: src/features/user/components/profile/ProfilePreview.tsx:321
 msgid "Message"
 msgstr "Message"
+
+#. placeholder {0}: RuntimeConfig.onboarding.operator_name ?? RuntimeConfig.productName
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:929
+msgid "Message {0}"
+msgstr "Message {0}"
 
 #. Prefix for the textarea placeholder text in a DM. Becomes "Message @username". The @ character is literal.
 #: src/features/channel/components/channel_textarea/shared.ts:16
@@ -20504,7 +20637,7 @@ msgstr "Messages in community channels"
 msgid "Messages shortcuts"
 msgstr "Messages shortcuts"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:550
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:715
 msgid "Messaging"
 msgstr "Messaging"
 
@@ -21288,7 +21421,7 @@ msgstr "My awesome media"
 msgid "My awesome sticker"
 msgstr "My awesome sticker"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:685
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:850
 msgid "My camera isn't working"
 msgstr "My camera isn't working"
 
@@ -21479,12 +21612,16 @@ msgstr "Navigation"
 msgid "Navigation shortcuts"
 msgstr "Navigation shortcuts"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:917
+msgid "Need a person?"
+msgstr "Need a person?"
+
 #. Short prompt shown near links that open account registration.
 #: src/features/i18n/utils/CommonMessageDescriptors.ts:86
 msgid "Need an account?"
 msgstr "Need an account?"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:104
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:160
 msgid "Needs attention"
 msgstr "Needs attention"
 
@@ -21550,7 +21687,7 @@ msgid "New"
 msgstr "New"
 
 #. Small badge on a new or recently added app navigation item.
-#: src/features/app/components/layout/GuildsLayout.tsx:136
+#: src/features/app/components/layout/GuildsLayout.tsx:141
 msgctxt "navigation-badge"
 msgid "New"
 msgstr "New"
@@ -21700,6 +21837,10 @@ msgstr "Next"
 msgid "Next attachment"
 msgstr "Next attachment"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:92
+msgid "Next step"
+msgstr "Next step"
+
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #. Short label in the base change nickname modal. Keep it concise.
 #. Short label in the rename channel modal. Keep it concise.
@@ -21832,7 +21973,7 @@ msgstr "No bookmarks"
 msgid "No bot banner"
 msgstr "No bot banner"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:579
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:744
 msgid "No call is active right now."
 msgstr "No call is active right now."
 
@@ -22114,7 +22255,7 @@ msgid "No preview yet"
 msgstr "No preview yet"
 
 #. Empty-state text in the notifications.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:26
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:28
 msgid "No push subscriptions registered yet."
 msgstr "No push subscriptions registered yet."
 
@@ -22199,7 +22340,7 @@ msgstr "No screens or windows were returned by the Linux screen sharing portal. 
 msgid "No search results"
 msgstr "No search results"
 
-#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:253
+#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:255
 #: src/features/app/components/dialogs/components/DesktopSettingsView.tsx:549
 msgid "No settings found"
 msgstr "No settings found"
@@ -22294,7 +22435,7 @@ msgstr "No trusted domains"
 msgid "No unread messages"
 msgstr "No unread messages"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:805
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1115
 msgid "No update found"
 msgstr "No update found"
 
@@ -22410,7 +22551,7 @@ msgstr "Not a member long enough"
 msgid "Not available"
 msgstr "Not available"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:642
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:807
 msgid "Not checked yet."
 msgstr "Not checked yet."
 
@@ -22435,6 +22576,7 @@ msgstr "Not for you? Turn it off anytime."
 #: src/features/app/components/dialogs/components/plutonium/SubscriptionCard.tsx:58
 #: src/features/app/components/layout/app_layout/nagbars/VoiceSessionRestoreNagbar.tsx:35
 #: src/features/auth/state/NewDeviceMonitoring.tsx:31
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:457
 msgid "Not now"
 msgstr "Not now"
 
@@ -22449,7 +22591,7 @@ msgstr "Not on your friends list"
 msgid "support.permission.not_requested"
 msgstr "not requested"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:126
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:182
 msgid "Not required"
 msgstr "Not required"
 
@@ -22486,6 +22628,10 @@ msgstr "nothing"
 msgid "Nothing"
 msgstr "Nothing"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:988
+msgid "Nothing is sent automatically. Private support opens a DM; shared feedback is visible to pilot members."
+msgstr "Nothing is sent automatically. Private support opens a DM; shared feedback is visible to pilot members."
+
 #: src/features/channel/components/bottomsheets/ChannelSearchBottomSheet.tsx:587
 msgid "Nothing matches"
 msgstr "Nothing matches"
@@ -22519,6 +22665,10 @@ msgstr "Notification badges showing unread mention counts in different sizes."
 msgid "Notification overrides"
 msgstr "Notification overrides"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:341
+msgid "Notification preset"
+msgstr "Notification preset"
+
 #. Submenu / section header that groups per-channel or per-community notification preferences.
 #: src/features/i18n/utils/CommonMessageDescriptors.ts:330
 msgid "Notification settings"
@@ -22551,12 +22701,12 @@ msgid "Notifications"
 msgstr "Notifications"
 
 #. User settings tab for notification and alert sound controls.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:133
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:138
 msgctxt "user-settings-tab"
 msgid "Notifications"
 msgstr "Notifications"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:706
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:871
 msgid "Notifications are missing"
 msgstr "Notifications are missing"
 
@@ -22704,7 +22854,7 @@ msgstr "One or more attachments couldn't be read or uploaded. The file may have 
 msgid "One or more files you're trying to upload exceed the maximum size limit of {maxSizeFormatted} per file."
 msgstr "One or more files you're trying to upload exceed the maximum size limit of {maxSizeFormatted} per file."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:497
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:662
 msgid "One or more items may need your attention."
 msgstr "One or more items may need your attention."
 
@@ -23010,6 +23160,7 @@ msgstr "Open color picker"
 
 #. Button label in the Discovery community preview modal shown when the user is already a member.
 #: src/features/discovery/components/modals/DiscoveryGuildPreviewModal.tsx:26
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:431
 msgid "Open community"
 msgstr "Open community"
 
@@ -23189,6 +23340,10 @@ msgstr "Open overlay"
 msgid "Open popup"
 msgstr "Open popup"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:295
+msgid "Open profile"
+msgstr "Open profile"
+
 #. Accessible label for the avatar button in the channel header of a DM. Opens the recipient user profile.
 #: src/features/channel/components/channel_header/shared.ts:18
 msgid "Open profile for {directMessageName}"
@@ -23355,6 +23510,11 @@ msgstr "OpenH264 Video Codec provided by Cisco Systems, Inc."
 #: src/features/app/components/dialogs/components/DesktopGuildSettingsView.tsx:66
 msgid "Opens the Members page. Press Space or Enter to open."
 msgstr "Opens the Members page. Press Space or Enter to open."
+
+#. placeholder {0}: config.operator_name
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:251
+msgid "Operated by {0}."
+msgstr "Operated by {0}."
 
 #. Short label in the language tab. Keep it concise.
 #. Spellcheck engine option in the textarea spellcheck submenu. Uses the host operating system spellchecker.
@@ -24506,6 +24666,7 @@ msgstr "Prefer using SSO? Continue with {ssoDisplayName}."
 
 #. macOS app menu submenu title. Keep "Preferences" to match the macOS HIG; in-app surfaces still use "settings".
 #: src/features/platform/utils/DesktopLocaleBridge.ts:25
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:380
 msgid "Preferences"
 msgstr "Preferences"
 
@@ -24575,6 +24736,14 @@ msgstr "Premium type"
 #: src/features/channel/components/channel_header_components/developer_tools/DeveloperOptionLabels.ts:157
 msgid "Premium until date"
 msgstr "Premium until date"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:942
+msgid "Prepare a clear report. You review it before anything is posted."
+msgstr "Prepare a clear report. You review it before anything is posted."
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1013
+msgid "Prepare shared feedback"
+msgstr "Prepare shared feedback"
 
 #. Setup wizard title while the instance configuration loads.
 #: src/features/app/components/setup/SetupWizardSteps.tsx:72
@@ -24649,7 +24818,7 @@ msgstr "Preview button"
 msgid "Preview camera"
 msgstr "Preview camera"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:893
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1203
 msgid "Preview diagnostics"
 msgstr "Preview diagnostics"
 
@@ -24808,7 +24977,7 @@ msgstr "Priority speaker"
 #. User settings tab for privacy and safety controls.
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:12
 #: src/features/user/components/settings_utils/section_registry/PrivacySafetySections.ts:60
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:104
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:109
 msgid "Privacy"
 msgstr "Privacy"
 
@@ -24847,6 +25016,10 @@ msgstr "Privacy violation or doxxing"
 msgid "Privacy violation or stalking"
 msgstr "Privacy violation or stalking"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:241
+msgid "Private community setup"
+msgstr "Private community setup"
+
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/section_registry/AppearanceSections.ts:222
 msgid "Private details"
@@ -24867,9 +25040,14 @@ msgstr "Private message"
 msgid "Pro tip:"
 msgstr "Pro tip:"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:115
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:171
 msgid "Problem found"
 msgstr "Problem found"
+
+#. Short confirmation after a structured support report is copied.
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:84
+msgid "Problem report copied"
+msgstr "Problem report copied"
 
 #. Generic action label that confirms proceeding past a content warning or mature-content gate.
 #: src/features/i18n/utils/CommonMessageDescriptors.ts:294
@@ -24888,7 +25066,7 @@ msgid "Product name"
 msgstr "Product name"
 
 #. User settings tab for editing the current user profile.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:92
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:93
 msgid "Profile"
 msgstr "Profile"
 
@@ -25132,7 +25310,7 @@ msgstr "Purchased {0}"
 #. Settings section label for managing purchased gift codes.
 #: src/features/user/components/modals/tabs/GiftInventoryTab.tsx:411
 #: src/features/user/components/settings_utils/search_index/GiftInventoryIndex.ts:38
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:14
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:18
 msgid "Purchased gifts"
 msgstr "Purchased gifts"
 
@@ -25197,7 +25375,7 @@ msgid "Push subscription"
 msgstr "Push subscription"
 
 #. Label in the notifications.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:57
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:59
 msgid "Push subscriptions for this device"
 msgstr "Push subscriptions for this device"
 
@@ -25337,9 +25515,15 @@ msgid "Quick switcher tabs"
 msgstr "Quick switcher tabs"
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:373
 #: src/features/user/components/settings_utils/section_registry/NotificationsSections.ts:187
 msgid "Quiet"
 msgstr "Quiet"
+
+#. Notification setting that suppresses notifications during a daily local-time window.
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:84
+msgid "Quiet hours"
+msgstr "Quiet hours"
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/DesktopSettingsIndex.ts:274
@@ -25473,12 +25657,17 @@ msgstr "Read the community's activity log of changes and moderation actions."
 msgid "Read the documentation ({domain})"
 msgstr "Read the documentation ({domain})"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:420
+msgid "Read the welcome information and community rules, then find the important channels."
+msgstr "Read the welcome information and community rules, then find the important channels."
+
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/section_registry/AccessibilitySections.ts:163
 msgid "Reading speed"
 msgstr "Reading speed"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:93
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:78
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:149
 msgid "Ready"
 msgstr "Ready"
 
@@ -25640,7 +25829,7 @@ msgstr "Redeem"
 #. Settings section label for redeeming a gift code.
 #: src/features/user/components/modals/tabs/GiftInventoryTab.tsx:362
 #: src/features/user/components/settings_utils/search_index/GiftInventoryIndex.ts:10
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:10
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:14
 msgid "Redeem a gift"
 msgstr "Redeem a gift"
 
@@ -25739,7 +25928,7 @@ msgid "Refresh audio sources"
 msgstr "Refresh audio sources"
 
 #. Short label in the notifications. Keep it concise.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:66
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:68
 msgid "Refresh push subscription"
 msgstr "Refresh push subscription"
 
@@ -25847,7 +26036,7 @@ msgstr "Relationship"
 msgid "Relative"
 msgstr "Relative"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:755
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1065
 msgid "Release channel"
 msgstr "Release channel"
 
@@ -25858,7 +26047,7 @@ msgstr "Release channel"
 msgid "Release delay"
 msgstr "Release delay"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:717
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1027
 msgid "Release identity helps support confirm exactly which client you are using."
 msgstr "Release identity helps support confirm exactly which client you are using."
 
@@ -25929,6 +26118,10 @@ msgstr "Remember window"
 #: src/features/user/components/modals/tabs/DesktopSettingsTab.tsx:165
 msgid "Remember window size and position"
 msgstr "Remember window size and position"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:983
+msgid "Remind me to attach a screenshot before sending"
+msgstr "Remind me to attach a screenshot before sending"
 
 #. Action label for removing the selected item from a list or relationship.
 #. Action label for removing the selected item from a list or relationship.
@@ -26480,6 +26673,12 @@ msgstr "Report a message"
 #: src/features/moderation/components/report_modal/IARModalCopy.ts:110
 msgid "Report a platform rule violation"
 msgstr "Report a platform rule violation"
+
+#. Support Center section for preparing a structured problem report.
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:941
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:94
+msgid "Report a problem or share feedback"
+msgstr "Report a problem or share feedback"
 
 #. IAR modal: screen-reader description for the whole modal.
 #: src/features/moderation/components/report_modal/IARModalCopy.ts:467
@@ -27144,13 +27343,17 @@ msgstr "Review and confirm"
 msgid "Review apps that can access your account."
 msgstr "Review apps that can access your account."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:707
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:872
 msgid "Review desktop, push, sound, and mention settings."
 msgstr "Review desktop, push, sound, and mention settings."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:695
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:860
 msgid "Review display, motion, accessibility, and performance settings."
 msgstr "Review display, motion, accessibility, and performance settings."
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:907
+msgid "Review known issues, recovery progress, and planned maintenance."
+msgstr "Review known issues, recovery progress, and planned maintenance."
 
 #. Settings row description for reviewing macOS permissions.
 #: src/features/permissions/system/components/MacPermissionsSettingsRow.tsx:16
@@ -27161,6 +27364,10 @@ msgstr "Review microphone, camera, screen recording, and Input Monitoring access
 #: src/features/user/components/settings_utils/search_index/PlutoniumIndex.ts:120
 msgid "Review past purchases and refund options"
 msgstr "Review past purchases and refund options"
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:320
+msgid "Review security"
+msgstr "Review security"
 
 #. Security settings row description for linked devices.
 #: src/features/user/components/modals/tabs/account_security_tab/SecurityTab.tsx:69
@@ -27190,6 +27397,10 @@ msgstr "Review what this app is asking for before you continue."
 #: src/features/app/components/setup/SetupWizardSteps.tsx:331
 msgid "Review your choices below, then finish. This saves the configuration and opens the instance."
 msgstr "Review your choices below, then finish. This saves the configuration and opens the instance."
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:310
+msgid "Review your password, multi-factor authentication, recovery codes, and signed-in devices."
+msgstr "Review your password, multi-factor authentication, recovery codes, and signed-in devices."
 
 #. Short label in the group invites bottom sheet. Keep it concise.
 #. Short label in the group invites modal. Keep it concise.
@@ -27422,11 +27633,11 @@ msgstr "Rows per page"
 msgid "Run {productName} automatically when your computer starts"
 msgstr "Run {productName} automatically when your computer starts"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:502
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:667
 msgid "Run a check to see your setup status."
 msgstr "Run a check to see your setup status."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:523
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:688
 msgid "Run again"
 msgstr "Run again"
 
@@ -27440,7 +27651,7 @@ msgstr "Run at login"
 msgid "Run the instance as one community instead of many. This can only be enabled now, during setup."
 msgstr "Run the instance as one community instead of many. This can only be enabled now, during setup."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:501
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:666
 msgid "Running a fresh check now."
 msgstr "Running a fresh check now."
 
@@ -28243,6 +28454,7 @@ msgstr "Secrets & tokens"
 #. Short label in the authentication email revert page. Keep the tone plain and specific.
 #: src/features/auth/components/pages/EmailRevertPage.tsx:18
 #: src/features/auth/components/pages/EmailRevertPage.tsx:68
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:308
 msgid "Secure your account"
 msgstr "Secure your account"
 
@@ -28300,6 +28512,10 @@ msgstr "See the member list for channels in this community."
 #: src/features/permissions/utils/PermissionLabelDescriptors.ts:128
 msgid "See the member list for this channel."
 msgstr "See the member list for this channel."
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:889
+msgid "See whether a service is unavailable or recovering."
+msgstr "See whether a service is unavailable or recovering."
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/AccessibilityIndex.ts:121
@@ -28829,6 +29045,14 @@ msgstr "Serve the token file"
 msgid "Service error"
 msgstr "Service error"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:888
+msgid "Service status"
+msgstr "Service status"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:904
+msgid "Service updates"
+msgstr "Service updates"
+
 #. Section heading in the voice connection status popout for current call/session debug stats.
 #: src/features/voice/components/voice_connection_status/shared.ts:64
 msgid "Session"
@@ -29137,6 +29361,10 @@ msgstr "Setup authenticator app"
 msgid "Setup key"
 msgstr "Setup key"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:259
+msgid "Setup progress: {progressPercent}%"
+msgstr "Setup progress: {progressPercent}%"
+
 #. Label in the channel and chat typing users.
 #: src/features/channel/components/TypingUsers.tsx:21
 msgid "Several people are typing..."
@@ -29332,7 +29560,7 @@ msgstr "Shortcut conflicts"
 #. User settings tab for keyboard shortcuts and custom bindings.
 #: src/features/user/components/settings_utils/search_index/KeybindsIndex.ts:18
 #: src/features/user/components/settings_utils/section_registry/AccessibilitySections.ts:175
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:129
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:134
 msgid "Shortcuts"
 msgstr "Shortcuts"
 
@@ -29925,7 +30153,7 @@ msgstr "Signed in"
 
 #. Settings section label for account sessions and devices.
 #: src/features/user/components/modals/tabs/DevicesTab.tsx:515
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:42
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:46
 msgid "Signed-in devices"
 msgstr "Signed-in devices"
 
@@ -29955,6 +30183,11 @@ msgstr "Signing out will remove this account from the device."
 #: src/features/user/components/settings_utils/section_registry/NotificationsSections.ts:183
 msgid "Silence"
 msgstr "Silence"
+
+#. Description of device-local notification quiet hours.
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:88
+msgid "Silence notification banners and sounds on this device during a daily window. Unread indicators remain."
+msgstr "Silence notification banners and sounds on this device during a daily window. Unread indicators remain."
 
 #. Short label in the accessibility tab. Keep it concise.
 #: src/features/user/components/modals/tabs/AccessibilityTab.tsx:66
@@ -30351,6 +30584,10 @@ msgstr "someone"
 msgid "something"
 msgstr "something"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:360
+msgid "Something else"
+msgstr "Something else"
+
 #. Generic error modal title for an unexpected failure.
 #. Generic error toast title.
 #: src/features/auth/flow/HandoffApprovalFlow.tsx:263
@@ -30744,7 +30981,7 @@ msgstr "Spell check"
 #: src/features/user/components/modals/tabs/LanguageTab.tsx:413
 #: src/features/user/components/modals/tabs/LanguageTab.tsx:455
 #: src/features/user/components/settings_utils/search_index/LanguageIndex.ts:74
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:58
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:62
 msgid "Spellcheck"
 msgstr "Spellcheck"
 
@@ -30906,6 +31143,10 @@ msgstr "Start {appName} automatically when you sign in."
 msgid "Start a call in a DM or group"
 msgstr "Start a call in a DM or group"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:920
+msgid "Start a direct message with the operator. Nothing is sent automatically."
+msgstr "Start a direct message with the operator. Nothing is sent automatically."
+
 #. Keyboard shortcut action label shown in the shortcuts list and keybind editor. Keep short, sentence case.
 #: src/features/input/state/input_keybind/shared.ts:149
 msgid "Start a group DM"
@@ -30969,6 +31210,11 @@ msgstr "Start recording"
 #: src/features/search/components/quick_switcher/QuickSwitcherModal.tsx:610
 msgid "Start searches with <0>{peoplePrefix}</0> <1>{textChannelPrefix}</1> <2>{voiceChannelPrefix}</2> <3>{communityPrefix}</3> to narrow down results."
 msgstr "Start searches with <0>{peoplePrefix}</0> <1>{textChannelPrefix}</1> <2>{voiceChannelPrefix}</2> <3>{communityPrefix}</3> to narrow down results."
+
+#. Label for the beginning of notification quiet hours.
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:92
+msgid "Start time"
+msgstr "Start time"
 
 #. Settings search entry description. One-line summary of what the settings search entry controls.
 #: src/features/user/components/settings_utils/search_index/ChatSettingsIndex.ts:151
@@ -31060,6 +31306,10 @@ msgstr "Step 3"
 #: src/features/moderation/components/report/ReportStepDetails.tsx:125
 msgid "Step 4"
 msgstr "Step 4"
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:266
+msgid "steps ready"
+msgstr "steps ready"
 
 #. Label for the has:sticker filter option in the mobile channel search sheet.
 #. Screen-reader fragment listing one sticker on a message. Lowercase because it appears inside a longer sentence.
@@ -31165,7 +31415,7 @@ msgstr "Sticker pack limit reached"
 #. Short label in the expression packs tab. Keep it concise.
 #: src/features/user/components/modals/tabs/ExpressionPacksTab.tsx:84
 #: src/features/user/components/settings_utils/search_index/ExpressionPacksIndex.ts:27
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:22
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:26
 msgid "Sticker packs"
 msgstr "Sticker packs"
 
@@ -31509,16 +31759,16 @@ msgid "Summary"
 msgstr "Summary"
 
 #. User settings tab for troubleshooting, diagnostics, version information, and updates.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:150
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:155
 msgid "Support"
 msgstr "Support"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:471
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:636
 msgid "Support center"
 msgstr "Support center"
 
 #. Toast-like button state after the support summary is copied.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:65
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:79
 msgid "Support summary copied"
 msgstr "Support summary copied"
 
@@ -31830,7 +32080,7 @@ msgid "Syntax highlighting"
 msgstr "Syntax highlighting"
 
 #: src/features/channel/components/ChannelUserTag.tsx:27
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:783
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1093
 msgid "System"
 msgstr "System"
 
@@ -32072,13 +32322,17 @@ msgstr "Terms URL"
 msgid "Terrorism or violent extremism"
 msgstr "Terrorism or violent extremism"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:592
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:757
 msgid "Test audio"
 msgstr "Test audio"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:622
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:787
 msgid "Test camera"
 msgstr "Test camera"
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:333
+msgid "Test notifications"
+msgstr "Test notifications"
 
 #. Button that validates SMTP credentials.
 #: src/features/app/components/setup/SetupWizardSteps.tsx:1001
@@ -32295,7 +32549,7 @@ msgstr "The app crashed"
 msgid "The app has crashed. Checking for updates that might fix this issue…"
 msgstr "The app has crashed. Checking for updates that might fix this issue…"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:694
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:859
 msgid "The app looks or feels wrong"
 msgstr "The app looks or feels wrong"
 
@@ -32344,7 +32598,7 @@ msgstr "The downloaded file is saved to your computer. Install it with your norm
 msgid "The file contains the verification token we will fetch from <0>{dnsUrl}</0>."
 msgstr "The file contains the verification token we will fetch from <0>{dnsUrl}</0>."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:859
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1169
 msgid "The file includes versions, operating system, service-check results, permission states, and device counts. It does not include passwords, tokens, cookies, messages, attachments, account IDs, community or channel names, participant identities, device IDs, or raw server responses."
 msgstr "The file includes versions, operating system, service-check results, permission states, and device counts. It does not include passwords, tokens, cookies, messages, attachments, account IDs, community or channel names, participant identities, device IDs, or raw server responses."
 
@@ -32366,7 +32620,7 @@ msgstr "The language most of your community speaks. Used to filter Discovery res
 msgid "The link may still work. Try again in a moment."
 msgstr "The link may still work. Try again in a moment."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:555
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:720
 msgid "The live message connection is not ready."
 msgstr "The live message connection is not ready."
 
@@ -33460,7 +33714,7 @@ msgstr "Time"
 #. Settings section label for app time display format.
 #: src/features/user/components/modals/tabs/LanguageTab.tsx:373
 #: src/features/user/components/settings_utils/search_index/LanguageIndex.ts:26
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:46
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:50
 msgid "Time format"
 msgstr "Time format"
 
@@ -34057,7 +34311,7 @@ msgstr "Try editing your message again."
 msgid "TRY gifts are one-time payments. Cards charged in TRY still need to be issued in Türkiye for the purchase to stay eligible."
 msgstr "TRY gifts are one-time payments. Cards charged in TRY still need to be issued in Türkiye for the purchase to stay eligible."
 
-#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:256
+#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:258
 msgid "Try searching for something like \"theme\", \"notifications\", or \"privacy\""
 msgstr "Try searching for something like \"theme\", \"notifications\", or \"privacy\""
 
@@ -34591,7 +34845,7 @@ msgstr "Unfurl"
 
 #. Settings section label for the embed debugger URL input.
 #: src/features/user/components/modals/tabs/EmbedDebuggerTab.tsx:226
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:70
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:74
 msgid "Unfurl debugger"
 msgstr "Unfurl debugger"
 
@@ -34665,7 +34919,7 @@ msgstr "Unknown date"
 #. Short label in the notifications. Keep it concise.
 #: src/features/app/components/layout/VoiceParticipantItem.tsx:43
 #: src/features/user/components/modals/tabs/DevicesTab.tsx:66
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:78
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:80
 msgid "Unknown device"
 msgstr "Unknown device"
 
@@ -35155,7 +35409,7 @@ msgstr "Up to 4K/60fps"
 
 #. Confirm button label on the reschedule scheduled-message alert.
 #: src/features/channel/components/channel_textarea/shared.ts:28
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:831
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1141
 msgid "Update"
 msgstr "Update"
 
@@ -35169,7 +35423,7 @@ msgstr "Update {productName} to view this message."
 msgid "Update app"
 msgstr "Update app"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:805
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1115
 msgid "Update available"
 msgstr "Update available"
 
@@ -35187,7 +35441,7 @@ msgstr "Update my status"
 msgid "Update service worker"
 msgstr "Update service worker"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:799
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1109
 msgid "Update status"
 msgstr "Update status"
 
@@ -35296,7 +35550,7 @@ msgstr "Updated the webhook avatar."
 msgid "Updater state"
 msgstr "Updater state"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:635
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:800
 msgid "Updates"
 msgstr "Updates"
 
@@ -36015,7 +36269,7 @@ msgid "User record"
 msgstr "User record"
 
 #. Root label for the current user settings modal and settings search paths.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:363
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:375
 msgid "User settings"
 msgstr "User settings"
 
@@ -36105,9 +36359,13 @@ msgid "Uses"
 msgstr "Uses"
 
 #. Label in the notifications.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:38
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:40
 msgid "Uses the OS notification center. For per-channel/per-community controls, right-click a community icon and open notification settings."
 msgstr "Uses the OS notification center. For per-channel/per-community controls, right-click a community icon and open notification settings."
+
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:228
+msgid "Uses this device’s local time. Matching start and end times means all day."
+msgstr "Uses this device’s local time. Matching start and end times means all day."
 
 #: src/features/invite/components/InviteListItem.tsx:232
 msgid "Uses:"
@@ -36467,8 +36725,8 @@ msgid "support.update.available"
 msgstr "Version {version} is available."
 
 #. Support Center section showing release identity and update controls.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:716
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:86
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1026
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:98
 msgid "Version & updates"
 msgstr "Version & updates"
 
@@ -36756,7 +37014,7 @@ msgid "View help article"
 msgstr "View help article"
 
 #. Button on the connection banner when an incident is ongoing. Opens that incident on the status page.
-#: src/features/app/hooks/useConnectionNotice.ts:47
+#: src/features/app/hooks/useConnectionNotice.ts:58
 msgid "View incident details"
 msgstr "View incident details"
 
@@ -36766,7 +37024,7 @@ msgid "View incoming call"
 msgstr "View incoming call"
 
 #. Button on the connection banner when maintenance is ongoing. Opens that maintenance on the status page.
-#: src/features/app/hooks/useConnectionNotice.ts:51
+#: src/features/app/hooks/useConnectionNotice.ts:62
 msgid "View maintenance details"
 msgstr "View maintenance details"
 
@@ -36808,7 +37066,7 @@ msgid "View reactions"
 msgstr "View reactions"
 
 #. Button on the connection banner. Opens the external service status page.
-#: src/features/app/hooks/useConnectionNotice.ts:43
+#: src/features/app/hooks/useConnectionNotice.ts:54
 msgid "View status page"
 msgstr "View status page"
 
@@ -36956,7 +37214,7 @@ msgstr "Voice (mature)"
 
 #. User settings tab for microphone, speaker, camera, and call stats.
 #. User settings tab for microphone, speaker, camera, and call stats.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:125
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:130
 #: src/features/voice/utils/VoiceMessageDescriptors.ts:30
 msgid "Voice & video"
 msgstr "Voice & video"
@@ -37091,7 +37349,7 @@ msgstr "Voice disconnected"
 msgid "Voice entrance sound"
 msgstr "Voice entrance sound"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:572
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:737
 msgid "Voice is disabled on this instance."
 msgstr "Voice is disabled on this instance."
 
@@ -37120,6 +37378,10 @@ msgstr "Voice message player"
 #: src/features/notification/utils/SoundLabels.ts:16
 msgid "Voice mute"
 msgstr "Voice mute"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:357
+msgid "Voice or video problem"
+msgstr "Voice or video problem"
 
 #. Aria label on the voice participants avatar list container.
 #: src/features/voice/components/VoiceParticipantAvatarList.tsx:39
@@ -37155,7 +37417,7 @@ msgstr "Voice recording is not supported in this browser."
 msgid "Voice region"
 msgstr "Voice region"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:569
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:734
 msgid "Voice service"
 msgstr "Voice service"
 
@@ -37356,6 +37618,11 @@ msgstr "We couldn't forward the message at this time."
 msgid "We couldn't import that theme library file."
 msgstr "We couldn't import that theme library file."
 
+#. Support Center error shown when creating or opening the configured operator DM fails.
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:94
+msgid "We couldn't open private support yet. Check your connection and try again."
+msgstr "We couldn't open private support yet. Check your connection and try again."
+
 #: src/features/messaging/components/alerts/AttachmentUploadConnectivityModal.tsx:23
 msgid "We couldn't reach the attachment upload service. {PRODUCT_NAME} can fall back to the standard upload path for messages up to {fallbackSizeFormatted} total, but these attachments exceed that combined limit and can't be sent until connectivity is restored. Try again later or contact <0>{SUPPORT_EMAIL}</0> if this keeps happening."
 msgstr "We couldn't reach the attachment upload service. {PRODUCT_NAME} can fall back to the standard upload path for messages up to {fallbackSizeFormatted} total, but these attachments exceed that combined limit and can't be sent until connectivity is restored. Try again later or contact <0>{SUPPORT_EMAIL}</0> if this keeps happening."
@@ -37375,12 +37642,17 @@ msgstr "We couldn't read this theme. It may be corrupted or invalid."
 msgid "We couldn't remove that account. Try again."
 msgstr "We couldn't remove that account. Try again."
 
+#. Getting Started error shown when synced onboarding progress could not be saved.
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:57
+msgid "We couldn't save that yet. Check your connection and try again."
+msgstr "We couldn't save that yet. Check your connection and try again."
+
 #. Modal body for existing-subscription block. Directs the user to the billing portal and addresses the just-paid race case. Keep plain and reassuring.
 #: src/features/app/components/dialogs/components/plutonium/hooks/useCheckoutActions.tsx:130
 msgid "We found an existing {premiumProductFullName} subscription for this account. Manage it in the secure billing portal to update payment details or check renewal status. If you just paid, wait a minute and reopen this page."
 msgstr "We found an existing {premiumProductFullName} subscription for this account. Manage it in the secure billing portal to update payment details or check renewal status. If you just paid, wait a minute and reopen this page."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:499
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:664
 msgid "We found something that may stop the app working correctly."
 msgstr "We found something that may stop the app working correctly."
 
@@ -37522,7 +37794,7 @@ msgstr "Web {buildVersion}"
 msgid "Web authentication"
 msgstr "Web authentication"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:741
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1051
 msgid "Web build"
 msgstr "Web build"
 
@@ -37629,6 +37901,11 @@ msgstr "Welcome back"
 msgid "Welcome in, {username}!"
 msgstr "Welcome in, {username}!"
 
+#. placeholder {0}: RuntimeConfig.productName
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:244
+msgid "Welcome to {0}"
+msgstr "Welcome to {0}"
+
 #: src/features/channel/components/ChannelWelcomeSection.tsx:53
 msgid "Welcome to {channelDisplayName}"
 msgstr "Welcome to {channelDisplayName}"
@@ -37706,10 +37983,18 @@ msgstr "Welcome, {username}! Your next conversation starts here."
 msgid "Welcome, {username}. We're happy to have you here."
 msgstr "Welcome, {username}. We're happy to have you here."
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:971
+msgid "What did you expect? (optional)"
+msgstr "What did you expect? (optional)"
+
 #. IAR modal: accessible label (aria-label only — not shown visually) for the primary-path radio group on step 1.
 #: src/features/moderation/components/report_modal/IARModalCopy.ts:36
 msgid "What do you need?"
 msgstr "What do you need?"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:961
+msgid "What happened?"
+msgstr "What happened?"
 
 #. IAR modal: category-step title for the platform-report path. User picks a broad area before drilling in.
 #: src/features/moderation/components/report_modal/IARModalCopy.ts:49
@@ -37937,7 +38222,7 @@ msgid "Window state"
 msgstr "Window state"
 
 #. User settings tab label shown on Windows desktop builds. Refers to the Microsoft Windows OS.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:75
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:76
 msgid "Windows app"
 msgstr "Windows app"
 
@@ -38096,7 +38381,7 @@ msgstr "You are about to transfer ownership of this community to <0>{0}</0>. Thi
 msgid "You are banned from this community and cannot join."
 msgstr "You are banned from this community and cannot join."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:577
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:742
 msgid "You are connected to a call."
 msgstr "You are connected to a call."
 
@@ -38195,6 +38480,10 @@ msgstr "You can refund again after {cooldownEndsOn}. Contact support for billing
 #: src/features/guild/components/modals/guild_tabs/guild_overview_tab/sections/MessageHistoryThresholdContent.tsx:86
 msgid "You can remove the <0>{readMessageHistoryPermissionLabel}</0> permission from the <1>{EVERYONE_MENTION}</1> role in <2>{rolesSettingsPath}</2> and grant it to one or more trusted roles instead."
 msgstr "You can remove the <0>{readMessageHistoryPermissionLabel}</0> permission from the <1>{EVERYONE_MENTION}</1> role in <2>{rolesSettingsPath}</2> and grant it to one or more trusted roles instead."
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:447
+msgid "You can reopen Getting Started from Settings at any time."
+msgstr "You can reopen Getting Started from Settings at any time."
 
 #: src/features/app/components/dialogs/components/LogoutModal.tsx:26
 msgid "You can sign back in at any time."
@@ -38663,7 +38952,7 @@ msgstr "You need to verify your email to send messages in this community."
 msgid "You or someone you're adding already has the maximum number of group DMs open. Leave one and try again."
 msgstr "You or someone you're adding already has the maximum number of group DMs open. Leave one and try again."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:856
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1166
 msgid "You stay in control"
 msgstr "You stay in control"
 
@@ -38857,6 +39146,10 @@ msgstr "You're on a legacy rate. The current price for this plan is {currentSubs
 msgid "You're on timeout in this community"
 msgstr "You're on timeout in this community"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:445
+msgid "You’re ready"
+msgstr "You’re ready"
+
 #. Label in the message send too quick modal.
 #: src/features/messaging/components/alerts/MessageSendTooQuickModal.tsx:8
 msgid "You're sending messages too quickly"
@@ -38980,7 +39273,7 @@ msgstr "Your {premiumProductName} subscription has expired. You have lost all {p
 msgid "Your {productName} session expired. Sign in again to continue authorizing this application."
 msgstr "Your {productName} session expired. Sign in again to continue authorizing this application."
 
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:210
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:215
 msgid "Your account"
 msgstr "Your account"
 
@@ -39246,6 +39539,12 @@ msgstr "your region"
 #: src/features/auth/components/modals/required_action/RequiredActionDescriptors.ts:61
 msgid "Your registration needs an extra anti-spam check before you can continue."
 msgstr "Your registration needs an extra anti-spam check before you can continue."
+
+#. Getting Started section containing the private community setup trail.
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:275
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:10
+msgid "Your setup checklist"
+msgstr "Your setup checklist"
 
 #. Subtitle under the preview-paused overlay reassuring the user that the screen share is still live for others.
 #: src/features/voice/components/voice_participant_tile/shared.ts:61

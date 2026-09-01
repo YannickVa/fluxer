@@ -88,11 +88,45 @@ export interface InstanceAppRegistration {
 	collect_date_of_birth: boolean;
 }
 
+export type InstanceOnboardingMfaPolicy = 'optional' | 'recommended' | 'required';
+
+export interface InstanceOnboardingSteps {
+	profile: boolean;
+	security: boolean;
+	notifications: boolean;
+	media: boolean;
+	community: boolean;
+}
+
+export interface InstanceOnboarding {
+	enabled: boolean;
+	version: number;
+	enabled_at: string | null;
+	show_for_existing_users: boolean;
+	welcome_message: string | null;
+	operator_name: string | null;
+	availability_message: string | null;
+	primary_guild_id: string | null;
+	rules_channel_id: string | null;
+	introduction_channel_id: string | null;
+	mfa_policy: InstanceOnboardingMfaPolicy;
+	steps: InstanceOnboardingSteps;
+}
+
+export interface InstanceSupport {
+	status_url: string | null;
+	support_user_id: string | null;
+	service_updates_channel_id: string | null;
+	feedback_channel_id: string | null;
+}
+
 export interface InstanceAppPublic {
 	branding: InstanceBranding;
 	setup: InstanceSetup;
 	legal: InstanceLegal;
 	registration: InstanceAppRegistration;
+	onboarding: InstanceOnboarding;
+	support: InstanceSupport;
 }
 
 export interface InstanceDiscoveryResponse {

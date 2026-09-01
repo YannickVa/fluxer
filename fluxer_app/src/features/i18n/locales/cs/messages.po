@@ -337,7 +337,7 @@ msgstr "{count, plural, one {Zbývá # řádek} other {Zbývá # řádky}}"
 msgid "{count, plural, one {# active override} other {# active overrides}}"
 msgstr "{count, plural, one {# aktivní přepsání} other {# aktivních přepsání}}"
 
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:141
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:167
 msgid "{count, plural, one {# active subscription} other {# active subscriptions}}"
 msgstr "{count, plural, one {# aktivní odběr} few {# aktivní odběry} many {# aktivních odběrů} other {# aktivních odběrů}}"
 
@@ -360,7 +360,7 @@ msgstr "{count, plural, one {# záložka} few {# záložky} many {# záložek} o
 msgid "{count, plural, one {# community found} other {# communities found}}"
 msgstr "{count, plural, one {# komunita nalezena} other {# komunit nalezeno} few {# komunity nalezeny}}"
 
-#: src/features/app/components/layout/GuildsLayout.tsx:1949
+#: src/features/app/components/layout/GuildsLayout.tsx:1955
 msgid "{count, plural, one {# community is temporarily unavailable due to a flux capacitor malfunction.} other {# communities are temporarily unavailable due to a flux capacitor malfunction.}}"
 msgstr "{count, plural, one {# komunita je dočasně nedostupná kvůli poruše \"flux kondenzátoru\".} few {# komunity jsou dočasně nedostupné kvůli poruše \"flux kondenzátoru\".} many {# komunit je dočasně nedostupných kvůli poruše \"flux kondenzátoru\".} other {# komunit je dočasně nedostupných kvůli poruše \"flux kondenzátoru\".}}"
 
@@ -644,12 +644,12 @@ msgid "{displayedUnreadDmCount} unread DMs"
 msgstr "{displayedUnreadDmCount} nepřečtených zpráv"
 
 #. Toast title announcing a newly accepted friend request.
-#: src/features/ui/state/Notification.ts:53
+#: src/features/ui/state/Notification.ts:58
 msgid "{displayName} is now your friend!"
 msgstr "{displayName} je nyní váš přítel!"
 
 #. Toast title announcing an incoming friend request.
-#: src/features/ui/state/Notification.ts:49
+#: src/features/ui/state/Notification.ts:54
 msgid "{displayName} sent you a friend request"
 msgstr "{displayName} vám poslal(a) žádost o přátelství"
 
@@ -886,7 +886,7 @@ msgstr "{length} sledujících"
 msgid "{lineCount, plural, one {# line} other {# lines}}"
 msgstr "{lineCount, plural, one {# řádek} few {# řádky} many {# řádků} other {# řádku}}"
 
-#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:147
+#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:149
 msgid "{matchCount, plural, one {# match} other {# matches}}"
 msgstr "{matchCount, plural, one {# shoda} other {# shody}}"
 
@@ -1117,6 +1117,16 @@ msgstr "Aplikace {productName} detekovala potenciální nájezd v této komunit�
 msgid "{productName} detected a potential raid, so new users can't join right now."
 msgstr "{productName} zjistil(a) potenciální nájezd, takže se teď noví uživatelé nemohou připojit."
 
+#. Calm connection banner for a private self-hosted instance whose server or VM may have been deliberately stopped.
+#: src/features/app/hooks/useConnectionNotice.ts:44
+msgid "{productName} is currently offline. It may have been intentionally stopped; we’ll reconnect automatically when it returns."
+msgstr ""
+
+#. Calm connection banner shown after an established private self-hosted connection is lost.
+#: src/features/app/hooks/useConnectionNotice.ts:50
+msgid "{productName} is offline. Reconnecting automatically…"
+msgstr ""
+
 #. Profile membership label showing when the user account was created.
 #: src/features/user/components/popouts/UserProfileShared.tsx:54
 msgid "{productName} member since"
@@ -1188,7 +1198,7 @@ msgid "{productName} Staff"
 msgstr "Tým {productName}"
 
 #. Label in the notifications.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:61
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:63
 msgid "{productName} uses push notifications when installed as a mobile PWA. Registering ensures the gateway can reach your device even when the app is backgrounded."
 msgstr "{productName} používá push oznámení, pokud je nainstalován jako mobilní PWA. Registrace zajistí, že brána může dosáhnout vašeho zařízení, i když je aplikace na pozadí."
 
@@ -1955,7 +1965,7 @@ msgstr "název hostitele, např. {exampleDomain}"
 msgid "A Linux desktop update is available. Choose the package format for this system and {productName} will save it locally."
 msgstr "Pro uživatele Linuxu je k dispozici aktualizace. Vyberte formát balíčku pro tento systém a aplikace {productName} jej uloží lokálně."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:511
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:676
 msgid "A live path through the systems needed for chat, calls, and updates."
 msgstr ""
 
@@ -2117,7 +2127,7 @@ msgstr "Přístup k základním informacím o profilu (uživatelské jméno, ava
 #. User settings tab for accessibility preferences (visual, motion, screen reader, etc.).
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:14
 #: src/features/user/components/settings_utils/section_registry/SharedDescriptors.ts:93
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:67
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:68
 msgid "Accessibility"
 msgstr "Přístupnost"
 
@@ -2131,7 +2141,7 @@ msgstr "Přístupná živá oblast"
 #. User settings tab for account login, password, MFA, and security.
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:11
 #: src/features/user/components/settings_utils/section_registry/AccountSecuritySections.ts:129
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:96
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:101
 msgid "Account"
 msgstr "Účet"
 
@@ -2168,6 +2178,10 @@ msgstr "Údaje o účtu"
 #: src/features/moderation/components/report_modal/IARModalCopy.ts:279
 msgid "Account exists to spam, scam, or abuse the platform."
 msgstr "Účet slouží k rozesílání spamu, podvodům nebo zneužívání platformy."
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:358
+msgid "Account or access problem"
+msgstr ""
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/section_registry/AccountSecuritySections.ts:121
@@ -2403,6 +2417,10 @@ msgstr "Přidat komunitu"
 #: src/features/auth/flow/DesktopHandoffAccountSelector.tsx:75
 msgid "Add a different account"
 msgstr "Přidat jiný účet"
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:282
+msgid "Add a display name and avatar so friends can recognize you. Status and privacy choices remain optional."
+msgstr ""
 
 #. Empty-state hint in the friends list when the user has no friends yet.
 #: src/features/relationship/utils/FriendsListUtils.tsx:31
@@ -2843,7 +2861,7 @@ msgstr "Správci pozastavili pozvánky – momentálně se nemůžete připojit.
 #: src/features/channel/components/modals/channel_tabs/ChannelOverviewTab.tsx:337
 #: src/features/guild/components/modals/guild_tabs/guild_overview_tab/index.tsx:28
 #: src/features/ui/action_menu/items/VoiceParticipantMenuData.tsx:178
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:146
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:151
 #: src/features/voice/components/voice_connection_status/VoiceDetailsPopout.tsx:60
 msgid "Advanced"
 msgstr "Pokročilé"
@@ -2950,7 +2968,7 @@ msgstr "Vše <0/>, navždy. Žádné účtování, žádná obnovení."
 msgid "All actions"
 msgstr "Všechny akce"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:496
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:661
 msgid "All checked systems look healthy."
 msgstr ""
 
@@ -3064,6 +3082,10 @@ msgstr "Povolte aplikaci {PRODUCT_NAME} přístup k mikrofonu. Zkontrolujte adre
 #: src/features/guild/components/modals/guild_tabs/GuildAuditLogTabRenderers.tsx:666
 msgid "Allow @mention."
 msgstr "Povolit @zmínku."
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:377
+msgid "Allow & test"
+msgstr ""
 
 #. Description text in the application info section.
 #: src/features/user/components/modals/tabs/applications_tab/application_detail/ApplicationInfoSection.tsx:40
@@ -3738,7 +3760,11 @@ msgstr "Označení ikony aplikace"
 msgid "App language: {format}"
 msgstr "Jazyk aplikace: {format}"
 
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:214
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:356
+msgid "App or connection problem"
+msgstr ""
+
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:219
 msgid "App settings"
 msgstr "Nastavení aplikace"
 
@@ -3765,7 +3791,7 @@ msgstr "Úroveň přiblížení aplikace"
 #. Advanced settings category tag.
 #. User settings tab for app appearance and layout options.
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:13
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:117
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:122
 msgid "Appearance"
 msgstr "Vzhled"
 
@@ -3838,8 +3864,8 @@ msgstr "Aplikace byla úspěšně aktualizována"
 #: src/features/user/components/modals/tabs/applications_tab/index.tsx:90
 #: src/features/user/components/modals/tabs/applications_tab/index.tsx:129
 #: src/features/user/components/settings_utils/search_index/SharedDescriptors.ts:29
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:74
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:71
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:78
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:72
 msgid "Applications"
 msgstr "Aplikace"
 
@@ -4365,7 +4391,7 @@ msgid "Authorized"
 msgstr "Autorizováno"
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:30
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:34
 msgid "Authorized applications"
 msgstr "Autorizované aplikace"
 
@@ -4379,8 +4405,8 @@ msgstr "Autorizované aplikace"
 #: src/features/user/components/modals/tabs/AuthorizedAppsTab.tsx:506
 #: src/features/user/components/settings_utils/search_index/AuthorizedAppsIndex.ts:10
 #: src/features/user/components/settings_utils/section_registry/AccountSecuritySections.ts:148
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:34
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:108
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:38
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:113
 msgid "Authorized apps"
 msgstr "Autorizované aplikace"
 
@@ -5069,7 +5095,7 @@ msgstr "1 až 32 znaků"
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/PlutoniumIndex.ts:27
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:212
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:217
 msgid "Billing"
 msgstr "Platby"
 
@@ -5210,8 +5236,8 @@ msgstr "Blokováno"
 #: src/features/user/components/modals/tabs/BlockedUsersTab.tsx:210
 #: src/features/user/components/settings_utils/search_index/BlockedUsersIndex.ts:6
 #: src/features/user/components/settings_utils/section_registry/AccountSecuritySections.ts:152
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:26
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:59
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:30
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:60
 msgid "Blocked users"
 msgstr "Blokovaní uživatelé"
 
@@ -5464,7 +5490,7 @@ msgstr "Náhled grafického podkladu"
 msgid "Brightness"
 msgstr "Jas"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:775
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1085
 msgid "Browser"
 msgstr ""
 
@@ -6052,6 +6078,7 @@ msgstr "kategorie"
 #. Channel type chip label for a community category container.
 #: src/features/channel/utils/ChannelUtils.tsx:35
 #: src/features/guild/components/modals/guild_tabs/GuildDiscoveryTab.tsx:458
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:947
 msgid "Category"
 msgstr "Kategorie"
 
@@ -6608,7 +6635,7 @@ msgstr "Překročen limit znaků o {remaining}"
 #: src/features/input/components/modals/KeyboardShortcutsCheatsheetModal.tsx:40
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:15
 #: src/features/user/components/modals/tabs/keybinds_tab/DefaultKeybindsList.tsx:39
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:121
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:126
 msgid "Chat"
 msgstr "Chat"
 
@@ -6641,19 +6668,24 @@ msgstr "vstup chatu"
 msgid "Chat shortcuts"
 msgstr "Zkratky chatu"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:882
+msgid "Check current information first, or ask the operator privately."
+msgstr ""
+
 #. Tray menu item. Triggers the auto-updater to look for a new desktop build.
 #: src/features/platform/utils/DesktopLocaleBridge.ts:160
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:823
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1133
 msgid "Check for updates"
 msgstr "Zkontrolovat aktualizace"
 
 #. Support Center section for live service, connection, device, and update checks.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:510
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:78
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:405
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:675
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:82
 msgid "Check my setup"
 msgstr ""
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:654
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:819
 msgid "Check now"
 msgstr ""
 
@@ -6666,8 +6698,12 @@ msgstr "Zkontrolujte náš <0>{BLUESKY_PROVIDER_NAME} ({FLUXER_BLUESKY_HANDLE})<
 msgid "Check out my custom theme!"
 msgstr "Podívej se na moje vlastní téma!"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:686
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:851
 msgid "Check permission, preview video, and select a camera."
+msgstr ""
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:393
+msgid "Check voice & video"
 msgstr ""
 
 #. Error-state description in the channel and chat gif picker view.
@@ -6676,7 +6712,7 @@ msgstr ""
 msgid "Check your connection and try again."
 msgstr "Zkontrolujte připojení a zkuste to znovu."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:481
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:646
 msgid "Check your connection, devices, app version, and the services this client depends on."
 msgstr ""
 
@@ -6705,7 +6741,7 @@ msgstr "Zkontrolujte si doručenou poštu, zda vám nepřišel ověřovací e-ma
 msgid "Checkboxes"
 msgstr "Zaškrtávací políčka"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:82
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:138
 msgid "Checking"
 msgstr ""
 
@@ -6811,6 +6847,10 @@ msgstr "Zvolte si nové heslo."
 msgid "Choose a speed for spoken text."
 msgstr "Vyberte rychlost pro čtený text."
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:335
+msgid "Choose a starting point, then test this device. You can fine-tune each community and channel later."
+msgstr ""
+
 #. Settings search entry description. One-line summary of what the settings search entry controls.
 #: src/features/user/components/settings_utils/search_index/PlutoniumIndex.ts:75
 msgid "Choose a subscription plan or gift option"
@@ -6859,7 +6899,7 @@ msgstr "Vyberte možnost"
 msgid "Choose background"
 msgstr "Vybrat pozadí"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:677
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:842
 msgid "Choose devices, check levels, and test your microphone."
 msgstr ""
 
@@ -8135,6 +8175,10 @@ msgstr "Pro další používání aplikace {productName} dokončete níže uvede
 msgid "Complete the required verification to continue using {productName}."
 msgstr "Dokončete požadované ověření, abyste mohli nadále používat {productName}."
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:280
+msgid "Complete your profile"
+msgstr ""
+
 #. Label in the premium badge settings. Preserve {premiumProductName}; it is inserted by code. Keep the tone plain and specific.
 #: src/features/user/components/modals/tabs/my_profile_tab/PremiumBadgeSettings.tsx:16
 msgid "Completely hide your {premiumProductName} badge from other users"
@@ -8303,6 +8347,10 @@ msgstr "Potvrďte heslo"
 msgid "Confirm voice join"
 msgstr "Potvrdit připojení hlasem"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:395
+msgid "Confirm your microphone, speaker, and camera on this device. A camera is optional."
+msgstr ""
+
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/ChatSettingsIndex.ts:439
 msgid "Confirmation"
@@ -8389,7 +8437,7 @@ msgid "Connection ID"
 msgstr "ID připojení"
 
 #. Banner shown while the app is still loading and the connection is taking unusually long. Phrased as a question offering help.
-#: src/features/app/hooks/useConnectionNotice.ts:33
+#: src/features/app/hooks/useConnectionNotice.ts:34
 msgid "Connection issues?"
 msgstr "Problémy s připojením?"
 
@@ -8403,7 +8451,7 @@ msgid "Connection lost"
 msgstr "Spojení ztraceno"
 
 #. Banner shown when the app loses its gateway connection after having loaded. The app stays usable, so keep the tone calm.
-#: src/features/app/hooks/useConnectionNotice.ts:38
+#: src/features/app/hooks/useConnectionNotice.ts:39
 msgid "Connection lost. Reconnecting…"
 msgstr "Připojení ztraceno. Znovu se připojuji…"
 
@@ -8453,12 +8501,12 @@ msgstr "Připojení: {connectionId}"
 #: src/features/i18n/utils/CommonMessageDescriptors.ts:410
 #: src/features/user/components/popouts/UserProfileShared.tsx:675
 #: src/features/user/components/settings_utils/search_index/LinkedAccountsIndex.ts:8
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:38
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:42
 msgid "Connections"
 msgstr "Propojení"
 
 #. User settings tab for linked external accounts.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:112
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:117
 msgctxt "user-settings-tab"
 msgid "Connections"
 msgstr "Propojení"
@@ -8560,6 +8608,10 @@ msgstr "Kontextové nabídky lze otevřít levým kliknutím (na tlačítka) neb
 #: src/features/user/components/modals/tabs/AuthorizedAppsTab.tsx:181
 msgid "Continue"
 msgstr "Pokračovat"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1005
+msgid "Continue privately"
+msgstr ""
 
 #. Plutonium checkout pre-approval prompt secondary button. Continues straight to the standard checkout screen.
 #: src/features/app/components/dialogs/components/plutonium/hooks/useCheckoutActions.tsx:89
@@ -8923,6 +8975,10 @@ msgstr "Kopírování pozastaveno během sdílení"
 msgid "Copy reference for {fileName}"
 msgstr "Kopírovat odkaz pro {fileName}"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:998
+msgid "Copy report"
+msgstr ""
+
 #. Developer-mode action that copies the role ID to the clipboard.
 #: src/features/ui/action_menu/items/CopyMenuItems.tsx:14
 msgid "Copy role ID"
@@ -8953,7 +9009,7 @@ msgstr "Kopírovat ID nálepky"
 msgid "Copy sticker URL"
 msgstr "Kopírovat URL nálepky"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:881
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1191
 msgid "Copy support summary"
 msgstr ""
 
@@ -9631,7 +9687,7 @@ msgstr "Vytvořit novou komunitu nebo se připojit k existující."
 msgid "Create a new group with {userName}"
 msgstr "Vytvořit novou skupinu s uživatelem {userName}"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:841
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1151
 msgid "Create a small, privacy-reviewed snapshot for someone helping you troubleshoot."
 msgstr ""
 
@@ -11061,6 +11117,11 @@ msgstr "Popište nálepku"
 msgid "Describe this media for screen readers"
 msgstr "Popište tento mediální soubor pro čtečky obrazovky"
 
+#. Validation error for an empty problem report description.
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:89
+msgid "Describe what happened before continuing."
+msgstr ""
+
 #. Placeholder in the Additional comments textarea on the DSA report form. Prompts the reporter to explain why the content is illegal.
 #: src/features/moderation/components/report/ReportStepDetails.tsx:77
 msgid "Describe what makes the content illegal"
@@ -11095,7 +11156,7 @@ msgid "Description must be no more than {discoveryDescriptionMaxLength} characte
 msgstr "Popis nesmí být delší než {discoveryDescriptionMaxLength} znaků."
 
 #. Developer settings tab showing UI component examples.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:158
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:163
 msgid "Design system"
 msgstr "Design systém"
 
@@ -11109,8 +11170,8 @@ msgstr "Počítač"
 
 #. User settings tab for desktop app integration and platform settings.
 #. User settings tab label shown on desktop builds when the OS could not be identified (fallback for the per-OS labels).
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:87
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:142
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:88
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:147
 msgid "Desktop app"
 msgstr "Aplikace pro stolní počítače"
 
@@ -11134,7 +11195,7 @@ msgstr "Zvuk plochy není v této verzi Windows k dispozici."
 msgid "Desktop away"
 msgstr "Mimo počítač"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:769
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1079
 msgid "Desktop build"
 msgstr ""
 
@@ -11201,7 +11262,7 @@ msgstr "Na ploše je k dispozici verze {version}. Stáhněte si instalační pro
 #. Settings section label for desktop window behavior.
 #: src/features/user/components/modals/tabs/DesktopSettingsTab.tsx:150
 #: src/features/user/components/settings_utils/search_index/DesktopSettingsIndex.ts:154
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:62
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:66
 msgid "Desktop window"
 msgstr "Okno počítače"
 
@@ -11247,7 +11308,7 @@ msgstr "Podrobnosti"
 msgid "Detect while typing"
 msgstr "Zjišťovat při psaní"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:791
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1101
 msgid "Detecting…"
 msgstr ""
 
@@ -11255,7 +11316,7 @@ msgstr ""
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:20
 #: src/features/user/components/settings_utils/search_index/SharedDescriptors.ts:25
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:216
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:221
 msgid "Developer"
 msgstr "Vývojář"
 
@@ -11263,7 +11324,7 @@ msgstr "Vývojář"
 #. Settings section label for client developer mode.
 #: src/features/user/components/modals/tabs/ClientDeveloperSettingsTab.tsx:17
 #: src/features/user/components/settings_utils/search_index/ClientDeveloperSettingsIndex.ts:7
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:66
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:70
 msgid "Developer mode"
 msgstr "Režim pro vývojáře"
 
@@ -11347,18 +11408,18 @@ msgstr "Zařízení:"
 #: src/features/user/components/modals/tabs/DevicesTab.tsx:528
 #: src/features/user/components/settings_utils/search_index/DevicesIndex.ts:11
 #: src/features/user/components/settings_utils/section_registry/AppearanceSections.ts:82
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:63
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:64
 #: src/features/voice/components/modals/ScreenSharePickerModal.tsx:133
 msgid "Devices"
 msgstr "Zařízení"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:605
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:770
 msgid "Devices & permissions"
 msgstr ""
 
 #. Support Center section for previewing and exporting privacy-safe diagnostics.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:840
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:90
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1150
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:102
 msgid "Diagnostics to share"
 msgstr ""
 
@@ -11952,6 +12013,14 @@ msgstr "Postranní panel zpráv"
 msgid "DNS TXT record"
 msgstr "Záznam DNS TXT"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:86
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:299
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:324
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:384
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:435
+msgid "Do later"
+msgstr ""
+
 #. Short label in the app constants.
 #. Tray status menu item. User presence that suppresses notifications.
 #: src/features/app/constants/AppConstants.ts:33
@@ -12164,7 +12233,7 @@ msgstr "Stáhnout aktualizaci pro počítač {version}"
 msgid "Download desktop update {version} ({formatBytes})"
 msgstr "Stáhnout aktualizaci pro počítač {version} ({formatBytes})"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:907
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1217
 msgid "Download diagnostics"
 msgstr ""
 
@@ -12782,7 +12851,7 @@ msgstr "Vložit"
 #. Developer settings tab for testing URL unfurls and rendered embeds.
 #. Settings search entry label for the developer embed debugger.
 #: src/features/user/components/settings_utils/search_index/EmbedDebuggerIndex.ts:7
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:154
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:159
 msgid "Embed debugger"
 msgstr "Ladění vloženého obsahu"
 
@@ -12938,7 +13007,7 @@ msgstr "Dosažen limit balíčku emoji"
 #. Short label in the expression packs tab. Keep it concise.
 #: src/features/user/components/modals/tabs/ExpressionPacksTab.tsx:80
 #: src/features/user/components/settings_utils/search_index/ExpressionPacksIndex.ts:23
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:18
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:22
 msgid "Emoji packs"
 msgstr "Balíčky emoji"
 
@@ -13062,12 +13131,12 @@ msgid "Enable Bluesky OAuth"
 msgstr "Povolit OAuth pro Bluesky"
 
 #. Button or menu action label in the notifications. Keep it concise.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:34
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:36
 msgid "Enable browser notifications"
 msgstr "Povolit oznámení prohlížeče"
 
 #. Button or menu action label in the notifications. Keep it concise.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:30
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:32
 msgid "Enable desktop notifications"
 msgstr "Zapnout oznámení na počítači"
 
@@ -13173,7 +13242,7 @@ msgid "Enable or disable built-in translators. Enabled translators appear in the
 msgstr "Povolte nebo zakažte vestavěné překladače. Povolené překladače se zobrazí v kontextové nabídce zpráv, když je vybrán text."
 
 #. Button or menu action label in the notifications. Keep it concise.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:70
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:72
 msgid "Enable push for this device"
 msgstr "Povolit oznámení pro toto zařízení"
 
@@ -13243,7 +13312,7 @@ msgstr "Povolit přizpůsobení odznaku pro nezpracovaná oznámení"
 
 #. Button or menu action label in the notifications. Keep it concise.
 #. Settings search entry label. Names the settings search entry in the settings UI.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:53
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:55
 #: src/features/user/components/settings_utils/search_index/NotificationsIndex.ts:6
 msgid "Enable unread message badge"
 msgstr "Povolit odznak nepřečtených zpráv"
@@ -13334,6 +13403,11 @@ msgstr "Ukončit odklad teď?"
 #: src/features/voice/components/VoiceControlBar.tsx:112
 msgid "End screen share"
 msgstr "Ukončit sdílení obrazovky"
+
+#. Label for the end of notification quiet hours.
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:96
+msgid "End time"
+msgstr ""
 
 #. Pre-join indicator shown beneath the Join button on a DM or group DM call where at least one connected participant (typically an outdated bot) does not support E2EE.
 #: src/features/voice/utils/VoiceMessageDescriptors.ts:332
@@ -13790,11 +13864,12 @@ msgid "Everyone is premium"
 msgstr "Všichni jsou prémioví"
 
 #. Scope option (radio) that exports the user every message and metadata. Default.
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:352
 #: src/features/user/components/modals/tabs/privacy_safety_tab/data_request_modal/DataRequestModal.tsx:54
 msgid "Everything"
 msgstr "Vše"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:913
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1223
 msgid "Exact contents of the diagnostic file"
 msgstr ""
 
@@ -14079,7 +14154,7 @@ msgstr "Automatické doplňování výrazů"
 #. User settings tab for purchased or owned emoji/sticker expression packs.
 #: src/features/user/components/modals/tabs/ExpressionPacksTab.tsx:166
 #: src/features/user/components/settings_utils/search_index/ExpressionPacksIndex.ts:7
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:55
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:56
 msgid "Expression packs"
 msgstr "Balíčky výrazů"
 
@@ -14590,6 +14665,10 @@ msgstr "Funkce dočasně vypnuta"
 msgid "Features"
 msgstr "Funkce"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:359
+msgid "Feedback or suggestion"
+msgstr ""
+
 #: src/features/user/components/modals/tabs/EmbedDebuggerTab.tsx:227
 msgid "Fetch a URL and inspect the embed payload the chat renderer receives."
 msgstr "Načtěte adresu URL a prozkoumejte vložený obsah, který obdrží vykreslovací modul chatu."
@@ -14776,10 +14855,15 @@ msgstr "Dokončit nastavení účtu"
 msgid "Finish account setup first"
 msgstr "Nejprve dokončete nastavení účtu"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:445
+msgid "Finish at your own pace"
+msgstr ""
+
 #. Button that saves the configuration and completes the setup wizard.
 #. Setup wizard finish step title.
 #: src/features/app/components/setup/SelfHostedSetupWizardGate.tsx:83
 #: src/features/app/components/setup/SetupWizardSteps.tsx:327
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:460
 msgid "Finish setup"
 msgstr "Dokončit nastavení"
 
@@ -14827,8 +14911,8 @@ msgid "First option"
 msgstr "První možnost"
 
 #. Support Center section linking to common troubleshooting settings.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:664
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:82
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:829
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:86
 msgid "Fix a common problem"
 msgstr ""
 
@@ -15129,7 +15213,7 @@ msgid "Forget authorized IPs"
 msgstr "Zapomenout autorizované IP adresy"
 
 #. Short label in the notifications. Keep it concise.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:74
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:76
 msgid "Forget subscriptions"
 msgstr "Zapomenout odběry"
 
@@ -15194,7 +15278,7 @@ msgstr "Přeposlal(a) zprávu"
 msgid "Forwarded from"
 msgstr "Přeposláno od"
 
-#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:271
+#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:273
 msgid "Found {resultCount} results in {categoryCount} categories"
 msgstr "Nalezeno {resultCount} výsledků v {categoryCount} kategoriích"
 
@@ -15276,7 +15360,7 @@ msgstr "Přítel přidán"
 
 #. Section or status label for a friend request item.
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
-#: src/features/ui/state/Notification.ts:45
+#: src/features/ui/state/Notification.ts:50
 #: src/features/user/components/settings_utils/section_registry/PrivacySafetySections.ts:24
 msgid "Friend request"
 msgstr "Žádost o přátelství"
@@ -15568,12 +15652,12 @@ msgid "Get new code"
 msgstr "Získat nový kód"
 
 #. Label in the notifications.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:43
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:45
 msgid "Get notified when you receive messages. You may need to allow notifications for {productName} in your device settings. For per-channel/per-community controls, open notification settings from a community's menu."
 msgstr "Dostávejte oznámení o nových zprávách. Možná budete muset povolit oznámení pro aplikaci {productName} v nastavení zařízení. Ovládací prvky pro jednotlivé kanály/komunity najdete v nastavení oznámení v nabídce komunity."
 
 #. Label in the notifications.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:48
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:50
 msgid "Get notified when you receive messages. You may need to allow notifications in your browser settings. For per-channel/per-community controls, right-click a community icon and open notification settings."
 msgstr "Dostávejte oznámení, když obdržíte zprávy. Možná budete muset povolit oznámení v nastavení prohlížeče. Pro ovládání oznámení pro jednotlivé kanály/komunity klikněte pravým tlačítkem na ikonu komunity a otevřete nastavení oznámení."
 
@@ -15586,6 +15670,11 @@ msgstr "Získejte desktopovou aplikaci {productName} pro celosystémové vysíl�
 #: src/features/voice/components/modals/screen_share_picker_modal/DesktopDownloadCta.tsx:20
 msgid "Get the desktop app"
 msgstr "Stáhněte si desktopovou aplikaci"
+
+#. User settings tab for the private community setup checklist.
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:97
+msgid "Getting Started"
+msgstr ""
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #. Type label for GIF media.
@@ -15788,7 +15877,7 @@ msgstr "Darováno <0/> do <1>{giftEndDate}</1>. Automaticky se neobnovuje. Pro p
 #. Settings search entry label. Also used as a search synonym in the settings search bar.
 #. User settings tab for gift inventory and redemption codes.
 #: src/features/user/components/settings_utils/search_index/SharedDescriptors.ts:37
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:100
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:105
 msgid "Gifts"
 msgstr "Dárky"
 
@@ -15839,7 +15928,7 @@ msgstr "Zpět"
 msgid "Go back and enter a valid email."
 msgstr "Vraťte se a zadejte platný e-mail."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:665
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:830
 msgid "Go straight to the settings and tests that can resolve it."
 msgstr ""
 
@@ -16352,6 +16441,12 @@ msgstr "Ahoj, {username}! Rádi tě tu vidíme."
 msgid "Help"
 msgstr "Nápověda"
 
+#. Support Center section for status, known issues, maintenance, and private help.
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:881
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:90
+msgid "Help & service information"
+msgstr ""
+
 #. Short label in the sidebar navigation help button.
 #: src/features/app/components/layout/sidebar_nav/HelpButton.tsx:27
 msgid "Help center"
@@ -16791,7 +16886,7 @@ msgstr "Souhlasím s aktualizovanými podmínkami"
 msgid "I am a tooltip"
 msgstr "Jsem popisek"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:676
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:841
 msgid "I can't hear or be heard"
 msgstr ""
 
@@ -16803,6 +16898,10 @@ msgstr "Nemůžu si to uplatnit, protože už mám doživotní {premiumProductNa
 #: src/features/guild/components/modals/GuildDeleteModal.tsx:56
 msgid "I changed my mind"
 msgstr "Rozmyslel/a jsem si to"
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:409
+msgid "I checked it"
+msgstr ""
 
 #. IAR modal: preference path option label for a community report.
 #: src/features/moderation/components/report_modal/IARModalCopy.ts:32
@@ -16829,6 +16928,10 @@ msgstr "Potřebuji jiný způsob"
 #: src/features/user/components/modals/tabs/UserVoiceTab.tsx:106
 msgid "I understand"
 msgstr "Rozumím"
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:435
+msgid "I’ve reviewed it"
+msgstr ""
 
 #. Label for the icon branding asset.
 #. Short label in the guild icon upload field. Keep it concise.
@@ -17389,6 +17492,14 @@ msgstr "Zahrnout aplikace"
 msgid "Include the community ID."
 msgstr "Zadejte ID komunity."
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:980
+msgid "Include the privacy-safe support summary shown below"
+msgstr ""
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:964
+msgid "Include the steps you took and what you saw."
+msgstr ""
+
 #. Generic label for an incoming voice or video call.
 #. Notification sound setting label. Ringtone for an incoming DM or group DM call.
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
@@ -17656,8 +17767,8 @@ msgstr "Instaluje se aktualizace pro počítač {version}…"
 msgid "Installing desktop update…"
 msgstr "Instaluje se aktualizace pro počítač…"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:537
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:727
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:702
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1037
 msgid "Instance"
 msgstr ""
 
@@ -17695,7 +17806,7 @@ msgstr "Rozhraní"
 #. Settings section label for interface language selection.
 #. Settings section title in the language tab. Keep it concise.
 #: src/features/user/components/modals/tabs/LanguageTab.tsx:79
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:50
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:54
 msgid "Interface language"
 msgstr "Jazyk rozhraní"
 
@@ -18223,6 +18334,10 @@ msgstr "Připojit se na tomto zařízení"
 msgid "Join the call"
 msgstr "Připojit se k hovoru"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:418
+msgid "Join the community"
+msgstr ""
+
 #. Confirm dialog body shown before joining a voice channel from a context where confirmation is required.
 #: src/features/voice/hooks/usePendingVoiceConnection.tsx:16
 msgid "Join this voice channel?"
@@ -18526,12 +18641,12 @@ msgstr "Korejština"
 #. User settings tab for language, locale, and time display preferences.
 #: src/features/app/components/setup/SetupWizardSteps.tsx:56
 #: src/features/user/components/settings_utils/search_index/LanguageIndex.ts:6
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:138
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:143
 msgid "Language"
 msgstr "Jazyk"
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:54
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:58
 msgid "Language settings"
 msgstr "Nastavení jazyka"
 
@@ -18789,8 +18904,12 @@ msgstr "Povolit čtečkám obrazovky oznamovat nové zprávy, jakmile dorazí do
 msgid "Let the community self-moderate"
 msgstr "Nechte komunitu, ať se moderuje sama"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:478
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:643
 msgid "Let's get everything working"
+msgstr ""
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:247
+msgid "Let’s make sure your account and this device are ready."
 msgstr ""
 
 #: src/features/theme_studio/sections/ThemeStudioSettingsSection.tsx:259
@@ -19007,7 +19126,7 @@ msgid "Links"
 msgstr "Odkazy"
 
 #. User settings tab label shown on Linux desktop builds.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:79
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:80
 msgid "Linux app"
 msgstr "Aplikace pro Linux"
 
@@ -19050,7 +19169,7 @@ msgstr "Litevština"
 msgid "Live"
 msgstr "Živě"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:553
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:718
 msgid "Live message connection is ready."
 msgstr ""
 
@@ -19104,7 +19223,7 @@ msgid "Loading profile"
 msgstr "Načítání profilu"
 
 #. Short label in the notifications. Keep it concise.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:22
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:24
 msgid "Loading push subscriptions…"
 msgstr "Načítání předplatných oznámení…"
 
@@ -19323,7 +19442,7 @@ msgid "macOS"
 msgstr "macOS"
 
 #. User settings tab label shown on macOS desktop builds.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:83
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:84
 msgid "macOS app"
 msgstr "Aplikace pro macOS"
 
@@ -19964,6 +20083,11 @@ msgstr "Střední"
 msgid "Medium size (default)"
 msgstr "Střední velikost (výchozí)"
 
+#. placeholder {0}: primaryGuild.name
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:418
+msgid "Meet {0}"
+msgstr ""
+
 #. Audit log target-type filter label. Filters entries that target a community member.
 #: src/features/app/config/AuditLogConstants.ts:156
 msgid "Member"
@@ -20175,6 +20299,10 @@ msgstr "zmíněná role"
 msgid "Mentions"
 msgstr "Zmínky"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:364
+msgid "Mentions & DMs"
+msgstr ""
+
 #. Short label in the markdown tab. Keep it concise.
 #: src/features/user/components/modals/tabs/component_gallery_tab/MarkdownTab.tsx:97
 msgid "Mentions and timestamps"
@@ -20232,6 +20360,11 @@ msgstr "zpráva"
 #: src/features/user/components/profile/ProfilePreview.tsx:321
 msgid "Message"
 msgstr "Zpráva"
+
+#. placeholder {0}: RuntimeConfig.onboarding.operator_name ?? RuntimeConfig.productName
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:929
+msgid "Message {0}"
+msgstr ""
 
 #. Prefix for the textarea placeholder text in a DM. Becomes "Message @username". The @ character is literal.
 #: src/features/channel/components/channel_textarea/shared.ts:16
@@ -20503,7 +20636,7 @@ msgstr "Zprávy v komunitních kanálech"
 msgid "Messages shortcuts"
 msgstr "Zkratky zpráv"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:550
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:715
 msgid "Messaging"
 msgstr ""
 
@@ -21287,7 +21420,7 @@ msgstr "Moje super média"
 msgid "My awesome sticker"
 msgstr "Moje super nálepka"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:685
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:850
 msgid "My camera isn't working"
 msgstr ""
 
@@ -21478,12 +21611,16 @@ msgstr "Navigace"
 msgid "Navigation shortcuts"
 msgstr "Navigační zkratky"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:917
+msgid "Need a person?"
+msgstr ""
+
 #. Short prompt shown near links that open account registration.
 #: src/features/i18n/utils/CommonMessageDescriptors.ts:86
 msgid "Need an account?"
 msgstr "Potřebujete účet?"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:104
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:160
 msgid "Needs attention"
 msgstr ""
 
@@ -21549,7 +21686,7 @@ msgid "New"
 msgstr "Nové"
 
 #. Small badge on a new or recently added app navigation item.
-#: src/features/app/components/layout/GuildsLayout.tsx:136
+#: src/features/app/components/layout/GuildsLayout.tsx:141
 msgctxt "navigation-badge"
 msgid "New"
 msgstr "Nové"
@@ -21699,6 +21836,10 @@ msgstr "Další"
 msgid "Next attachment"
 msgstr "Další příloha"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:92
+msgid "Next step"
+msgstr ""
+
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #. Short label in the base change nickname modal. Keep it concise.
 #. Short label in the rename channel modal. Keep it concise.
@@ -21831,7 +21972,7 @@ msgstr "Žádné záložky"
 msgid "No bot banner"
 msgstr "Žádný banner bota"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:579
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:744
 msgid "No call is active right now."
 msgstr ""
 
@@ -22113,7 +22254,7 @@ msgid "No preview yet"
 msgstr "Zatím žádný náhled"
 
 #. Empty-state text in the notifications.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:26
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:28
 msgid "No push subscriptions registered yet."
 msgstr "Zatím nejsou registrována žádná oznámení."
 
@@ -22198,7 +22339,7 @@ msgstr "Linuxový portál pro sdílení obrazovky nenašel žádné zdroje, kter
 msgid "No search results"
 msgstr "Žádné výsledky vyhledávání"
 
-#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:253
+#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:255
 #: src/features/app/components/dialogs/components/DesktopSettingsView.tsx:549
 msgid "No settings found"
 msgstr "Nenalezena žádná nastavení"
@@ -22293,7 +22434,7 @@ msgstr "Žádné důvěryhodné domény"
 msgid "No unread messages"
 msgstr "Žádné nepřečtené zprávy"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:805
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1115
 msgid "No update found"
 msgstr ""
 
@@ -22409,7 +22550,7 @@ msgstr "Nejste členem dostatečně dlouho"
 msgid "Not available"
 msgstr "Není k dispozici"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:642
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:807
 msgid "Not checked yet."
 msgstr ""
 
@@ -22434,6 +22575,7 @@ msgstr "Nelíbí se vám? Kdykoli to můžete vypnout."
 #: src/features/app/components/dialogs/components/plutonium/SubscriptionCard.tsx:58
 #: src/features/app/components/layout/app_layout/nagbars/VoiceSessionRestoreNagbar.tsx:35
 #: src/features/auth/state/NewDeviceMonitoring.tsx:31
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:457
 msgid "Not now"
 msgstr "Teď ne"
 
@@ -22448,7 +22590,7 @@ msgstr "Není ve vašem seznamu přátel"
 msgid "support.permission.not_requested"
 msgstr ""
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:126
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:182
 msgid "Not required"
 msgstr ""
 
@@ -22485,6 +22627,10 @@ msgstr "nic"
 msgid "Nothing"
 msgstr "Nic"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:988
+msgid "Nothing is sent automatically. Private support opens a DM; shared feedback is visible to pilot members."
+msgstr ""
+
 #: src/features/channel/components/bottomsheets/ChannelSearchBottomSheet.tsx:587
 msgid "Nothing matches"
 msgstr "Nic se neshoduje"
@@ -22518,6 +22664,10 @@ msgstr "Odznaky upozornění zobrazující počty nepřečtených zmínek v růz
 msgid "Notification overrides"
 msgstr "Přepsání oznámení"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:341
+msgid "Notification preset"
+msgstr ""
+
 #. Submenu / section header that groups per-channel or per-community notification preferences.
 #: src/features/i18n/utils/CommonMessageDescriptors.ts:330
 msgid "Notification settings"
@@ -22550,12 +22700,12 @@ msgid "Notifications"
 msgstr "Oznámení"
 
 #. User settings tab for notification and alert sound controls.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:133
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:138
 msgctxt "user-settings-tab"
 msgid "Notifications"
 msgstr "Oznámení"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:706
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:871
 msgid "Notifications are missing"
 msgstr ""
 
@@ -22703,7 +22853,7 @@ msgstr "Jeden nebo více příloh se nepodařilo přečíst nebo nahrát. Soubor
 msgid "One or more files you're trying to upload exceed the maximum size limit of {maxSizeFormatted} per file."
 msgstr "Jeden nebo více souborů, které se snažíte nahrát, překračuje maximální limit velikosti {maxSizeFormatted} na soubor."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:497
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:662
 msgid "One or more items may need your attention."
 msgstr ""
 
@@ -23009,6 +23159,7 @@ msgstr "Otevřít výběr barvy"
 
 #. Button label in the Discovery community preview modal shown when the user is already a member.
 #: src/features/discovery/components/modals/DiscoveryGuildPreviewModal.tsx:26
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:431
 msgid "Open community"
 msgstr "Otevřít komunitu"
 
@@ -23188,6 +23339,10 @@ msgstr "Otevřít překrytí"
 msgid "Open popup"
 msgstr "Otevřít rozbalovací nabídku"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:295
+msgid "Open profile"
+msgstr ""
+
 #. Accessible label for the avatar button in the channel header of a DM. Opens the recipient user profile.
 #: src/features/channel/components/channel_header/shared.ts:18
 msgid "Open profile for {directMessageName}"
@@ -23354,6 +23509,11 @@ msgstr "Video kodek OpenH264 poskytovaný společností Cisco Systems, Inc."
 #: src/features/app/components/dialogs/components/DesktopGuildSettingsView.tsx:66
 msgid "Opens the Members page. Press Space or Enter to open."
 msgstr "Otevře stránku Členové. Stisknutím mezerníku nebo Enter otevřete."
+
+#. placeholder {0}: config.operator_name
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:251
+msgid "Operated by {0}."
+msgstr ""
 
 #. Short label in the language tab. Keep it concise.
 #. Spellcheck engine option in the textarea spellcheck submenu. Uses the host operating system spellchecker.
@@ -24505,6 +24665,7 @@ msgstr "Chcete raději použít jednotné přihlášení? Pokračujte s {ssoDisp
 
 #. macOS app menu submenu title. Keep "Preferences" to match the macOS HIG; in-app surfaces still use "settings".
 #: src/features/platform/utils/DesktopLocaleBridge.ts:25
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:380
 msgid "Preferences"
 msgstr "Předvolby"
 
@@ -24574,6 +24735,14 @@ msgstr "Typ předplatného"
 #: src/features/channel/components/channel_header_components/developer_tools/DeveloperOptionLabels.ts:157
 msgid "Premium until date"
 msgstr "Premium do data"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:942
+msgid "Prepare a clear report. You review it before anything is posted."
+msgstr ""
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1013
+msgid "Prepare shared feedback"
+msgstr ""
 
 #. Setup wizard title while the instance configuration loads.
 #: src/features/app/components/setup/SetupWizardSteps.tsx:72
@@ -24648,7 +24817,7 @@ msgstr "Tlačítko náhledu"
 msgid "Preview camera"
 msgstr "Náhled kamery"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:893
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1203
 msgid "Preview diagnostics"
 msgstr ""
 
@@ -24807,7 +24976,7 @@ msgstr "Prioritní mluvčí"
 #. User settings tab for privacy and safety controls.
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:12
 #: src/features/user/components/settings_utils/section_registry/PrivacySafetySections.ts:60
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:104
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:109
 msgid "Privacy"
 msgstr "Soukromí"
 
@@ -24846,6 +25015,10 @@ msgstr "Porušení soukromí nebo doxxing"
 msgid "Privacy violation or stalking"
 msgstr "Porušení soukromí nebo pronásledování"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:241
+msgid "Private community setup"
+msgstr ""
+
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/section_registry/AppearanceSections.ts:222
 msgid "Private details"
@@ -24866,8 +25039,13 @@ msgstr "Soukromá zpráva"
 msgid "Pro tip:"
 msgstr "Tip:"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:115
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:171
 msgid "Problem found"
+msgstr ""
+
+#. Short confirmation after a structured support report is copied.
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:84
+msgid "Problem report copied"
 msgstr ""
 
 #. Generic action label that confirms proceeding past a content warning or mature-content gate.
@@ -24887,7 +25065,7 @@ msgid "Product name"
 msgstr "Název produktu"
 
 #. User settings tab for editing the current user profile.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:92
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:93
 msgid "Profile"
 msgstr "Profil"
 
@@ -25131,7 +25309,7 @@ msgstr "Zakoupeno {0}"
 #. Settings section label for managing purchased gift codes.
 #: src/features/user/components/modals/tabs/GiftInventoryTab.tsx:411
 #: src/features/user/components/settings_utils/search_index/GiftInventoryIndex.ts:38
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:14
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:18
 msgid "Purchased gifts"
 msgstr "Zakoupené dárky"
 
@@ -25196,7 +25374,7 @@ msgid "Push subscription"
 msgstr "Oznámení"
 
 #. Label in the notifications.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:57
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:59
 msgid "Push subscriptions for this device"
 msgstr "Oznámení pro toto zařízení"
 
@@ -25336,9 +25514,15 @@ msgid "Quick switcher tabs"
 msgstr "Karty rychlého přepínače"
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:373
 #: src/features/user/components/settings_utils/section_registry/NotificationsSections.ts:187
 msgid "Quiet"
 msgstr "Tichý"
+
+#. Notification setting that suppresses notifications during a daily local-time window.
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:84
+msgid "Quiet hours"
+msgstr ""
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/DesktopSettingsIndex.ts:274
@@ -25472,12 +25656,17 @@ msgstr "Čtení protokolu aktivit komunity o změnách a moderátorských akcíc
 msgid "Read the documentation ({domain})"
 msgstr "Přečtěte si dokumentaci ({domain})"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:420
+msgid "Read the welcome information and community rules, then find the important channels."
+msgstr ""
+
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/section_registry/AccessibilitySections.ts:163
 msgid "Reading speed"
 msgstr "Rychlost čtení"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:93
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:78
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:149
 msgid "Ready"
 msgstr ""
 
@@ -25639,7 +25828,7 @@ msgstr "Uplatnit"
 #. Settings section label for redeeming a gift code.
 #: src/features/user/components/modals/tabs/GiftInventoryTab.tsx:362
 #: src/features/user/components/settings_utils/search_index/GiftInventoryIndex.ts:10
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:10
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:14
 msgid "Redeem a gift"
 msgstr "Uplatnit dárek"
 
@@ -25738,7 +25927,7 @@ msgid "Refresh audio sources"
 msgstr "Obnovit zdroje zvuku"
 
 #. Short label in the notifications. Keep it concise.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:66
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:68
 msgid "Refresh push subscription"
 msgstr "Obnovit push předplatné"
 
@@ -25846,7 +26035,7 @@ msgstr "Vztah"
 msgid "Relative"
 msgstr "Relativní"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:755
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1065
 msgid "Release channel"
 msgstr ""
 
@@ -25857,7 +26046,7 @@ msgstr ""
 msgid "Release delay"
 msgstr "Prodleva uvolnění"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:717
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1027
 msgid "Release identity helps support confirm exactly which client you are using."
 msgstr ""
 
@@ -25928,6 +26117,10 @@ msgstr "Zapamatovat si okno"
 #: src/features/user/components/modals/tabs/DesktopSettingsTab.tsx:165
 msgid "Remember window size and position"
 msgstr "Pamatovat si velikost a pozici okna"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:983
+msgid "Remind me to attach a screenshot before sending"
+msgstr ""
 
 #. Action label for removing the selected item from a list or relationship.
 #. Action label for removing the selected item from a list or relationship.
@@ -26479,6 +26672,12 @@ msgstr "Nahlásit zprávu"
 #: src/features/moderation/components/report_modal/IARModalCopy.ts:110
 msgid "Report a platform rule violation"
 msgstr "Nahlásit porušení pravidel platformy"
+
+#. Support Center section for preparing a structured problem report.
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:941
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:94
+msgid "Report a problem or share feedback"
+msgstr ""
 
 #. IAR modal: screen-reader description for the whole modal.
 #: src/features/moderation/components/report_modal/IARModalCopy.ts:467
@@ -27143,12 +27342,16 @@ msgstr "Zkontrolovat a potvrdit"
 msgid "Review apps that can access your account."
 msgstr "Prohlédněte si aplikace, které mají přístup k vašemu účtu."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:707
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:872
 msgid "Review desktop, push, sound, and mention settings."
 msgstr ""
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:695
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:860
 msgid "Review display, motion, accessibility, and performance settings."
+msgstr ""
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:907
+msgid "Review known issues, recovery progress, and planned maintenance."
 msgstr ""
 
 #. Settings row description for reviewing macOS permissions.
@@ -27160,6 +27363,10 @@ msgstr "Zkontrolovat přístup k mikrofonu, kameře, nahrávání obrazovky a mo
 #: src/features/user/components/settings_utils/search_index/PlutoniumIndex.ts:120
 msgid "Review past purchases and refund options"
 msgstr "Zkontrolovat minulé nákupy a možnosti vrácení peněz"
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:320
+msgid "Review security"
+msgstr ""
 
 #. Security settings row description for linked devices.
 #: src/features/user/components/modals/tabs/account_security_tab/SecurityTab.tsx:69
@@ -27189,6 +27396,10 @@ msgstr "Než budete pokračovat, zkontrolujte, co tato aplikace požaduje."
 #: src/features/app/components/setup/SetupWizardSteps.tsx:331
 msgid "Review your choices below, then finish. This saves the configuration and opens the instance."
 msgstr "Zkontrolujte níže svá nastavení a poté dokončete. Tím se uloží konfigurace a otevře instance."
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:310
+msgid "Review your password, multi-factor authentication, recovery codes, and signed-in devices."
+msgstr ""
 
 #. Short label in the group invites bottom sheet. Keep it concise.
 #. Short label in the group invites modal. Keep it concise.
@@ -27421,11 +27632,11 @@ msgstr "Řádků na stránku"
 msgid "Run {productName} automatically when your computer starts"
 msgstr "Spustit aplikaci {productName} automaticky při spuštění počítače"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:502
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:667
 msgid "Run a check to see your setup status."
 msgstr ""
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:523
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:688
 msgid "Run again"
 msgstr ""
 
@@ -27439,7 +27650,7 @@ msgstr "Spustit při přihlášení"
 msgid "Run the instance as one community instead of many. This can only be enabled now, during setup."
 msgstr "Spusťte instanci jako jednu komunitu místo mnoha. Toto lze povolit pouze nyní, během nastavení."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:501
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:666
 msgid "Running a fresh check now."
 msgstr ""
 
@@ -28242,6 +28453,7 @@ msgstr "Tajné klíče a tokeny"
 #. Short label in the authentication email revert page. Keep the tone plain and specific.
 #: src/features/auth/components/pages/EmailRevertPage.tsx:18
 #: src/features/auth/components/pages/EmailRevertPage.tsx:68
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:308
 msgid "Secure your account"
 msgstr "Zabezpečte si účet"
 
@@ -28299,6 +28511,10 @@ msgstr "Zobrazit seznam členů kanálů v této komunitě."
 #: src/features/permissions/utils/PermissionLabelDescriptors.ts:128
 msgid "See the member list for this channel."
 msgstr "Zobrazit seznam členů tohoto kanálu."
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:889
+msgid "See whether a service is unavailable or recovering."
+msgstr ""
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/AccessibilityIndex.ts:121
@@ -28828,6 +29044,14 @@ msgstr "Poskytnout soubor tokenu"
 msgid "Service error"
 msgstr "Chyba služby"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:888
+msgid "Service status"
+msgstr ""
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:904
+msgid "Service updates"
+msgstr ""
+
 #. Section heading in the voice connection status popout for current call/session debug stats.
 #: src/features/voice/components/voice_connection_status/shared.ts:64
 msgid "Session"
@@ -29136,6 +29360,10 @@ msgstr "Nastavit aplikaci pro ověřování"
 msgid "Setup key"
 msgstr "Nastavovací klíč"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:259
+msgid "Setup progress: {progressPercent}%"
+msgstr ""
+
 #. Label in the channel and chat typing users.
 #: src/features/channel/components/TypingUsers.tsx:21
 msgid "Several people are typing..."
@@ -29331,7 +29559,7 @@ msgstr "Konflikty zkratek"
 #. User settings tab for keyboard shortcuts and custom bindings.
 #: src/features/user/components/settings_utils/search_index/KeybindsIndex.ts:18
 #: src/features/user/components/settings_utils/section_registry/AccessibilitySections.ts:175
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:129
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:134
 msgid "Shortcuts"
 msgstr "Zkratky"
 
@@ -29924,7 +30152,7 @@ msgstr "Přihlášeno"
 
 #. Settings section label for account sessions and devices.
 #: src/features/user/components/modals/tabs/DevicesTab.tsx:515
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:42
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:46
 msgid "Signed-in devices"
 msgstr "Přihlášená zařízení"
 
@@ -29954,6 +30182,11 @@ msgstr "Odhlášením tento účet z tohoto zařízení odeberete."
 #: src/features/user/components/settings_utils/section_registry/NotificationsSections.ts:183
 msgid "Silence"
 msgstr "Ztišit"
+
+#. Description of device-local notification quiet hours.
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:88
+msgid "Silence notification banners and sounds on this device during a daily window. Unread indicators remain."
+msgstr ""
 
 #. Short label in the accessibility tab. Keep it concise.
 #: src/features/user/components/modals/tabs/AccessibilityTab.tsx:66
@@ -30350,6 +30583,10 @@ msgstr "někdo"
 msgid "something"
 msgstr "něco"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:360
+msgid "Something else"
+msgstr ""
+
 #. Generic error modal title for an unexpected failure.
 #. Generic error toast title.
 #: src/features/auth/flow/HandoffApprovalFlow.tsx:263
@@ -30743,7 +30980,7 @@ msgstr "Kontrola pravopisu"
 #: src/features/user/components/modals/tabs/LanguageTab.tsx:413
 #: src/features/user/components/modals/tabs/LanguageTab.tsx:455
 #: src/features/user/components/settings_utils/search_index/LanguageIndex.ts:74
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:58
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:62
 msgid "Spellcheck"
 msgstr "Kontrola pravopisu"
 
@@ -30905,6 +31142,10 @@ msgstr "Spustit aplikaci {appName} automaticky po přihlášení."
 msgid "Start a call in a DM or group"
 msgstr "Zahájit hovor v soukromé nebo skupinové konverzaci"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:920
+msgid "Start a direct message with the operator. Nothing is sent automatically."
+msgstr ""
+
 #. Keyboard shortcut action label shown in the shortcuts list and keybind editor. Keep short, sentence case.
 #: src/features/input/state/input_keybind/shared.ts:149
 msgid "Start a group DM"
@@ -30968,6 +31209,11 @@ msgstr "Spustit nahrávání"
 #: src/features/search/components/quick_switcher/QuickSwitcherModal.tsx:610
 msgid "Start searches with <0>{peoplePrefix}</0> <1>{textChannelPrefix}</1> <2>{voiceChannelPrefix}</2> <3>{communityPrefix}</3> to narrow down results."
 msgstr "Začněte vyhledáváním pomocí <0>{peoplePrefix}</0> <1>{textChannelPrefix}</1> <2>{voiceChannelPrefix}</2> <3>{communityPrefix}</3>, abyste zúžili výsledky."
+
+#. Label for the beginning of notification quiet hours.
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:92
+msgid "Start time"
+msgstr ""
 
 #. Settings search entry description. One-line summary of what the settings search entry controls.
 #: src/features/user/components/settings_utils/search_index/ChatSettingsIndex.ts:151
@@ -31059,6 +31305,10 @@ msgstr "Krok 3"
 #: src/features/moderation/components/report/ReportStepDetails.tsx:125
 msgid "Step 4"
 msgstr "Krok 4"
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:266
+msgid "steps ready"
+msgstr ""
 
 #. Label for the has:sticker filter option in the mobile channel search sheet.
 #. Screen-reader fragment listing one sticker on a message. Lowercase because it appears inside a longer sentence.
@@ -31164,7 +31414,7 @@ msgstr "Dosažen limit balíčků nálepek"
 #. Short label in the expression packs tab. Keep it concise.
 #: src/features/user/components/modals/tabs/ExpressionPacksTab.tsx:84
 #: src/features/user/components/settings_utils/search_index/ExpressionPacksIndex.ts:27
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:22
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:26
 msgid "Sticker packs"
 msgstr "Balíčky nálepek"
 
@@ -31508,16 +31758,16 @@ msgid "Summary"
 msgstr "Souhrn"
 
 #. User settings tab for troubleshooting, diagnostics, version information, and updates.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:150
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:155
 msgid "Support"
 msgstr ""
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:471
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:636
 msgid "Support center"
 msgstr ""
 
 #. Toast-like button state after the support summary is copied.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:65
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:79
 msgid "Support summary copied"
 msgstr ""
 
@@ -31829,7 +32079,7 @@ msgid "Syntax highlighting"
 msgstr "Zvýraznění syntaxe"
 
 #: src/features/channel/components/ChannelUserTag.tsx:27
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:783
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1093
 msgid "System"
 msgstr "Systém"
 
@@ -32071,12 +32321,16 @@ msgstr "URL podmínek"
 msgid "Terrorism or violent extremism"
 msgstr "Terorismus nebo násilný extremismus"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:592
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:757
 msgid "Test audio"
 msgstr ""
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:622
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:787
 msgid "Test camera"
+msgstr ""
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:333
+msgid "Test notifications"
 msgstr ""
 
 #. Button that validates SMTP credentials.
@@ -32294,7 +32548,7 @@ msgstr "Aplikace spadla"
 msgid "The app has crashed. Checking for updates that might fix this issue…"
 msgstr "Aplikace spadla. Hledám aktualizace, které by to mohly opravit…"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:694
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:859
 msgid "The app looks or feels wrong"
 msgstr ""
 
@@ -32343,7 +32597,7 @@ msgstr "Stažený soubor je uložen do vašeho počítače. Nainstalujte jej pom
 msgid "The file contains the verification token we will fetch from <0>{dnsUrl}</0>."
 msgstr "Soubor obsahuje ověřovací token, který načteme z <0>{dnsUrl}</0>."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:859
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1169
 msgid "The file includes versions, operating system, service-check results, permission states, and device counts. It does not include passwords, tokens, cookies, messages, attachments, account IDs, community or channel names, participant identities, device IDs, or raw server responses."
 msgstr ""
 
@@ -32365,7 +32619,7 @@ msgstr "Jazyk, kterým mluví většina vaší komunity. Používá se k filtrov
 msgid "The link may still work. Try again in a moment."
 msgstr "Odkaz může být stále funkční. Zkuste to prosím za chvíli znovu."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:555
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:720
 msgid "The live message connection is not ready."
 msgstr ""
 
@@ -33459,7 +33713,7 @@ msgstr "Čas"
 #. Settings section label for app time display format.
 #: src/features/user/components/modals/tabs/LanguageTab.tsx:373
 #: src/features/user/components/settings_utils/search_index/LanguageIndex.ts:26
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:46
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:50
 msgid "Time format"
 msgstr "Formát času"
 
@@ -34056,7 +34310,7 @@ msgstr "Zkuste zprávu upravit znovu."
 msgid "TRY gifts are one-time payments. Cards charged in TRY still need to be issued in Türkiye for the purchase to stay eligible."
 msgstr "Dárky v TRY jsou jednorázové platby. Karty účtované v TRY musí být stále vydány v Turecku, aby nákup zůstal způsobilý."
 
-#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:256
+#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:258
 msgid "Try searching for something like \"theme\", \"notifications\", or \"privacy\""
 msgstr "Zkuste hledat něco jako \"motiv\", \"oznámení\" nebo \"soukromí\""
 
@@ -34590,7 +34844,7 @@ msgstr "Rozbalit"
 
 #. Settings section label for the embed debugger URL input.
 #: src/features/user/components/modals/tabs/EmbedDebuggerTab.tsx:226
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:70
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:74
 msgid "Unfurl debugger"
 msgstr "Ladící nástroj pro vkládání odkazů"
 
@@ -34664,7 +34918,7 @@ msgstr "Neznámé datum"
 #. Short label in the notifications. Keep it concise.
 #: src/features/app/components/layout/VoiceParticipantItem.tsx:43
 #: src/features/user/components/modals/tabs/DevicesTab.tsx:66
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:78
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:80
 msgid "Unknown device"
 msgstr "Neznámé zařízení"
 
@@ -35154,7 +35408,7 @@ msgstr "Až 4K/60 sn./s"
 
 #. Confirm button label on the reschedule scheduled-message alert.
 #: src/features/channel/components/channel_textarea/shared.ts:28
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:831
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1141
 msgid "Update"
 msgstr "Aktualizovat"
 
@@ -35168,7 +35422,7 @@ msgstr "Aktualizujte aplikaci {productName}, abyste si mohli tuto zprávu prohl�
 msgid "Update app"
 msgstr "Aktualizovat aplikaci"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:805
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1115
 msgid "Update available"
 msgstr ""
 
@@ -35186,7 +35440,7 @@ msgstr "Aktualizovat můj stav"
 msgid "Update service worker"
 msgstr "Aktualizovat service worker"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:799
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1109
 msgid "Update status"
 msgstr ""
 
@@ -35295,7 +35549,7 @@ msgstr "Aktualizován avatar webhooku."
 msgid "Updater state"
 msgstr "Stav aktualizátoru"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:635
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:800
 msgid "Updates"
 msgstr ""
 
@@ -36014,7 +36268,7 @@ msgid "User record"
 msgstr "Záznam uživatele"
 
 #. Root label for the current user settings modal and settings search paths.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:363
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:375
 msgid "User settings"
 msgstr "Uživatelské nastavení"
 
@@ -36104,9 +36358,13 @@ msgid "Uses"
 msgstr "Používá"
 
 #. Label in the notifications.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:38
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:40
 msgid "Uses the OS notification center. For per-channel/per-community controls, right-click a community icon and open notification settings."
 msgstr "Používá oznamovací centrum OS. Pro nastavení oznámení pro jednotlivé kanály/komunity klikněte pravým tlačítkem na ikonu komunity a otevřete nastavení oznámení."
+
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:228
+msgid "Uses this device’s local time. Matching start and end times means all day."
+msgstr ""
 
 #: src/features/invite/components/InviteListItem.tsx:232
 msgid "Uses:"
@@ -36466,8 +36724,8 @@ msgid "support.update.available"
 msgstr ""
 
 #. Support Center section showing release identity and update controls.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:716
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:86
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1026
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:98
 msgid "Version & updates"
 msgstr ""
 
@@ -36755,7 +37013,7 @@ msgid "View help article"
 msgstr "Zobrazit článek nápovědy"
 
 #. Button on the connection banner when an incident is ongoing. Opens that incident on the status page.
-#: src/features/app/hooks/useConnectionNotice.ts:47
+#: src/features/app/hooks/useConnectionNotice.ts:58
 msgid "View incident details"
 msgstr "Zobrazit podrobnosti incidentu"
 
@@ -36765,7 +37023,7 @@ msgid "View incoming call"
 msgstr "Zobrazit příchozí hovor"
 
 #. Button on the connection banner when maintenance is ongoing. Opens that maintenance on the status page.
-#: src/features/app/hooks/useConnectionNotice.ts:51
+#: src/features/app/hooks/useConnectionNotice.ts:62
 msgid "View maintenance details"
 msgstr "Zobrazit podrobnosti údržby"
 
@@ -36807,7 +37065,7 @@ msgid "View reactions"
 msgstr "Zobrazit reakce"
 
 #. Button on the connection banner. Opens the external service status page.
-#: src/features/app/hooks/useConnectionNotice.ts:43
+#: src/features/app/hooks/useConnectionNotice.ts:54
 msgid "View status page"
 msgstr "Zobrazit stavovou stránku"
 
@@ -36955,7 +37213,7 @@ msgstr "Hlasový (pro dospělé)"
 
 #. User settings tab for microphone, speaker, camera, and call stats.
 #. User settings tab for microphone, speaker, camera, and call stats.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:125
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:130
 #: src/features/voice/utils/VoiceMessageDescriptors.ts:30
 msgid "Voice & video"
 msgstr "Zvuk a video"
@@ -37090,7 +37348,7 @@ msgstr "Hlas odpojen"
 msgid "Voice entrance sound"
 msgstr "Zvuk při vstupu do hovoru"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:572
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:737
 msgid "Voice is disabled on this instance."
 msgstr ""
 
@@ -37119,6 +37377,10 @@ msgstr "Přehrávač hlasových zpráv"
 #: src/features/notification/utils/SoundLabels.ts:16
 msgid "Voice mute"
 msgstr "Ztlumit hlas"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:357
+msgid "Voice or video problem"
+msgstr ""
 
 #. Aria label on the voice participants avatar list container.
 #: src/features/voice/components/VoiceParticipantAvatarList.tsx:39
@@ -37154,7 +37416,7 @@ msgstr "Nahrávání hlasu není v tomto prohlížeči podporováno."
 msgid "Voice region"
 msgstr "Hlasový region"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:569
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:734
 msgid "Voice service"
 msgstr ""
 
@@ -37355,6 +37617,11 @@ msgstr "Zprávu se momentálně nepodařilo přeposlat."
 msgid "We couldn't import that theme library file."
 msgstr "Soubor knihovny motivů se nepodařilo importovat."
 
+#. Support Center error shown when creating or opening the configured operator DM fails.
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:94
+msgid "We couldn't open private support yet. Check your connection and try again."
+msgstr ""
+
 #: src/features/messaging/components/alerts/AttachmentUploadConnectivityModal.tsx:23
 msgid "We couldn't reach the attachment upload service. {PRODUCT_NAME} can fall back to the standard upload path for messages up to {fallbackSizeFormatted} total, but these attachments exceed that combined limit and can't be sent until connectivity is restored. Try again later or contact <0>{SUPPORT_EMAIL}</0> if this keeps happening."
 msgstr "Nepodařilo se nám připojit ke službě pro nahrávání příloh. {PRODUCT_NAME} může použít standardní cestu pro nahrávání zpráv do celkové velikosti {fallbackSizeFormatted}, ale tyto přílohy překračují kombinovaný limit a nelze je odeslat, dokud se neobnoví připojení. Zkuste to prosím později, nebo pokud problém přetrvává, kontaktujte <0>{SUPPORT_EMAIL}</0>."
@@ -37374,12 +37641,17 @@ msgstr "Téma se nepodařilo načíst. Je možné, že je poškozené nebo nepla
 msgid "We couldn't remove that account. Try again."
 msgstr "Tento účet se nám nepodařilo odebrat. Zkuste to znovu."
 
+#. Getting Started error shown when synced onboarding progress could not be saved.
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:57
+msgid "We couldn't save that yet. Check your connection and try again."
+msgstr ""
+
 #. Modal body for existing-subscription block. Directs the user to the billing portal and addresses the just-paid race case. Keep plain and reassuring.
 #: src/features/app/components/dialogs/components/plutonium/hooks/useCheckoutActions.tsx:130
 msgid "We found an existing {premiumProductFullName} subscription for this account. Manage it in the secure billing portal to update payment details or check renewal status. If you just paid, wait a minute and reopen this page."
 msgstr "Pro tento účet jsme našli stávající předplatné {premiumProductFullName}. Spravujte ho v zabezpečeném platebním portálu, kde můžete aktualizovat platební údaje nebo zkontrolovat stav obnovení. Pokud jste právě zaplatili, počkejte minutu a znovu otevřete tuto stránku."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:499
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:664
 msgid "We found something that may stop the app working correctly."
 msgstr ""
 
@@ -37521,7 +37793,7 @@ msgstr "Web {buildVersion}"
 msgid "Web authentication"
 msgstr "Webové ověřování"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:741
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1051
 msgid "Web build"
 msgstr ""
 
@@ -37628,6 +37900,11 @@ msgstr "Vítejte zpět"
 msgid "Welcome in, {username}!"
 msgstr "Vítejte, {username}!"
 
+#. placeholder {0}: RuntimeConfig.productName
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:244
+msgid "Welcome to {0}"
+msgstr ""
+
 #: src/features/channel/components/ChannelWelcomeSection.tsx:53
 msgid "Welcome to {channelDisplayName}"
 msgstr "Vítejte v kanálu {channelDisplayName}"
@@ -37705,10 +37982,18 @@ msgstr "Vítejte, {username}! Váš další rozhovor začíná zde."
 msgid "Welcome, {username}. We're happy to have you here."
 msgstr "Vítejte, {username}. Jsme rádi, že jste tu."
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:971
+msgid "What did you expect? (optional)"
+msgstr ""
+
 #. IAR modal: accessible label (aria-label only — not shown visually) for the primary-path radio group on step 1.
 #: src/features/moderation/components/report_modal/IARModalCopy.ts:36
 msgid "What do you need?"
 msgstr "Co potřebujete?"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:961
+msgid "What happened?"
+msgstr ""
 
 #. IAR modal: category-step title for the platform-report path. User picks a broad area before drilling in.
 #: src/features/moderation/components/report_modal/IARModalCopy.ts:49
@@ -37936,7 +38221,7 @@ msgid "Window state"
 msgstr "Stav okna"
 
 #. User settings tab label shown on Windows desktop builds. Refers to the Microsoft Windows OS.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:75
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:76
 msgid "Windows app"
 msgstr "Aplikace pro Windows"
 
@@ -38095,7 +38380,7 @@ msgstr "Chystáte se převést vlastnictví této komunity na uživatele <0>{0}<
 msgid "You are banned from this community and cannot join."
 msgstr "Máte zákaz v této komunitě a nemůžete se připojit."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:577
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:742
 msgid "You are connected to a call."
 msgstr ""
 
@@ -38194,6 +38479,10 @@ msgstr "Znovu můžete vrátit peníze po {cooldownEndsOn}. V případě problé
 #: src/features/guild/components/modals/guild_tabs/guild_overview_tab/sections/MessageHistoryThresholdContent.tsx:86
 msgid "You can remove the <0>{readMessageHistoryPermissionLabel}</0> permission from the <1>{EVERYONE_MENTION}</1> role in <2>{rolesSettingsPath}</2> and grant it to one or more trusted roles instead."
 msgstr "Oprávnění <0>{readMessageHistoryPermissionLabel}</0> můžete odebrat roli <1>{EVERYONE_MENTION}</1> v <2>{rolesSettingsPath}</2> a místo toho ho udělit jedné nebo více důvěryhodným rolím."
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:447
+msgid "You can reopen Getting Started from Settings at any time."
+msgstr ""
 
 #: src/features/app/components/dialogs/components/LogoutModal.tsx:26
 msgid "You can sign back in at any time."
@@ -38662,7 +38951,7 @@ msgstr "Abyste mohli v této komunitě posílat zprávy, musíte si ověřit e-m
 msgid "You or someone you're adding already has the maximum number of group DMs open. Leave one and try again."
 msgstr "Vy nebo někdo, koho přidáváte, už má otevřený maximální počet skupinových DM. Opusťte jeden a zkuste to znovu."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:856
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1166
 msgid "You stay in control"
 msgstr ""
 
@@ -38856,6 +39145,10 @@ msgstr "Používáte starší tarif. Aktuální cena tohoto plánu je {currentSu
 msgid "You're on timeout in this community"
 msgstr "V této komunitě máte pauzu"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:445
+msgid "You’re ready"
+msgstr ""
+
 #. Label in the message send too quick modal.
 #: src/features/messaging/components/alerts/MessageSendTooQuickModal.tsx:8
 msgid "You're sending messages too quickly"
@@ -38979,7 +39272,7 @@ msgstr "Vaše předplatné {premiumProductName} vypršelo. Ztratili jste všechn
 msgid "Your {productName} session expired. Sign in again to continue authorizing this application."
 msgstr "Vaše relace {productName} vypršela. Přihlaste se znovu a pokračujte v autorizaci této aplikace."
 
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:210
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:215
 msgid "Your account"
 msgstr "Váš účet"
 
@@ -39245,6 +39538,12 @@ msgstr "váš region"
 #: src/features/auth/components/modals/required_action/RequiredActionDescriptors.ts:61
 msgid "Your registration needs an extra anti-spam check before you can continue."
 msgstr "Než budete moct pokračovat, je potřeba provést dodatečnou kontrolu proti spamu."
+
+#. Getting Started section containing the private community setup trail.
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:275
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:10
+msgid "Your setup checklist"
+msgstr ""
 
 #. Subtitle under the preview-paused overlay reassuring the user that the screen share is still live for others.
 #: src/features/voice/components/voice_participant_tile/shared.ts:61

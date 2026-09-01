@@ -8,12 +8,14 @@ import type {ChannelID, EmojiID, GuildID, RoleID, StickerID, UserID} from '../..
 import type {IGatewayService} from '../../../infrastructure/IGatewayService';
 import {Logger} from '../../../Logger';
 import type {Guild} from '../../../models/Guild';
+import type {IUserRepository} from '../../../user/IUserRepository';
 import {serializeGuildForAudit as serializeGuildForAuditUtil} from '../../../utils/AuditSerializationUtils';
 import {requirePermission} from '../../../utils/PermissionUtils';
 import type {GuildAuditLogService} from '../../GuildAuditLogService';
 import type {GuildAuditLogChange} from '../../GuildAuditLogTypes';
 import {mapGuildToGuildResponse} from '../../GuildModel';
 import {GuildRepository} from '../../repositories/GuildRepository';
+import {enforceGuildMfa} from '../GuildMfaGuard';
 
 interface GuildAuth {
 	guildData: GuildResponse;
@@ -24,6 +26,7 @@ export class GuildDataHelpers {
 	constructor(
 		private readonly gatewayService: IGatewayService,
 		private readonly guildAuditLogService: GuildAuditLogService,
+		private readonly userRepository: IUserRepository,
 	) {}
 
 	private readonly guildRepository = new GuildRepository();
@@ -46,6 +49,7 @@ export class GuildDataHelpers {
 		const {guildData, guildId, userId} = params;
 		const checkPermission = async (permission: bigint) => {
 			await requirePermission(this.gatewayService, {guildId, userId, permission});
+			await enforceGuildMfa({guildData, userId, permission, userRepository: this.userRepository});
 		};
 		return {guildData, checkPermission};
 	}

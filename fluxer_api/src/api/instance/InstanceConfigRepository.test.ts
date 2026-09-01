@@ -81,6 +81,103 @@ describe('InstanceConfigRepository', () => {
 		});
 	});
 
+	it('provides safe disabled defaults for onboarding and support', async () => {
+		setCassandraQueryExecutorForTesting(new CountingInMemoryCassandraQueryExecutor());
+		const repository = createRepository(new MockKVProvider());
+
+		const config = await repository.getAppPublicConfig();
+
+		expect(config.onboarding).toEqual({
+			enabled: false,
+			version: 1,
+			enabled_at: null,
+			show_for_existing_users: false,
+			welcome_message: null,
+			operator_name: null,
+			availability_message: null,
+			primary_guild_id: null,
+			rules_channel_id: null,
+			introduction_channel_id: null,
+			mfa_policy: 'recommended',
+			steps: {
+				profile: true,
+				security: true,
+				notifications: true,
+				media: true,
+				community: true,
+			},
+		});
+		expect(config.support).toEqual({
+			status_url: null,
+			support_user_id: null,
+			service_updates_channel_id: null,
+			feedback_channel_id: null,
+		});
+	});
+
+	it('merges onboarding step updates without resetting sibling settings', async () => {
+		setCassandraQueryExecutorForTesting(new CountingInMemoryCassandraQueryExecutor());
+		const repository = createRepository(new MockKVProvider());
+
+		await repository.setAppPublicConfig({
+			onboarding: {
+				welcome_message: 'Welcome to the pilot',
+				steps: {media: false},
+			},
+		});
+		const updated = await repository.setAppPublicConfig({
+			onboarding: {steps: {notifications: false}},
+		});
+
+		expect(updated.onboarding.welcome_message).toBe('Welcome to the pilot');
+		expect(updated.onboarding.steps).toEqual({
+			profile: true,
+			security: true,
+			notifications: false,
+			media: false,
+			community: true,
+		});
+	});
+
+	it('merges support destination updates without clearing configured siblings', async () => {
+		setCassandraQueryExecutorForTesting(new CountingInMemoryCassandraQueryExecutor());
+		const repository = createRepository(new MockKVProvider());
+
+		await repository.setAppPublicConfig({
+			support: {
+				support_user_id: '323456789012345678',
+				service_updates_channel_id: '423456789012345678',
+			},
+		});
+		const updated = await repository.setAppPublicConfig({
+			support: {feedback_channel_id: '523456789012345678'},
+		});
+
+		expect(updated.support).toEqual({
+			status_url: null,
+			support_user_id: '323456789012345678',
+			service_updates_channel_id: '423456789012345678',
+			feedback_channel_id: '523456789012345678',
+		});
+	});
+
+	it('records rollout time only when onboarding transitions from disabled to enabled', async () => {
+		setCassandraQueryExecutorForTesting(new CountingInMemoryCassandraQueryExecutor());
+		const repository = createRepository(new MockKVProvider());
+
+		const enabled = await repository.setAppPublicConfig({onboarding: {enabled: true}});
+		const enabledAt = enabled.onboarding.enabled_at;
+		expect(enabledAt).not.toBeNull();
+
+		const edited = await repository.setAppPublicConfig({onboarding: {welcome_message: 'Hello'}});
+		expect(edited.onboarding.enabled_at).toBe(enabledAt);
+
+		await repository.setAppPublicConfig({onboarding: {enabled: false}});
+		const reenabled = await repository.setAppPublicConfig({onboarding: {enabled: true}});
+		expect(reenabled.onboarding.enabled_at).not.toBeNull();
+		expect(Date.parse(reenabled.onboarding.enabled_at!)).toBeGreaterThanOrEqual(Date.parse(enabledAt!));
+	});
+
 	it('uses the registration URL id as the admin-visible registration code', async () => {
 		const executor = new CountingInMemoryCassandraQueryExecutor();
 		setCassandraQueryExecutorForTesting(executor);
