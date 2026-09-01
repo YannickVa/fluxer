@@ -194,6 +194,21 @@ async function login(page, gatewayTracker, credentials, timeoutMs) {
 	assert.match(page.url(), /\/channels\/@me(?:\/|$)/, `${credentials.label}: session did not survive reload.`);
 }
 
+async function dismissPilotOnboardingIfVisible(page, timeoutMs) {
+	const dismissButton = page.getByRole('button', {name: /^not now$/i});
+	try {
+		await dismissButton.waitFor({state: 'visible', timeout: Math.min(5_000, timeoutMs)});
+	} catch {
+		return false;
+	}
+
+	await dismissButton.click();
+	await page
+		.locator('[data-flx="user.user-settings-modal.modal-root"]')
+		.waitFor({state: 'hidden', timeout: timeoutMs});
+	return true;
+}
+
 async function openChannel(page, gatewayTracker, guildId, channelId, timeoutMs) {
 	const openedBeforeNavigation = gatewayTracker.opened;
 	await page.goto(`/channels/${guildId}/${channelId}`, {waitUntil: 'domcontentloaded'});
@@ -411,6 +426,15 @@ try {
 
 	await Promise.all([login(pageA, gatewayTrackerA, userA, timeoutMs), login(pageB, gatewayTrackerB, userB, timeoutMs)]);
 	pass('two isolated sessions authenticate and survive reload');
+	const onboardingDismissed = await Promise.all([
+		dismissPilotOnboardingIfVisible(pageA, timeoutMs),
+		dismissPilotOnboardingIfVisible(pageB, timeoutMs),
+	]);
+	if (onboardingDismissed.some(Boolean)) {
+		pass('optional pilot onboarding can be dismissed without blocking collaboration access', {
+			sessionsDismissed: onboardingDismissed.filter(Boolean).length,
+		});
+	}
 
 	await Promise.all([
 		openChannel(pageA, gatewayTrackerA, guildId, channelId, timeoutMs),
