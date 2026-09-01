@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import {SsoStatusResponse} from '@fluxer/schema/src/domains/auth/AuthSchemas';
+import {SnowflakeStringType} from '@fluxer/schema/src/primitives/SchemaPrimitives';
 import {z} from 'zod';
 
 const LimitFilterResponse = z.object({
@@ -52,6 +53,42 @@ const AppPublicConfigResponse = z.object({
 			collect_date_of_birth: z.boolean().describe('Whether public registration collects and validates date of birth'),
 		})
 		.describe('Public registration field collection policy'),
+	onboarding: z
+		.object({
+			enabled: z.boolean().describe('Whether the instance onboarding experience is enabled'),
+			version: z.number().int().min(1).describe('Version used to re-present materially changed onboarding'),
+			enabled_at: z.iso.datetime().nullable().describe('When the current onboarding rollout was enabled'),
+			show_for_existing_users: z.boolean().describe('Whether the rollout may auto-open for existing accounts'),
+			welcome_message: z.string().nullable().describe('Optional instance-specific welcome message'),
+			operator_name: z.string().nullable().describe('Optional public name of the instance operator'),
+			availability_message: z.string().nullable().describe('Optional plain-language availability expectation'),
+			primary_guild_id: SnowflakeStringType.nullable().describe('Optional primary community shown during onboarding'),
+			rules_channel_id: SnowflakeStringType.nullable().describe('Optional rules channel shown during onboarding'),
+			introduction_channel_id: SnowflakeStringType.nullable().describe(
+				'Optional introduction channel shown during onboarding',
+			),
+			mfa_policy: z.enum(['optional', 'recommended', 'required']).describe('How strongly onboarding presents MFA'),
+			steps: z.object({
+				profile: z.boolean(),
+				security: z.boolean(),
+				notifications: z.boolean(),
+				media: z.boolean(),
+				community: z.boolean(),
+			}),
+		})
+		.describe('Configurable first-run experience for instance members'),
+	support: z
+		.object({
+			status_url: z.string().nullable().describe('Optional instance service status URL'),
+			support_user_id: SnowflakeStringType.nullable().describe('Optional operator user for private support DMs'),
+			service_updates_channel_id: SnowflakeStringType.nullable().describe(
+				'Optional community channel for known issues and maintenance updates',
+			),
+			feedback_channel_id: SnowflakeStringType.nullable().describe(
+				'Optional community channel for deliberately shared pilot feedback',
+			),
+		})
+		.describe('Public support destinations for instance members'),
 });
 
 export const WellKnownFluxerResponse = z.object({

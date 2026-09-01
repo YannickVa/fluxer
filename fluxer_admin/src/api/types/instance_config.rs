@@ -285,6 +285,10 @@ pub struct AppPublicConfigResponse {
     pub legal: AppLegalConfigResponse,
     #[serde(default)]
     pub registration: AppRegistrationConfigResponse,
+    #[serde(default)]
+    pub onboarding: AppOnboardingConfigResponse,
+    #[serde(default)]
+    pub support: AppSupportConfigResponse,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -345,6 +349,107 @@ impl Default for AppRegistrationConfigResponse {
 
 fn default_collect_date_of_birth() -> bool {
     true
+}
+
+#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum AppOnboardingMfaPolicy {
+    Optional,
+    #[default]
+    Recommended,
+    Required,
+}
+
+impl AppOnboardingMfaPolicy {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Optional => "optional",
+            Self::Recommended => "recommended",
+            Self::Required => "required",
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct AppOnboardingStepsConfigResponse {
+    #[serde(default = "default_true")]
+    pub profile: bool,
+    #[serde(default = "default_true")]
+    pub security: bool,
+    #[serde(default = "default_true")]
+    pub notifications: bool,
+    #[serde(default = "default_true")]
+    pub media: bool,
+    #[serde(default = "default_true")]
+    pub community: bool,
+}
+
+impl Default for AppOnboardingStepsConfigResponse {
+    fn default() -> Self {
+        Self {
+            profile: true,
+            security: true,
+            notifications: true,
+            media: true,
+            community: true,
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct AppOnboardingConfigResponse {
+    #[serde(default)]
+    pub enabled: bool,
+    #[serde(default = "default_onboarding_version")]
+    pub version: u32,
+    pub enabled_at: Option<String>,
+    #[serde(default)]
+    pub show_for_existing_users: bool,
+    pub welcome_message: Option<String>,
+    pub operator_name: Option<String>,
+    pub availability_message: Option<String>,
+    pub primary_guild_id: Option<String>,
+    pub rules_channel_id: Option<String>,
+    pub introduction_channel_id: Option<String>,
+    #[serde(default)]
+    pub mfa_policy: AppOnboardingMfaPolicy,
+    #[serde(default)]
+    pub steps: AppOnboardingStepsConfigResponse,
+}
+
+impl Default for AppOnboardingConfigResponse {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            version: default_onboarding_version(),
+            enabled_at: None,
+            show_for_existing_users: false,
+            welcome_message: None,
+            operator_name: None,
+            availability_message: None,
+            primary_guild_id: None,
+            rules_channel_id: None,
+            introduction_channel_id: None,
+            mfa_policy: AppOnboardingMfaPolicy::default(),
+            steps: AppOnboardingStepsConfigResponse::default(),
+        }
+    }
+}
+
+fn default_onboarding_version() -> u32 {
+    1
+}
+
+fn default_true() -> bool {
+    true
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+pub struct AppSupportConfigResponse {
+    pub status_url: Option<String>,
+    pub support_user_id: Option<String>,
+    pub service_updates_channel_id: Option<String>,
+    pub feedback_channel_id: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -676,6 +781,10 @@ pub struct AppPublicConfigUpdateRequest {
     pub legal: Option<AppLegalConfigUpdateRequest>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub registration: Option<AppRegistrationConfigUpdateRequest>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub onboarding: Option<AppOnboardingConfigUpdateRequest>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub support: Option<AppSupportConfigUpdateRequest>,
 }
 
 #[derive(Clone, Debug, Default, Serialize)]
@@ -714,6 +823,58 @@ pub struct AppLegalConfigUpdateRequest {
 pub struct AppRegistrationConfigUpdateRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub collect_date_of_birth: Option<bool>,
+}
+
+#[derive(Clone, Debug, Default, Serialize)]
+pub struct AppOnboardingConfigUpdateRequest {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub enabled: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub version: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub show_for_existing_users: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub welcome_message: Option<Option<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub operator_name: Option<Option<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub availability_message: Option<Option<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub primary_guild_id: Option<Option<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rules_channel_id: Option<Option<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub introduction_channel_id: Option<Option<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mfa_policy: Option<AppOnboardingMfaPolicy>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub steps: Option<AppOnboardingStepsConfigUpdateRequest>,
+}
+
+#[derive(Clone, Debug, Default, Serialize)]
+pub struct AppOnboardingStepsConfigUpdateRequest {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub profile: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub security: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub notifications: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub media: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub community: Option<bool>,
+}
+
+#[derive(Clone, Debug, Default, Serialize)]
+pub struct AppSupportConfigUpdateRequest {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status_url: Option<Option<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub support_user_id: Option<Option<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub service_updates_channel_id: Option<Option<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub feedback_channel_id: Option<Option<String>>,
 }
 
 #[derive(Clone, Debug, Default, Serialize)]

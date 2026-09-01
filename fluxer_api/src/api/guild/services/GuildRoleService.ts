@@ -26,6 +26,7 @@ import type {LimitConfigService} from '../../limits/LimitConfigService';
 import {resolveLimitSafe} from '../../limits/LimitConfigUtils';
 import {createLimitMatchContext} from '../../limits/LimitMatchContextBuilder';
 import {GuildRole} from '../../models/GuildRole';
+import type {IUserRepository} from '../../user/IUserRepository';
 import {applyProtectedRolePermissions} from '../../utils/featureUtils';
 import {computePermissionsDiff} from '../../utils/PermissionUtils';
 import type {GuildAuditLogService} from '../GuildAuditLogService';
@@ -33,6 +34,7 @@ import type {GuildAuditLogChange} from '../GuildAuditLogTypes';
 import {mapGuildRoleToResponse} from '../GuildModel';
 import type {IGuildMemberRepository} from '../repositories/IGuildMemberRepository';
 import type {IGuildRoleRepository} from '../repositories/IGuildRoleRepository';
+import {enforceGuildMfa, getGuildMfaFilteredPermissions} from './GuildMfaGuard';
 
 interface GuildRoleRepository extends IGuildRoleRepository, IGuildMemberRepository {}
 
@@ -62,6 +64,7 @@ export class GuildRoleService {
 		private readonly gatewayService: IGatewayService,
 		private readonly guildAuditLogService: GuildAuditLogService,
 		private readonly limitConfigService: LimitConfigService,
+		private readonly userRepository: IUserRepository,
 	) {}
 
 	async systemCreateRole(params: {
@@ -449,8 +452,15 @@ export class GuildRoleService {
 		const checkPermission = async (permission: bigint) => {
 			const hasPermission = await this.gatewayService.checkPermission({guildId, userId, permission});
 			if (!hasPermission) throw new MissingPermissionsError();
+			await enforceGuildMfa({guildData, userId, permission, userRepository: this.userRepository});
 		};
-		const getMyPermissions = async () => this.gatewayService.getUserPermissions({guildId, userId});
+		const getMyPermissions = async () =>
+			getGuildMfaFilteredPermissions({
+				guildData,
+				userId,
+				permissions: await this.gatewayService.getUserPermissions({guildId, userId}),
+				userRepository: this.userRepository,
+			});
 		return {
 			guildData,
 			checkPermission,

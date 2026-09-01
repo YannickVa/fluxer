@@ -11,6 +11,7 @@ import type {MessageDescriptor} from '@lingui/core';
 export type SectionKeyword = MessageDescriptor | string;
 
 export type UserSettingsTabType =
+	| 'getting_started'
 	| 'my_profile'
 	| 'account_security'
 	| 'plutonium'

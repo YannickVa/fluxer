@@ -5,7 +5,13 @@ import {SettingsTabContainer} from '@app/features/app/components/dialogs/shared/
 import Config from '@app/features/app/config/Config';
 import RuntimeConfig from '@app/features/app/state/RuntimeConfig';
 import Updater from '@app/features/app/state/Updater';
+import * as PrivateChannelCommands from '@app/features/channel/commands/PrivateChannelCommands';
+import Channels from '@app/features/channel/state/Channels';
 import GatewayConnection from '@app/features/gateway/transport/GatewayConnection';
+import * as DraftCommands from '@app/features/messaging/commands/DraftCommands';
+import Drafts from '@app/features/messaging/state/MessagingDrafts';
+import {focusChannelTextareaAfterNavigation} from '@app/features/messaging/utils/ChannelTextareaFocusUtils';
+import * as NavigationCommands from '@app/features/navigation/commands/NavigationCommands';
 import MediaPermission from '@app/features/permissions/system/state/MediaPermission';
 import {type ClientInfo, getClientInfo} from '@app/features/platform/utils/ClientInfo';
 import {ComponentDispatch} from '@app/features/platform/utils/ComponentBus';
@@ -30,16 +36,22 @@ import {
 	type SupportReadinessStep,
 	serializeSupportDiagnostics,
 } from '@app/features/support/SupportCenterDiagnostics';
+import {appendSupportProblemReportToDraft, buildSupportProblemReport} from '@app/features/support/SupportProblemReport';
 import {remFromPx} from '@app/features/theme/layout/RemFromPx';
 import {Button} from '@app/features/ui/button/Button';
+import {Checkbox} from '@app/features/ui/checkbox/Checkbox';
+import * as ModalCommands from '@app/features/ui/commands/ModalCommands';
 import * as TextCopyCommands from '@app/features/ui/commands/TextCopyCommands';
-import {isDesktop} from '@app/features/ui/utils/NativeUtils';
+import {Textarea} from '@app/features/ui/components/form/FormInput';
+import {isDesktop, openExternalUrl} from '@app/features/ui/utils/NativeUtils';
 import MediaEngineFacade from '@app/features/voice/engine/MediaEngineFacade';
 import {useMediaDevices} from '@app/features/voice/hooks/useMediaDevices';
+import {ME} from '@fluxer/constants/src/AppConstants';
 import {msg} from '@lingui/core/macro';
 import {Trans, useLingui} from '@lingui/react/macro';
 import {
 	ArrowRightIcon,
+	ArticleIcon,
 	CameraIcon,
 	CheckCircleIcon,
 	ClipboardTextIcon,
@@ -49,9 +61,11 @@ import {
 	MicrophoneIcon,
 	MonitorIcon,
 	PackageIcon,
+	PaperPlaneTiltIcon,
 	PathIcon,
 	ProhibitIcon,
 	SpinnerGapIcon,
+	UsersThreeIcon,
 	WarningCircleIcon,
 	WifiHighIcon,
 	WrenchIcon,
@@ -67,12 +81,54 @@ const SUPPORT_SUMMARY_DESCRIPTOR = msg({
 	comment: 'Toast-like button state after the support summary is copied.',
 });
 
+const REPORT_COPIED_DESCRIPTOR = msg({
+	message: 'Problem report copied',
+	comment: 'Short confirmation after a structured support report is copied.',
+});
+
+const REPORT_DESCRIPTION_REQUIRED_DESCRIPTOR = msg({
+	message: 'Describe what happened before continuing.',
+	comment: 'Validation error for an empty problem report description.',
+});
+
+const PRIVATE_SUPPORT_FAILED_DESCRIPTOR = msg({
+	message: "We couldn't open private support yet. Check your connection and try again.",
+	comment: 'Support Center error shown when creating or opening the configured operator DM fails.',
+});
+
+type ProblemCategory = 'technical' | 'voice_video' | 'account_access' | 'feedback' | 'other';
+
+interface SupportResourceLinkProps {
+	icon: React.ReactNode;
+	title: React.ReactNode;
+	description: React.ReactNode;
+	url: string;
+}
+
+const SupportResourceLink: React.FC<SupportResourceLinkProps> = ({icon, title, description, url}) => (
+	<button type="button" className={styles.resourceLink} onClick={() => void openExternalUrl(url)}>
+		<span className={styles.resourceIcon}>{icon}</span>
+		<span className={styles.resourceCopy}>
+			<strong>{title}</strong>
+			<span>{description}</span>
+		</span>
+		<ArrowRightIcon className={styles.resourceArrow} size={ACTION_ICON_SIZE} weight="bold" />
+	</button>
+);
+
 const STATUS_ICON_SIZE = remFromPx(18);
 const ACTION_ICON_SIZE = remFromPx(16);
 
 interface StatusPresentation {
 	label: React.ReactNode;
 	icon: React.ReactNode;
+}
+
+type DestinationErrorLocation = 'help' | 'report';
+
+interface DestinationError {
+	location: DestinationErrorLocation;
+	message: string;
 }
 
 function getStatusPresentation(status: SupportCheckStatus): StatusPresentation {
@@ -280,6 +336,31 @@ const SupportCenterTab: React.FC = observer(() => {
 	const [clientInfo, setClientInfo] = useState<ClientInfo | null>(null);
 	const [diagnostics, setDiagnostics] = useState<SupportDiagnosticsSnapshot | null>(null);
 	const [summaryCopied, setSummaryCopied] = useState(false);
+	const [problemCategory, setProblemCategory] = useState<ProblemCategory>('technical');
+	const [problemDescription, setProblemDescription] = useState('');
+	const [expectedBehavior, setExpectedBehavior] = useState('');
+	const [includeDiagnostics, setIncludeDiagnostics] = useState(false);
+	const [willAttachScreenshot, setWillAttachScreenshot] = useState(false);
+	const [reportCopied, setReportCopied] = useState(false);
+	const [reportError, setReportError] = useState<string | null>(null);
+	const [destinationError, setDestinationError] = useState<DestinationError | null>(null);
+	const supportUserId = RuntimeConfig.support.support_user_id;
+	const serviceUpdatesChannel = RuntimeConfig.support.service_updates_channel_id
+		? Channels.getChannel(RuntimeConfig.support.service_updates_channel_id)
+		: undefined;
+	const feedbackChannel = RuntimeConfig.support.feedback_channel_id
+		? Channels.getChannel(RuntimeConfig.support.feedback_channel_id)
+		: undefined;
+	const categoryLabels = useMemo<Record<ProblemCategory, string>>(
+		() => ({
+			technical: i18n._(msg`App or connection problem`),
+			voice_video: i18n._(msg`Voice or video problem`),
+			account_access: i18n._(msg`Account or access problem`),
+			feedback: i18n._(msg`Feedback or suggestion`),
+			other: i18n._(msg`Something else`),
+		}),
+		[i18n],
+	);
 
 	const runChecks = useCallback(async () => {
 		setChecksRunning(true);
@@ -409,9 +490,9 @@ const SupportCenterTab: React.FC = observer(() => {
 
 	const diagnosticsJson = useMemo(() => (diagnostics ? serializeSupportDiagnostics(diagnostics) : null), [diagnostics]);
 
-	const copySummary = useCallback(async () => {
+	const createSupportSummary = useCallback(() => {
 		const info = clientInfo ?? {};
-		const summary = [
+		return [
 			`${RuntimeConfig.productName} support summary`,
 			`Overall: ${overallStatus}`,
 			`Instance: ${getSafeOrigin(RuntimeConfig.webAppBaseUrl || RuntimeConfig.apiEndpoint)}`,
@@ -426,10 +507,6 @@ const SupportCenterTab: React.FC = observer(() => {
 			`Permissions: microphone ${formatSupportPermission(i18n, MediaPermission.microphonePermissionState)}, camera ${formatSupportPermission(i18n, MediaPermission.cameraPermissionState)}`,
 			`Update: ${Updater.hasUpdate ? `available (${Updater.displayVersion ?? 'version unknown'})` : updateStatus}`,
 		].join('\n');
-		if (await TextCopyCommands.copy(i18n, summary, true)) {
-			setSummaryCopied(true);
-			window.setTimeout(() => setSummaryCopied(false), 1800);
-		}
 	}, [
 		appCheck,
 		apiCheck,
@@ -443,6 +520,94 @@ const SupportCenterTab: React.FC = observer(() => {
 		updateStatus,
 		videoDevices.length,
 	]);
+
+	const copySummary = useCallback(async () => {
+		if (await TextCopyCommands.copy(i18n, createSupportSummary(), true)) {
+			setSummaryCopied(true);
+			window.setTimeout(() => setSummaryCopied(false), 1800);
+		}
+	}, [createSupportSummary, i18n]);
+
+	const createProblemReport = useCallback((): string | null => {
+		const report = buildSupportProblemReport({
+			categoryLabel: categoryLabels[problemCategory],
+			description: problemDescription,
+			expectedBehavior,
+			willAttachScreenshot,
+			supportSummary: includeDiagnostics ? createSupportSummary() : null,
+		});
+		if (!report) {
+			setReportError(i18n._(REPORT_DESCRIPTION_REQUIRED_DESCRIPTOR));
+			return null;
+		}
+		setReportError(null);
+		return report;
+	}, [
+		categoryLabels,
+		createSupportSummary,
+		expectedBehavior,
+		i18n,
+		includeDiagnostics,
+		problemCategory,
+		problemDescription,
+		willAttachScreenshot,
+	]);
+
+	const copyProblemReport = useCallback(async () => {
+		const report = createProblemReport();
+		if (!report) return;
+		if (await TextCopyCommands.copy(i18n, report, true)) {
+			setReportCopied(true);
+			window.setTimeout(() => setReportCopied(false), 1800);
+		}
+	}, [createProblemReport, i18n]);
+
+	const openCommunityChannel = useCallback((channelId: string) => {
+		const channel = Channels.getChannel(channelId);
+		if (!channel?.guildId) return;
+		ModalCommands.pop();
+		NavigationCommands.selectChannel(channel.guildId, channel.id);
+		focusChannelTextareaAfterNavigation(channel.id);
+	}, []);
+
+	const openPrivateSupport = useCallback(
+		async (errorLocation: DestinationErrorLocation, draft?: string) => {
+			if (!supportUserId) return;
+			setDestinationError(null);
+			try {
+				const channelId = await PrivateChannelCommands.ensureDMChannel(supportUserId);
+				if (draft) {
+					DraftCommands.createDraft(channelId, appendSupportProblemReportToDraft(Drafts.getDraft(channelId), draft));
+				}
+				ModalCommands.pop();
+				NavigationCommands.selectChannel(ME, channelId);
+				focusChannelTextareaAfterNavigation(channelId);
+			} catch {
+				setDestinationError({
+					location: errorLocation,
+					message: i18n._(PRIVATE_SUPPORT_FAILED_DESCRIPTOR),
+				});
+			}
+		},
+		[i18n, supportUserId],
+	);
+
+	const continuePrivateProblemReport = useCallback(async () => {
+		const report = createProblemReport();
+		if (!report || !supportUserId) return;
+		await openPrivateSupport('report', report);
+	}, [createProblemReport, openPrivateSupport, supportUserId]);
+
+	const continueSharedProblemReport = useCallback(() => {
+		const report = createProblemReport();
+		if (!report || !feedbackChannel?.guildId) return;
+		setDestinationError(null);
+		DraftCommands.createDraft(
+			feedbackChannel.id,
+			appendSupportProblemReportToDraft(Drafts.getDraft(feedbackChannel.id), report),
+		);
+		openCommunityChannel(feedbackChannel.id);
+	}, [createProblemReport, feedbackChannel, openCommunityChannel]);
 
 	const downloadDiagnostics = useCallback(() => {
 		const snapshot = diagnostics ?? createDiagnostics();
@@ -708,6 +873,151 @@ const SupportCenterTab: React.FC = observer(() => {
 						onClick={() => openSettings('notifications')}
 						data-flx="user.support-center-tab.support-center-tab.quick-fix.open-settings--4"
 					/>
+				</div>
+			</SettingsSection>
+
+			<SettingsSection
+				id="help-status"
+				title={<Trans>Help & service information</Trans>}
+				description={<Trans>Check current information first, or ask the operator privately.</Trans>}
+			>
+				<div className={styles.resourceGrid}>
+					{RuntimeConfig.support.status_url ? (
+						<SupportResourceLink
+							icon={<CloudCheckIcon size={remFromPx(20)} weight="duotone" />}
+							title={<Trans>Service status</Trans>}
+							description={<Trans>See whether a service is unavailable or recovering.</Trans>}
+							url={RuntimeConfig.support.status_url}
+						/>
+					) : null}
+					{serviceUpdatesChannel?.guildId ? (
+						<button
+							type="button"
+							className={styles.resourceLink}
+							onClick={() => openCommunityChannel(serviceUpdatesChannel.id)}
+						>
+							<span className={styles.resourceIcon}>
+								<ArticleIcon size={remFromPx(20)} weight="duotone" />
+							</span>
+							<span className={styles.resourceCopy}>
+								<strong>
+									<Trans>Service updates</Trans>
+								</strong>
+								<span>
+									<Trans>Review known issues, recovery progress, and planned maintenance.</Trans>
+								</span>
+							</span>
+							<ArrowRightIcon className={styles.resourceArrow} size={ACTION_ICON_SIZE} weight="bold" />
+						</button>
+					) : null}
+				</div>
+				<div className={styles.helpPanel}>
+					<div>
+						<strong>
+							<Trans>Need a person?</Trans>
+						</strong>
+						<p>
+							<Trans>Start a direct message with the operator. Nothing is sent automatically.</Trans>
+						</p>
+					</div>
+					<Button
+						variant="secondary"
+						disabled={!supportUserId}
+						onClick={() => void openPrivateSupport('help')}
+						rightIcon={<ArrowRightIcon />}
+					>
+						<Trans>Message {RuntimeConfig.onboarding.operator_name ?? RuntimeConfig.productName}</Trans>
+					</Button>
+				</div>
+				{destinationError?.location === 'help' ? (
+					<p className={styles.error} role="alert">
+						{destinationError.message}
+					</p>
+				) : null}
+			</SettingsSection>
+
+			<SettingsSection
+				id="report-problem"
+				title={<Trans>Report a problem or share feedback</Trans>}
+				description={<Trans>Prepare a clear report. You review it before anything is posted.</Trans>}
+			>
+				<div className={styles.reportPanel}>
+					<label className={styles.reportField}>
+						<span>
+							<Trans>Category</Trans>
+						</span>
+						<select
+							value={problemCategory}
+							onChange={(event) => setProblemCategory(event.target.value as ProblemCategory)}
+						>
+							<option value="technical">{categoryLabels.technical}</option>
+							<option value="voice_video">{categoryLabels.voice_video}</option>
+							<option value="account_access">{categoryLabels.account_access}</option>
+							<option value="feedback">{categoryLabels.feedback}</option>
+							<option value="other">{categoryLabels.other}</option>
+						</select>
+					</label>
+					<Textarea
+						label={<Trans>What happened?</Trans>}
+						value={problemDescription}
+						onChange={(event) => setProblemDescription(event.target.value)}
+						placeholder={i18n._(msg`Include the steps you took and what you saw.`)}
+						maxLength={2000}
+						showCharacterCount
+						minRows={4}
+						error={reportError ?? undefined}
+					/>
+					<Textarea
+						label={<Trans>What did you expect? (optional)</Trans>}
+						value={expectedBehavior}
+						onChange={(event) => setExpectedBehavior(event.target.value)}
+						maxLength={1000}
+						showCharacterCount
+						minRows={2}
+					/>
+					<div className={styles.reportChoices}>
+						<Checkbox checked={includeDiagnostics} onChange={setIncludeDiagnostics}>
+							<Trans>Include the privacy-safe support summary shown below</Trans>
+						</Checkbox>
+						<Checkbox checked={willAttachScreenshot} onChange={setWillAttachScreenshot}>
+							<Trans>Remind me to attach a screenshot before sending</Trans>
+						</Checkbox>
+					</div>
+					<p className={styles.reportPrivacy}>
+						<InfoIcon size={ACTION_ICON_SIZE} weight="fill" />
+						<Trans>
+							Nothing is sent automatically. Private support opens a DM; shared feedback is visible to pilot members.
+						</Trans>
+					</p>
+					<div className={styles.buttonRow}>
+						<Button
+							variant="secondary"
+							onClick={() => void copyProblemReport()}
+							leftIcon={<ClipboardTextIcon size={ACTION_ICON_SIZE} />}
+						>
+							{reportCopied ? i18n._(REPORT_COPIED_DESCRIPTOR) : <Trans>Copy report</Trans>}
+						</Button>
+						<Button
+							disabled={!supportUserId}
+							onClick={() => void continuePrivateProblemReport()}
+							leftIcon={<PaperPlaneTiltIcon size={ACTION_ICON_SIZE} />}
+						>
+							<Trans>Continue privately</Trans>
+						</Button>
+						<Button
+							variant="secondary"
+							disabled={!feedbackChannel?.guildId}
+							onClick={continueSharedProblemReport}
+							leftIcon={<UsersThreeIcon size={ACTION_ICON_SIZE} />}
+						>
+							<Trans>Prepare shared feedback</Trans>
+						</Button>
+					</div>
+					{destinationError?.location === 'report' ? (
+						<p className={styles.error} role="alert">
+							{destinationError.message}
+						</p>
+					) : null}
 				</div>
 			</SettingsSection>
 

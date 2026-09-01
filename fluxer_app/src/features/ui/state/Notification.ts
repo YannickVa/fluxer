@@ -12,6 +12,11 @@ import {Message} from '@app/features/messaging/models/MessagingMessage';
 import * as MessageUtils from '@app/features/messaging/utils/MessageUtils';
 import Navigation from '@app/features/navigation/state/Navigation';
 import SelectedChannel from '@app/features/navigation/state/SelectedChannel';
+import {
+	isTimeWithinQuietHours,
+	normalizeQuietHoursMinutes,
+	quietHoursMinutesFromDate,
+} from '@app/features/notification/NotificationQuietHours';
 import {buildMessageNotificationBody} from '@app/features/notification/utils/MessageNotificationPreview';
 import * as NotificationUtils from '@app/features/notification/utils/NotificationUtils';
 import * as PushSubscriptionService from '@app/features/platform/push/PushSubscriptionService';
@@ -129,6 +134,9 @@ class NotificationState {
 	browserNotificationsEnabled = false;
 	unreadMessageBadgeEnabled = true;
 	ttsNotificationMode: TTSNotificationMode = TTSNotificationMode.NEVER;
+	quietHoursEnabled = false;
+	quietHoursStartMinutes = 22 * 60;
+	quietHoursEndMinutes = 8 * 60;
 	focused = isDocumentFocused();
 	notifiedMessageIds = new LRUCache<string, boolean>({max: CACHE_SIZE});
 	private isPersisting = false;
@@ -181,6 +189,9 @@ class NotificationState {
 			'browserNotificationsEnabled',
 			'unreadMessageBadgeEnabled',
 			'ttsNotificationMode',
+			'quietHoursEnabled',
+			'quietHoursStartMinutes',
+			'quietHoursEndMinutes',
 		]);
 	}
 
@@ -206,6 +217,29 @@ class NotificationState {
 
 	setTTSNotificationMode(mode: TTSNotificationMode): void {
 		this.ttsNotificationMode = mode;
+	}
+
+	get isQuietHoursActive(): boolean {
+		return (
+			this.quietHoursEnabled &&
+			isTimeWithinQuietHours(
+				quietHoursMinutesFromDate(new Date()),
+				this.quietHoursStartMinutes,
+				this.quietHoursEndMinutes,
+			)
+		);
+	}
+
+	setQuietHoursEnabled(enabled: boolean): void {
+		this.quietHoursEnabled = enabled;
+	}
+
+	setQuietHoursStartMinutes(value: number): void {
+		this.quietHoursStartMinutes = normalizeQuietHoursMinutes(value);
+	}
+
+	setQuietHoursEndMinutes(value: number): void {
+		this.quietHoursEndMinutes = normalizeQuietHoursMinutes(value);
 	}
 
 	isFocused(): boolean {
@@ -382,6 +416,9 @@ class NotificationState {
 		if (StreamerMode.shouldDisableNotifications) {
 			return false;
 		}
+		if (this.isQuietHoursActive) {
+			return false;
+		}
 		const isFocusedViewingChannel =
 			message.author.id !== Authentication.currentUserId &&
 			!Relationships.isBlocked(message.author.id) &&
@@ -481,6 +518,9 @@ class NotificationState {
 			return;
 		}
 		if (StreamerMode.shouldDisableNotifications) {
+			return;
+		}
+		if (this.isQuietHoursActive) {
 			return;
 		}
 		if (!this.i18n) {

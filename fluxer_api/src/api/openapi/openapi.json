@@ -25087,9 +25087,112 @@
 								},
 								"required": ["collect_date_of_birth"],
 								"description": "Public registration field collection policy"
+							},
+							"onboarding": {
+								"type": "object",
+								"properties": {
+									"enabled": {
+										"type": "boolean",
+										"description": "Whether the instance onboarding experience is enabled"
+									},
+									"version": {
+										"type": "integer",
+										"minimum": 1,
+										"maximum": 9007199254740991,
+										"format": "int53",
+										"description": "Version used to re-present materially changed onboarding"
+									},
+									"enabled_at": {
+										"anyOf": [{"type": "string", "format": "date-time"}, {"type": "null"}],
+										"description": "When the current onboarding rollout was enabled"
+									},
+									"show_for_existing_users": {
+										"type": "boolean",
+										"description": "Whether the rollout may auto-open for existing accounts"
+									},
+									"welcome_message": {
+										"anyOf": [{"type": "string"}, {"type": "null"}],
+										"description": "Optional instance-specific welcome message"
+									},
+									"operator_name": {
+										"anyOf": [{"type": "string"}, {"type": "null"}],
+										"description": "Optional public name of the instance operator"
+									},
+									"availability_message": {
+										"anyOf": [{"type": "string"}, {"type": "null"}],
+										"description": "Optional plain-language availability expectation"
+									},
+									"primary_guild_id": {
+										"anyOf": [{"$ref": "#/components/schemas/SnowflakeType"}, {"type": "null"}],
+										"description": "Optional primary community shown during onboarding"
+									},
+									"rules_channel_id": {
+										"anyOf": [{"$ref": "#/components/schemas/SnowflakeType"}, {"type": "null"}],
+										"description": "Optional rules channel shown during onboarding"
+									},
+									"introduction_channel_id": {
+										"anyOf": [{"$ref": "#/components/schemas/SnowflakeType"}, {"type": "null"}],
+										"description": "Optional introduction channel shown during onboarding"
+									},
+									"mfa_policy": {
+										"enum": ["optional", "recommended", "required"],
+										"type": "string",
+										"x-enumNames": ["optional", "recommended", "required"],
+										"description": "How strongly onboarding presents MFA"
+									},
+									"steps": {
+										"type": "object",
+										"properties": {
+											"profile": {"type": "boolean"},
+											"security": {"type": "boolean"},
+											"notifications": {"type": "boolean"},
+											"media": {"type": "boolean"},
+											"community": {"type": "boolean"}
+										},
+										"required": ["profile", "security", "notifications", "media", "community"]
+									}
+								},
+								"required": [
+									"enabled",
+									"version",
+									"enabled_at",
+									"show_for_existing_users",
+									"welcome_message",
+									"operator_name",
+									"availability_message",
+									"primary_guild_id",
+									"rules_channel_id",
+									"introduction_channel_id",
+									"mfa_policy",
+									"steps"
+								],
+								"description": "Configurable first-run experience for instance members"
+							},
+							"support": {
+								"type": "object",
+								"properties": {
+									"status_url": {
+										"anyOf": [{"type": "string"}, {"type": "null"}],
+										"description": "Optional instance service status URL"
+									},
+									"support_user_id": {
+										"anyOf": [{"$ref": "#/components/schemas/SnowflakeType"}, {"type": "null"}],
+										"description": "Optional operator user for private support DMs"
+									},
+									"service_updates_channel_id": {
+										"anyOf": [{"$ref": "#/components/schemas/SnowflakeType"}, {"type": "null"}],
+										"description": "Optional community channel for known issues and maintenance updates"
+									},
+									"feedback_channel_id": {
+										"anyOf": [{"$ref": "#/components/schemas/SnowflakeType"}, {"type": "null"}],
+										"description": "Optional community channel for deliberately shared pilot feedback"
+									}
+								},
+								"required": ["status_url", "support_user_id", "service_updates_channel_id", "feedback_channel_id"],
+								"description": "Public support destinations for instance members"
 							}
 						},
-						"required": ["branding", "setup", "legal", "registration"],
+						"required": ["branding", "setup", "legal", "registration", "onboarding", "support"],
 						"description": "Public application configuration for client-side features"
 					}
 				},
@@ -25108,6 +25211,7 @@
 					"app_public"
 				]
 			},
+			"SnowflakeType": {"type": "string", "pattern": "^(0|[1-9][0-9]*)$", "format": "snowflake"},
 			"Error": {
 				"type": "object",
 				"properties": {
@@ -26089,7 +26193,6 @@
 				},
 				"required": ["status"]
 			},
-			"SnowflakeType": {"type": "string", "pattern": "^(0|[1-9][0-9]*)$", "format": "snowflake"},
 			"UserPartialResponse": {
 				"type": "object",
 				"properties": {

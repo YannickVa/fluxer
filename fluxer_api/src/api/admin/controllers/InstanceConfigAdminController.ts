@@ -278,6 +278,39 @@ export function InstanceConfigAdminController(app: HonoApp) {
 								collect_date_of_birth: readOptionalField(data.app_public.registration, 'collect_date_of_birth'),
 							})
 						: undefined,
+					onboarding: data.app_public.onboarding
+						? {
+								...omitUndefinedFields({
+									enabled: readOptionalField(data.app_public.onboarding, 'enabled'),
+									version: readOptionalField(data.app_public.onboarding, 'version'),
+									show_for_existing_users: readOptionalField(data.app_public.onboarding, 'show_for_existing_users'),
+									welcome_message: readOptionalField(data.app_public.onboarding, 'welcome_message'),
+									operator_name: readOptionalField(data.app_public.onboarding, 'operator_name'),
+									availability_message: readOptionalField(data.app_public.onboarding, 'availability_message'),
+									primary_guild_id: readOptionalField(data.app_public.onboarding, 'primary_guild_id'),
+									rules_channel_id: readOptionalField(data.app_public.onboarding, 'rules_channel_id'),
+									introduction_channel_id: readOptionalField(data.app_public.onboarding, 'introduction_channel_id'),
+									mfa_policy: readOptionalField(data.app_public.onboarding, 'mfa_policy'),
+								}),
+								steps: data.app_public.onboarding.steps
+									? omitUndefinedFields({
+											profile: readOptionalField(data.app_public.onboarding.steps, 'profile'),
+											security: readOptionalField(data.app_public.onboarding.steps, 'security'),
+											notifications: readOptionalField(data.app_public.onboarding.steps, 'notifications'),
+											media: readOptionalField(data.app_public.onboarding.steps, 'media'),
+											community: readOptionalField(data.app_public.onboarding.steps, 'community'),
+										})
+									: undefined,
+							}
+						: undefined,
+					support: data.app_public.support
+						? omitUndefinedFields({
+								status_url: readOptionalField(data.app_public.support, 'status_url'),
+								support_user_id: readOptionalField(data.app_public.support, 'support_user_id'),
+								service_updates_channel_id: readOptionalField(data.app_public.support, 'service_updates_channel_id'),
+								feedback_channel_id: readOptionalField(data.app_public.support, 'feedback_channel_id'),
+							})
+						: undefined,
 				});
 			}
 			if (data.integrations) {

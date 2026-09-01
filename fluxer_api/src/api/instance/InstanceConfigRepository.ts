@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import crypto from 'node:crypto';
+import type {InstanceOnboardingMfaPolicy} from '@fluxer/instance_bootstrap/src/Types';
 import type {LimitConfigSnapshot} from '@fluxer/limits/src/LimitTypes';
 import {
 	type GatewayRolloutConfig,
@@ -70,6 +71,32 @@ interface InstanceAppPublicConfig {
 	};
 	registration: {
 		collect_date_of_birth: boolean;
+	};
+	onboarding: {
+		enabled: boolean;
+		version: number;
+		enabled_at: string | null;
+		show_for_existing_users: boolean;
+		welcome_message: string | null;
+		operator_name: string | null;
+		availability_message: string | null;
+		primary_guild_id: string | null;
+		rules_channel_id: string | null;
+		introduction_channel_id: string | null;
+		mfa_policy: InstanceOnboardingMfaPolicy;
+		steps: {
+			profile: boolean;
+			security: boolean;
+			notifications: boolean;
+			media: boolean;
+			community: boolean;
+		};
+	};
+	support: {
+		status_url: string | null;
+		support_user_id: string | null;
+		service_updates_channel_id: string | null;
+		feedback_channel_id: string | null;
 	};
 }
 
@@ -355,6 +382,32 @@ function getDefaultAppPublicConfig(): InstanceAppPublicConfig {
 		registration: {
 			collect_date_of_birth: !Config.instance.selfHosted,
 		},
+		onboarding: {
+			enabled: false,
+			version: 1,
+			enabled_at: null,
+			show_for_existing_users: false,
+			welcome_message: null,
+			operator_name: null,
+			availability_message: null,
+			primary_guild_id: null,
+			rules_channel_id: null,
+			introduction_channel_id: null,
+			mfa_policy: 'recommended',
+			steps: {
+				profile: true,
+				security: true,
+				notifications: true,
+				media: true,
+				community: true,
+			},
+		},
+		support: {
+			status_url: null,
+			support_user_id: null,
+			service_updates_channel_id: null,
+			feedback_channel_id: null,
+		},
 	};
 }
 
@@ -367,6 +420,19 @@ function normalizeAppPublicConfig(value: unknown): InstanceAppPublicConfig {
 	const setup = isJsonRecord(value.setup) ? value.setup : {};
 	const legal = isJsonRecord(value.legal) ? value.legal : {};
 	const registration = isJsonRecord(value.registration) ? value.registration : {};
+	const onboarding = isJsonRecord(value.onboarding) ? value.onboarding : {};
+	const onboardingSteps = isJsonRecord(onboarding.steps) ? onboarding.steps : {};
+	const support = isJsonRecord(value.support) ? value.support : {};
+	const normalizedOnboardingVersion =
+		typeof onboarding.version === 'number' && Number.isSafeInteger(onboarding.version) && onboarding.version >= 1
+			? onboarding.version
+			: defaults.onboarding.version;
+	const normalizedMfaPolicy =
+		onboarding.mfa_policy === 'optional' ||
+		onboarding.mfa_policy === 'recommended' ||
+		onboarding.mfa_policy === 'required'
+			? onboarding.mfa_policy
+			: defaults.onboarding.mfa_policy;
 	return {
 		branding: {
 			product_name: normalizePublicString(branding.product_name) ?? defaults.branding.product_name,
@@ -389,6 +455,71 @@ function normalizeAppPublicConfig(value: unknown): InstanceAppPublicConfig {
 				typeof registration.collect_date_of_birth === 'boolean'
 					? registration.collect_date_of_birth
 					: defaults.registration.collect_date_of_birth,
+		},
+		onboarding: {
+			enabled: typeof onboarding.enabled === 'boolean' ? onboarding.enabled : defaults.onboarding.enabled,
+			version: normalizedOnboardingVersion,
+			enabled_at: normalizeOptionalPublicString(onboarding, 'enabled_at', defaults.onboarding.enabled_at),
+			show_for_existing_users:
+				typeof onboarding.show_for_existing_users === 'boolean'
+					? onboarding.show_for_existing_users
+					: defaults.onboarding.show_for_existing_users,
+			welcome_message: normalizeOptionalPublicString(
+				onboarding,
+				'welcome_message',
+				defaults.onboarding.welcome_message,
+			),
+			operator_name: normalizeOptionalPublicString(onboarding, 'operator_name', defaults.onboarding.operator_name),
+			availability_message: normalizeOptionalPublicString(
+				onboarding,
+				'availability_message',
+				defaults.onboarding.availability_message,
+			),
+			primary_guild_id: normalizeOptionalPublicString(
+				onboarding,
+				'primary_guild_id',
+				defaults.onboarding.primary_guild_id,
+			),
+			rules_channel_id: normalizeOptionalPublicString(
+				onboarding,
+				'rules_channel_id',
+				defaults.onboarding.rules_channel_id,
+			),
+			introduction_channel_id: normalizeOptionalPublicString(
+				onboarding,
+				'introduction_channel_id',
+				defaults.onboarding.introduction_channel_id,
+			),
+			mfa_policy: normalizedMfaPolicy,
+			steps: {
+				profile:
+					typeof onboardingSteps.profile === 'boolean' ? onboardingSteps.profile : defaults.onboarding.steps.profile,
+				security:
+					typeof onboardingSteps.security === 'boolean' ? onboardingSteps.security : defaults.onboarding.steps.security,
+				notifications:
+					typeof onboardingSteps.notifications === 'boolean'
+						? onboardingSteps.notifications
+						: defaults.onboarding.steps.notifications,
+				media: typeof onboardingSteps.media === 'boolean' ? onboardingSteps.media : defaults.onboarding.steps.media,
+				community:
+					typeof onboardingSteps.community === 'boolean'
+						? onboardingSteps.community
+						: defaults.onboarding.steps.community,
+			},
+		},
+		support: {
+			status_url: normalizeOptionalPublicString(support, 'status_url', defaults.support.status_url),
+			support_user_id: normalizeOptionalPublicString(support, 'support_user_id', defaults.support.support_user_id),
+			service_updates_channel_id: normalizeOptionalPublicString(
+				support,
+				'service_updates_channel_id',
+				defaults.support.service_updates_channel_id,
+			),
+			feedback_channel_id: normalizeOptionalPublicString(
+				support,
+				'feedback_channel_id',
+				defaults.support.feedback_channel_id,
+			),
 		},
 	};
 }
@@ -1053,8 +1184,16 @@ export class InstanceConfigRepository {
 		setup?: Partial<InstanceAppPublicConfig['setup']>;
 		legal?: Partial<InstanceAppPublicConfig['legal']>;
 		registration?: Partial<InstanceAppPublicConfig['registration']>;
+		onboarding?: Omit<Partial<Omit<InstanceAppPublicConfig['onboarding'], 'enabled_at'>>, 'steps'> & {
+			steps?: Partial<InstanceAppPublicConfig['onboarding']['steps']>;
+		};
+		support?: Partial<InstanceAppPublicConfig['support']>;
 	}): Promise<InstanceAppPublicConfig> {
 		const current = await this.getAppPublicConfig();
+		const onboardingEnabledAt =
+			config.onboarding?.enabled === true && !current.onboarding.enabled
+				? new Date().toISOString()
+				: current.onboarding.enabled_at;
 		const next = normalizeAppPublicConfig({
 			branding: {
 				...current.branding,
@@ -1071,6 +1210,19 @@ export class InstanceConfigRepository {
 			registration: {
 				...current.registration,
 				...(config.registration ?? {}),
+			},
+			onboarding: {
+				...current.onboarding,
+				...(config.onboarding ?? {}),
+				enabled_at: onboardingEnabledAt,
+				steps: {
+					...current.onboarding.steps,
+					...(config.onboarding?.steps ?? {}),
+				},
+			},
+			support: {
+				...current.support,
+				...(config.support ?? {}),
 			},
 		});
 		await this.setConfig(APP_PUBLIC_CONFIG_KEY, JSON.stringify(next));

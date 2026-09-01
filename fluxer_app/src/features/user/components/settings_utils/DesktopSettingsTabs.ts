@@ -11,6 +11,7 @@ import DesktopSettingsTab from '@app/features/user/components/modals/tabs/Deskto
 import EmbedDebuggerTab from '@app/features/user/components/modals/tabs/EmbedDebuggerTab';
 import ExpressionPacksTab from '@app/features/user/components/modals/tabs/ExpressionPacksTab';
 import GiftInventoryTab from '@app/features/user/components/modals/tabs/GiftInventoryTab';
+import GettingStartedTab from '@app/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab';
 import KeybindsTab from '@app/features/user/components/modals/tabs/KeybindsTab';
 import LanguageTab from '@app/features/user/components/modals/tabs/LanguageTab';
 import LinkedAccountsTab from '@app/features/user/components/modals/tabs/LinkedAccountsTab';
@@ -24,6 +25,7 @@ import type {UserSettingsTabType} from '@app/features/user/components/settings_u
 import type React from 'react';
 
 const DESKTOP_TAB_COMPONENTS: Partial<Record<UserSettingsTabType, React.ComponentType<Record<string, unknown>>>> = {
+	getting_started: GettingStartedTab,
 	my_profile: MyProfileTab,
 	account_security: AccountSecurityTab,
 	plutonium: PlutoniumTab,

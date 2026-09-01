@@ -12535,9 +12535,66 @@
 								"type": "object",
 								"properties": {"collect_date_of_birth": {"type": "boolean"}},
 								"required": ["collect_date_of_birth"]
+							},
+							"onboarding": {
+								"type": "object",
+								"properties": {
+									"enabled": {"type": "boolean"},
+									"version": {"type": "integer", "minimum": 1, "maximum": 9007199254740991, "format": "int53"},
+									"enabled_at": {"nullable": true, "type": "string", "format": "date-time"},
+									"show_for_existing_users": {"type": "boolean"},
+									"welcome_message": {"nullable": true, "type": "string"},
+									"operator_name": {"nullable": true, "type": "string"},
+									"availability_message": {"nullable": true, "type": "string"},
+									"primary_guild_id": {"nullable": true, "allOf": [{"$ref": "#/components/schemas/SnowflakeType"}]},
+									"rules_channel_id": {"nullable": true, "allOf": [{"$ref": "#/components/schemas/SnowflakeType"}]},
+									"introduction_channel_id": {
+										"nullable": true,
+										"allOf": [{"$ref": "#/components/schemas/SnowflakeType"}]
+									},
+									"mfa_policy": {"enum": ["optional", "recommended", "required"], "type": "string"},
+									"steps": {
+										"type": "object",
+										"properties": {
+											"profile": {"type": "boolean"},
+											"security": {"type": "boolean"},
+											"notifications": {"type": "boolean"},
+											"media": {"type": "boolean"},
+											"community": {"type": "boolean"}
+										},
+										"required": ["profile", "security", "notifications", "media", "community"]
+									}
+								},
+								"required": [
+									"enabled",
+									"version",
+									"enabled_at",
+									"show_for_existing_users",
+									"welcome_message",
+									"operator_name",
+									"availability_message",
+									"primary_guild_id",
+									"rules_channel_id",
+									"introduction_channel_id",
+									"mfa_policy",
+									"steps"
+								]
+							},
+							"support": {
+								"type": "object",
+								"properties": {
+									"status_url": {"nullable": true, "type": "string"},
+									"support_user_id": {"nullable": true, "allOf": [{"$ref": "#/components/schemas/SnowflakeType"}]},
+									"service_updates_channel_id": {
+										"nullable": true,
+										"allOf": [{"$ref": "#/components/schemas/SnowflakeType"}]
+									},
+									"feedback_channel_id": {"nullable": true, "allOf": [{"$ref": "#/components/schemas/SnowflakeType"}]}
+								},
+								"required": ["status_url", "support_user_id", "service_updates_channel_id", "feedback_channel_id"]
 							}
 						},
-						"required": ["branding", "setup", "legal", "registration"]
+						"required": ["branding", "setup", "legal", "registration", "onboarding", "support"]
 					},
 					"policy": {
 						"type": "object",
@@ -12969,6 +13026,48 @@
 								"nullable": true,
 								"type": "object",
 								"properties": {"collect_date_of_birth": {"type": "boolean"}}
+							},
+							"onboarding": {
+								"nullable": true,
+								"type": "object",
+								"properties": {
+									"enabled": {"type": "boolean"},
+									"version": {"type": "integer", "minimum": 1, "maximum": 2147483647, "format": "int32"},
+									"show_for_existing_users": {"type": "boolean"},
+									"welcome_message": {"nullable": true, "type": "string", "maxLength": 500},
+									"operator_name": {"nullable": true, "type": "string", "maxLength": 100},
+									"availability_message": {"nullable": true, "type": "string", "maxLength": 500},
+									"primary_guild_id": {"nullable": true, "allOf": [{"$ref": "#/components/schemas/SnowflakeType"}]},
+									"rules_channel_id": {"nullable": true, "allOf": [{"$ref": "#/components/schemas/SnowflakeType"}]},
+									"introduction_channel_id": {
+										"nullable": true,
+										"allOf": [{"$ref": "#/components/schemas/SnowflakeType"}]
+									},
+									"mfa_policy": {"enum": ["optional", "recommended", "required"], "type": "string"},
+									"steps": {
+										"type": "object",
+										"properties": {
+											"profile": {"type": "boolean"},
+											"security": {"type": "boolean"},
+											"notifications": {"type": "boolean"},
+											"media": {"type": "boolean"},
+											"community": {"type": "boolean"}
+										}
+									}
+								}
+							},
+							"support": {
+								"nullable": true,
+								"type": "object",
+								"properties": {
+									"status_url": {"nullable": true, "type": "string", "maxLength": 2048, "format": "uri"},
+									"support_user_id": {"nullable": true, "allOf": [{"$ref": "#/components/schemas/SnowflakeType"}]},
+									"service_updates_channel_id": {
+										"nullable": true,
+										"allOf": [{"$ref": "#/components/schemas/SnowflakeType"}]
+									},
+									"feedback_channel_id": {"nullable": true, "allOf": [{"$ref": "#/components/schemas/SnowflakeType"}]}
+								}
 							}
 						}
 					},

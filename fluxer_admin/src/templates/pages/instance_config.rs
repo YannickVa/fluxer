@@ -825,6 +825,160 @@ fn app_public_config_section(
                         }
                     }
                 }
+                div class="space-y-4 border-t border-neutral-200 pt-6" {
+                    h3 class="text-sm font-semibold text-neutral-900" { "Member Onboarding" }
+                    p class="text-xs text-neutral-500" {
+                        "Configure the resumable first-run checklist. Keep it disabled until the copy and channel destinations are ready."
+                    }
+                    form method="post" action={(base) "/instance-config?action=update_app_onboarding"} {
+                        (csrf_input(csrf_token))
+                        div class="space-y-5" {
+                            div class="grid grid-cols-1 gap-3 sm:grid-cols-2" {
+                                (checkbox(
+                                    "app_onboarding_enabled",
+                                    "true",
+                                    "Enable member onboarding",
+                                    app_public.onboarding.enabled,
+                                    true,
+                                ))
+                                (checkbox(
+                                    "app_onboarding_show_for_existing_users",
+                                    "true",
+                                    "Auto-open once for existing users",
+                                    app_public.onboarding.show_for_existing_users,
+                                    true,
+                                ))
+                            }
+                            div class="grid grid-cols-1 gap-4 sm:grid-cols-2" {
+                                (number_field(
+                                    "app_onboarding_version",
+                                    "Onboarding Version",
+                                    &app_public.onboarding.version.to_string(),
+                                    Some(1),
+                                    None,
+                                    "1",
+                                    Some("Increase only when a materially changed checklist should be shown again."),
+                                ))
+                                (select_input(
+                                    "app_onboarding_mfa_policy",
+                                    "MFA Guidance",
+                                    &[
+                                        ("optional", "Optional"),
+                                        ("recommended", "Recommended"),
+                                        ("required", "Required by operator"),
+                                    ],
+                                    app_public.onboarding.mfa_policy.as_str(),
+                                ))
+                            }
+                            (text_input(
+                                "app_onboarding_operator_name",
+                                "Operator Name",
+                                app_public.onboarding.operator_name.as_deref().unwrap_or(""),
+                                "Community administrator",
+                            ))
+                            (textarea_input(
+                                "app_onboarding_welcome_message",
+                                "Welcome Message",
+                                "A short description of this private community.",
+                                app_public.onboarding.welcome_message.as_deref().unwrap_or(""),
+                                3,
+                                false,
+                            ))
+                            (textarea_input(
+                                "app_onboarding_availability_message",
+                                "Availability Message",
+                                "Explain expected availability in plain language.",
+                                app_public.onboarding.availability_message.as_deref().unwrap_or(""),
+                                3,
+                                false,
+                            ))
+                            div class="grid grid-cols-1 gap-4 sm:grid-cols-3" {
+                                (text_input(
+                                    "app_onboarding_primary_guild_id",
+                                    "Primary Community ID",
+                                    app_public.onboarding.primary_guild_id.as_deref().unwrap_or(""),
+                                    "123456789012345678",
+                                ))
+                                (text_input(
+                                    "app_onboarding_rules_channel_id",
+                                    "Rules Channel ID",
+                                    app_public.onboarding.rules_channel_id.as_deref().unwrap_or(""),
+                                    "123456789012345678",
+                                ))
+                                (text_input(
+                                    "app_onboarding_introduction_channel_id",
+                                    "Introduction Channel ID",
+                                    app_public.onboarding.introduction_channel_id.as_deref().unwrap_or(""),
+                                    "123456789012345678",
+                                ))
+                            }
+                            div class="space-y-3" {
+                                p class="text-xs font-medium text-neutral-700" { "Enabled checklist steps" }
+                                div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3" {
+                                    (checkbox("app_onboarding_step_profile", "true", "Complete profile", app_public.onboarding.steps.profile, true))
+                                    (checkbox("app_onboarding_step_security", "true", "Secure account", app_public.onboarding.steps.security, true))
+                                    (checkbox("app_onboarding_step_notifications", "true", "Configure notifications", app_public.onboarding.steps.notifications, true))
+                                    (checkbox("app_onboarding_step_media", "true", "Check voice and video", app_public.onboarding.steps.media, true))
+                                    (checkbox("app_onboarding_step_community", "true", "Join the community", app_public.onboarding.steps.community, true))
+                                }
+                            }
+                            @if let Some(enabled_at) = app_public.onboarding.enabled_at.as_deref() {
+                                p class="text-xs text-neutral-500" {
+                                    "Current rollout enabled " (enabled_at) "."
+                                }
+                            }
+                            p class="text-xs text-neutral-500" {
+                                "Choosing Required by operator keeps the security step visibly incomplete until MFA is enabled; it does not independently enforce an API login policy."
+                            }
+                            (form_actions(html! {
+                                (submit_button("Save Member Onboarding"))
+                            }))
+                        }
+                    }
+                }
+                div class="space-y-4 border-t border-neutral-200 pt-6" {
+                    h3 class="text-sm font-semibold text-neutral-900" { "Member Support Destinations" }
+                    p class="text-xs text-neutral-500" {
+                        "These runtime values are public to clients. Use channel IDs and public pages only; never enter secrets or private administrator contact details."
+                    }
+                    form method="post" action={(base) "/instance-config?action=update_app_support"} {
+                        (csrf_input(csrf_token))
+                        div class="space-y-4" {
+                            (text_input(
+                                "app_support_status_url",
+                                "Status URL",
+                                app_public.support.status_url.as_deref().unwrap_or(""),
+                                "https://status.example.com",
+                            ))
+                            div class="grid grid-cols-1 gap-4 sm:grid-cols-2" {
+                                (text_input(
+                                    "app_support_user_id",
+                                    "Private Support User ID",
+                                    app_public.support.support_user_id.as_deref().unwrap_or(""),
+                                    "123456789012345678",
+                                ))
+                                (text_input(
+                                    "app_support_service_updates_channel_id",
+                                    "Service Updates Channel ID",
+                                    app_public.support.service_updates_channel_id.as_deref().unwrap_or(""),
+                                    "123456789012345678",
+                                ))
+                            }
+                            (text_input(
+                                "app_support_feedback_channel_id",
+                                "Shared Pilot Feedback Channel ID",
+                                app_public.support.feedback_channel_id.as_deref().unwrap_or(""),
+                                "123456789012345678",
+                            ))
+                            p class="text-xs text-neutral-500" {
+                                "Private support opens a direct message with the configured user. Service updates and pilot feedback are ordinary community channels and should be readable by the intended members."
+                            }
+                            (form_actions(html! {
+                                (submit_button("Save Support Destinations"))
+                            }))
+                        }
+                    }
+                }
             }
         },
     )

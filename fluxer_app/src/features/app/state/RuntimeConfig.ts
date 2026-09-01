@@ -156,6 +156,32 @@ export const DEFAULT_APP_PUBLIC_CONFIG: InstanceAppPublic = {
 	registration: {
 		collect_date_of_birth: true,
 	},
+	onboarding: {
+		enabled: false,
+		version: 1,
+		enabled_at: null,
+		show_for_existing_users: false,
+		welcome_message: null,
+		operator_name: null,
+		availability_message: null,
+		primary_guild_id: null,
+		rules_channel_id: null,
+		introduction_channel_id: null,
+		mfa_policy: 'recommended',
+		steps: {
+			profile: true,
+			security: true,
+			notifications: true,
+			media: true,
+			community: true,
+		},
+	},
+	support: {
+		status_url: null,
+		support_user_id: null,
+		service_updates_channel_id: null,
+		feedback_channel_id: null,
+	},
 };
 
 export function normalizeInstanceRegistration(registration?: InstanceRegistration | null): InstanceRegistration {
@@ -271,6 +297,18 @@ export function normalizeAppPublicConfig(appPublic?: Partial<InstanceAppPublic> 
 		registration: {
 			...DEFAULT_APP_PUBLIC_CONFIG.registration,
 			...(appPublic?.registration ?? {}),
+		},
+		onboarding: {
+			...DEFAULT_APP_PUBLIC_CONFIG.onboarding,
+			...(appPublic?.onboarding ?? {}),
+			steps: {
+				...DEFAULT_APP_PUBLIC_CONFIG.onboarding.steps,
+				...(appPublic?.onboarding?.steps ?? {}),
+			},
+		},
+		support: {
+			...DEFAULT_APP_PUBLIC_CONFIG.support,
+			...(appPublic?.support ?? {}),
 		},
 	};
 }
@@ -391,6 +429,8 @@ class RuntimeConfig {
 			},
 			legal: config.app_public.legal,
 			registration: config.app_public.registration,
+			onboarding: config.app_public.onboarding,
+			support: config.app_public.support,
 		});
 		runInAction(() => {
 			this.features = {
@@ -527,6 +567,14 @@ class RuntimeConfig {
 
 	get collectDateOfBirthOnRegistration(): boolean {
 		return this.appPublic.registration.collect_date_of_birth;
+	}
+
+	get onboarding(): InstanceAppPublic['onboarding'] {
+		return this.appPublic.onboarding;
+	}
+
+	get support(): InstanceAppPublic['support'] {
+		return this.appPublic.support;
 	}
 
 	get setupAdminUrl(): string | null {

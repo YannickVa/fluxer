@@ -337,7 +337,7 @@ msgstr "{count, plural, one {남은 행이 1개입니다.} other {남은 행이 
 msgid "{count, plural, one {# active override} other {# active overrides}}"
 msgstr "{count, plural, one {#개 활성 재정의} other {#개 활성 재정의}}"
 
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:141
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:167
 msgid "{count, plural, one {# active subscription} other {# active subscriptions}}"
 msgstr "{count, plural, one {#개 활성 구독} other {#개 활성 구독}}"
 
@@ -360,7 +360,7 @@ msgstr "{count, plural, one {#개 북마크} other {#개 북마크}}"
 msgid "{count, plural, one {# community found} other {# communities found}}"
 msgstr "{count, plural, one {#개 커뮤니티 찾음} other {#개 커뮤니티 찾음}}"
 
-#: src/features/app/components/layout/GuildsLayout.tsx:1949
+#: src/features/app/components/layout/GuildsLayout.tsx:1955
 msgid "{count, plural, one {# community is temporarily unavailable due to a flux capacitor malfunction.} other {# communities are temporarily unavailable due to a flux capacitor malfunction.}}"
 msgstr "{count, plural, one {#개 커뮤니티가 플럭스 캐패시터 오작동으로 인해 일시적으로 이용할 수 없습니다.} other {#개 커뮤니티가 플럭스 캐패시터 오작동으로 인해 일시적으로 이용할 수 없습니다.}}"
 
@@ -644,12 +644,12 @@ msgid "{displayedUnreadDmCount} unread DMs"
 msgstr "읽지 않은 DM {displayedUnreadDmCount}개"
 
 #. Toast title announcing a newly accepted friend request.
-#: src/features/ui/state/Notification.ts:53
+#: src/features/ui/state/Notification.ts:58
 msgid "{displayName} is now your friend!"
 msgstr "{displayName}님이 이제 회원님의 친구입니다!"
 
 #. Toast title announcing an incoming friend request.
-#: src/features/ui/state/Notification.ts:49
+#: src/features/ui/state/Notification.ts:54
 msgid "{displayName} sent you a friend request"
 msgstr "{displayName}님이 친구 요청을 보냈습니다"
 
@@ -886,7 +886,7 @@ msgstr "{length}명 시청 중"
 msgid "{lineCount, plural, one {# line} other {# lines}}"
 msgstr "{lineCount, plural, one {#줄} other {#줄}}"
 
-#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:147
+#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:149
 msgid "{matchCount, plural, one {# match} other {# matches}}"
 msgstr "{matchCount, plural, one {#개 일치} other {#개 일치}}"
 
@@ -1117,6 +1117,16 @@ msgstr "{productName}에서 이 커뮤니티에 대한 잠재적인 공격을 �
 msgid "{productName} detected a potential raid, so new users can't join right now."
 msgstr "{productName}에서 잠재적인 레이드를 감지했습니다. 현재 새 사용자는 참여할 수 없습니다."
 
+#. Calm connection banner for a private self-hosted instance whose server or VM may have been deliberately stopped.
+#: src/features/app/hooks/useConnectionNotice.ts:44
+msgid "{productName} is currently offline. It may have been intentionally stopped; we’ll reconnect automatically when it returns."
+msgstr ""
+
+#. Calm connection banner shown after an established private self-hosted connection is lost.
+#: src/features/app/hooks/useConnectionNotice.ts:50
+msgid "{productName} is offline. Reconnecting automatically…"
+msgstr ""
+
 #. Profile membership label showing when the user account was created.
 #: src/features/user/components/popouts/UserProfileShared.tsx:54
 msgid "{productName} member since"
@@ -1188,7 +1198,7 @@ msgid "{productName} Staff"
 msgstr "{productName} 직원"
 
 #. Label in the notifications.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:61
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:63
 msgid "{productName} uses push notifications when installed as a mobile PWA. Registering ensures the gateway can reach your device even when the app is backgrounded."
 msgstr "{productName}은(는) 모바일 PWA로 설치된 경우 푸시 알림을 사용합니다. 등록하면 앱이 백그라운드에 있을 때도 게이트웨이가 기기에 연결할 수 있습니다."
 
@@ -1955,7 +1965,7 @@ msgstr "호스트 이름(예: {exampleDomain})"
 msgid "A Linux desktop update is available. Choose the package format for this system and {productName} will save it locally."
 msgstr "Linux 데스크톱 업데이트가 있습니다. 이 시스템에 대한 패키지 형식을 선택하면 {productName}이 로컬에 저장됩니다."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:511
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:676
 msgid "A live path through the systems needed for chat, calls, and updates."
 msgstr ""
 
@@ -2117,7 +2127,7 @@ msgstr "기본 프로필 정보(사용자 이름, 아바타 등)에 접근"
 #. User settings tab for accessibility preferences (visual, motion, screen reader, etc.).
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:14
 #: src/features/user/components/settings_utils/section_registry/SharedDescriptors.ts:93
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:67
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:68
 msgid "Accessibility"
 msgstr "접근성"
 
@@ -2131,7 +2141,7 @@ msgstr "접근 가능한 라이브 영역"
 #. User settings tab for account login, password, MFA, and security.
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:11
 #: src/features/user/components/settings_utils/section_registry/AccountSecuritySections.ts:129
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:96
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:101
 msgid "Account"
 msgstr "계정"
 
@@ -2168,6 +2178,10 @@ msgstr "계정 데이터"
 #: src/features/moderation/components/report_modal/IARModalCopy.ts:279
 msgid "Account exists to spam, scam, or abuse the platform."
 msgstr "스팸, 사기 또는 플랫폼 악용을 목적으로 생성된 계정입니다."
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:358
+msgid "Account or access problem"
+msgstr ""
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/section_registry/AccountSecuritySections.ts:121
@@ -2403,6 +2417,10 @@ msgstr "커뮤니티 추가"
 #: src/features/auth/flow/DesktopHandoffAccountSelector.tsx:75
 msgid "Add a different account"
 msgstr "다른 계정 추가"
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:282
+msgid "Add a display name and avatar so friends can recognize you. Status and privacy choices remain optional."
+msgstr ""
 
 #. Empty-state hint in the friends list when the user has no friends yet.
 #: src/features/relationship/utils/FriendsListUtils.tsx:31
@@ -2843,7 +2861,7 @@ msgstr "관리자가 초대를 일시 중지했습니다. 지금은 참여할 �
 #: src/features/channel/components/modals/channel_tabs/ChannelOverviewTab.tsx:337
 #: src/features/guild/components/modals/guild_tabs/guild_overview_tab/index.tsx:28
 #: src/features/ui/action_menu/items/VoiceParticipantMenuData.tsx:178
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:146
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:151
 #: src/features/voice/components/voice_connection_status/VoiceDetailsPopout.tsx:60
 msgid "Advanced"
 msgstr "고급"
@@ -2950,7 +2968,7 @@ msgstr "모든 <0/>를 영원히. 청구도 갱신도 없습니다."
 msgid "All actions"
 msgstr "모든 활동"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:496
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:661
 msgid "All checked systems look healthy."
 msgstr ""
 
@@ -3064,6 +3082,10 @@ msgstr "{PRODUCT_NAME}에서 마이크에 접근하도록 허용해 주세요. �
 #: src/features/guild/components/modals/guild_tabs/GuildAuditLogTabRenderers.tsx:666
 msgid "Allow @mention."
 msgstr "@멘션 허용."
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:377
+msgid "Allow & test"
+msgstr ""
 
 #. Description text in the application info section.
 #: src/features/user/components/modals/tabs/applications_tab/application_detail/ApplicationInfoSection.tsx:40
@@ -3738,7 +3760,11 @@ msgstr "앱 아이콘 배지"
 msgid "App language: {format}"
 msgstr "앱 언어: {format}"
 
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:214
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:356
+msgid "App or connection problem"
+msgstr ""
+
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:219
 msgid "App settings"
 msgstr "앱 설정"
 
@@ -3765,7 +3791,7 @@ msgstr "앱 확대/축소 수준"
 #. Advanced settings category tag.
 #. User settings tab for app appearance and layout options.
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:13
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:117
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:122
 msgid "Appearance"
 msgstr "모양 및 설정"
 
@@ -3838,8 +3864,8 @@ msgstr "신청이 성공적으로 업데이트되었습니다"
 #: src/features/user/components/modals/tabs/applications_tab/index.tsx:90
 #: src/features/user/components/modals/tabs/applications_tab/index.tsx:129
 #: src/features/user/components/settings_utils/search_index/SharedDescriptors.ts:29
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:74
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:71
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:78
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:72
 msgid "Applications"
 msgstr "앱"
 
@@ -4365,7 +4391,7 @@ msgid "Authorized"
 msgstr "승인됨"
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:30
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:34
 msgid "Authorized applications"
 msgstr "연결된 앱"
 
@@ -4379,8 +4405,8 @@ msgstr "연결된 앱"
 #: src/features/user/components/modals/tabs/AuthorizedAppsTab.tsx:506
 #: src/features/user/components/settings_utils/search_index/AuthorizedAppsIndex.ts:10
 #: src/features/user/components/settings_utils/section_registry/AccountSecuritySections.ts:148
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:34
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:108
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:38
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:113
 msgid "Authorized apps"
 msgstr "승인된 앱"
 
@@ -5069,7 +5095,7 @@ msgstr "1~32자"
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/PlutoniumIndex.ts:27
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:212
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:217
 msgid "Billing"
 msgstr "결제"
 
@@ -5210,8 +5236,8 @@ msgstr "차단됨"
 #: src/features/user/components/modals/tabs/BlockedUsersTab.tsx:210
 #: src/features/user/components/settings_utils/search_index/BlockedUsersIndex.ts:6
 #: src/features/user/components/settings_utils/section_registry/AccountSecuritySections.ts:152
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:26
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:59
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:30
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:60
 msgid "Blocked users"
 msgstr "차단된 사용자"
 
@@ -5464,7 +5490,7 @@ msgstr "브랜딩 에셋 미리보기"
 msgid "Brightness"
 msgstr "밝기"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:775
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1085
 msgid "Browser"
 msgstr ""
 
@@ -6052,6 +6078,7 @@ msgstr "카테고리"
 #. Channel type chip label for a community category container.
 #: src/features/channel/utils/ChannelUtils.tsx:35
 #: src/features/guild/components/modals/guild_tabs/GuildDiscoveryTab.tsx:458
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:947
 msgid "Category"
 msgstr "카테고리"
 
@@ -6608,7 +6635,7 @@ msgstr "{remaining}자 초과"
 #: src/features/input/components/modals/KeyboardShortcutsCheatsheetModal.tsx:40
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:15
 #: src/features/user/components/modals/tabs/keybinds_tab/DefaultKeybindsList.tsx:39
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:121
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:126
 msgid "Chat"
 msgstr "채팅"
 
@@ -6641,19 +6668,24 @@ msgstr "채팅 입력"
 msgid "Chat shortcuts"
 msgstr "채팅 단축키"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:882
+msgid "Check current information first, or ask the operator privately."
+msgstr ""
+
 #. Tray menu item. Triggers the auto-updater to look for a new desktop build.
 #: src/features/platform/utils/DesktopLocaleBridge.ts:160
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:823
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1133
 msgid "Check for updates"
 msgstr "업데이트 확인"
 
 #. Support Center section for live service, connection, device, and update checks.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:510
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:78
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:405
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:675
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:82
 msgid "Check my setup"
 msgstr ""
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:654
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:819
 msgid "Check now"
 msgstr ""
 
@@ -6666,8 +6698,12 @@ msgstr "상태 업데이트는 <0>{BLUESKY_PROVIDER_NAME} ({FLUXER_BLUESKY_HANDL
 msgid "Check out my custom theme!"
 msgstr "내 테마를 확인해 보세요!"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:686
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:851
 msgid "Check permission, preview video, and select a camera."
+msgstr ""
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:393
+msgid "Check voice & video"
 msgstr ""
 
 #. Error-state description in the channel and chat gif picker view.
@@ -6676,7 +6712,7 @@ msgstr ""
 msgid "Check your connection and try again."
 msgstr "연결 상태를 확인하고 다시 시도해 주세요."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:481
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:646
 msgid "Check your connection, devices, app version, and the services this client depends on."
 msgstr ""
 
@@ -6705,7 +6741,7 @@ msgstr "받은 편지함에서 인증 이메일을 확인하세요."
 msgid "Checkboxes"
 msgstr "체크박스"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:82
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:138
 msgid "Checking"
 msgstr ""
 
@@ -6811,6 +6847,10 @@ msgstr "새 비밀번호를 입력하세요."
 msgid "Choose a speed for spoken text."
 msgstr "음성 텍스트 속도 선택"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:335
+msgid "Choose a starting point, then test this device. You can fine-tune each community and channel later."
+msgstr ""
+
 #. Settings search entry description. One-line summary of what the settings search entry controls.
 #: src/features/user/components/settings_utils/search_index/PlutoniumIndex.ts:75
 msgid "Choose a subscription plan or gift option"
@@ -6859,7 +6899,7 @@ msgstr "옵션 선택"
 msgid "Choose background"
 msgstr "배경 선택"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:677
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:842
 msgid "Choose devices, check levels, and test your microphone."
 msgstr ""
 
@@ -8135,6 +8175,10 @@ msgstr "{productName}을(를) 계속 사용하려면 아래에서 이메일 및 
 msgid "Complete the required verification to continue using {productName}."
 msgstr "{productName}을(를) 계속 사용하려면 필요한 인증을 완료하세요."
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:280
+msgid "Complete your profile"
+msgstr ""
+
 #. Label in the premium badge settings. Preserve {premiumProductName}; it is inserted by code. Keep the tone plain and specific.
 #: src/features/user/components/modals/tabs/my_profile_tab/PremiumBadgeSettings.tsx:16
 msgid "Completely hide your {premiumProductName} badge from other users"
@@ -8303,6 +8347,10 @@ msgstr "비밀번호 확인"
 msgid "Confirm voice join"
 msgstr "음성 참가 확인"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:395
+msgid "Confirm your microphone, speaker, and camera on this device. A camera is optional."
+msgstr ""
+
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/ChatSettingsIndex.ts:439
 msgid "Confirmation"
@@ -8389,7 +8437,7 @@ msgid "Connection ID"
 msgstr "연결 ID"
 
 #. Banner shown while the app is still loading and the connection is taking unusually long. Phrased as a question offering help.
-#: src/features/app/hooks/useConnectionNotice.ts:33
+#: src/features/app/hooks/useConnectionNotice.ts:34
 msgid "Connection issues?"
 msgstr "연결에 문제가 있나요?"
 
@@ -8403,7 +8451,7 @@ msgid "Connection lost"
 msgstr "연결 끊김"
 
 #. Banner shown when the app loses its gateway connection after having loaded. The app stays usable, so keep the tone calm.
-#: src/features/app/hooks/useConnectionNotice.ts:38
+#: src/features/app/hooks/useConnectionNotice.ts:39
 msgid "Connection lost. Reconnecting…"
 msgstr "연결이 끊어졌어요. 다시 연결 중…"
 
@@ -8453,12 +8501,12 @@ msgstr "연결: {connectionId}"
 #: src/features/i18n/utils/CommonMessageDescriptors.ts:410
 #: src/features/user/components/popouts/UserProfileShared.tsx:675
 #: src/features/user/components/settings_utils/search_index/LinkedAccountsIndex.ts:8
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:38
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:42
 msgid "Connections"
 msgstr "연결된 계정"
 
 #. User settings tab for linked external accounts.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:112
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:117
 msgctxt "user-settings-tab"
 msgid "Connections"
 msgstr "연결"
@@ -8560,6 +8608,10 @@ msgstr "좌클릭(버튼) 또는 우클릭(다른 요소)으로 상황별 메뉴
 #: src/features/user/components/modals/tabs/AuthorizedAppsTab.tsx:181
 msgid "Continue"
 msgstr "계속"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1005
+msgid "Continue privately"
+msgstr ""
 
 #. Plutonium checkout pre-approval prompt secondary button. Continues straight to the standard checkout screen.
 #: src/features/app/components/dialogs/components/plutonium/hooks/useCheckoutActions.tsx:89
@@ -8923,6 +8975,10 @@ msgstr "공유 중에는 복사 일시 중지됨"
 msgid "Copy reference for {fileName}"
 msgstr "{fileName} 참조 복사"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:998
+msgid "Copy report"
+msgstr ""
+
 #. Developer-mode action that copies the role ID to the clipboard.
 #: src/features/ui/action_menu/items/CopyMenuItems.tsx:14
 msgid "Copy role ID"
@@ -8953,7 +9009,7 @@ msgstr "스티커 ID 복사"
 msgid "Copy sticker URL"
 msgstr "스티커 URL 복사"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:881
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1191
 msgid "Copy support summary"
 msgstr ""
 
@@ -9631,7 +9687,7 @@ msgstr "새로운 커뮤니티를 만들거나 기존 커뮤니티에 참여하�
 msgid "Create a new group with {userName}"
 msgstr "{userName}님과 새 그룹 만들기"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:841
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1151
 msgid "Create a small, privacy-reviewed snapshot for someone helping you troubleshoot."
 msgstr ""
 
@@ -11061,6 +11117,11 @@ msgstr "스티커 설명"
 msgid "Describe this media for screen readers"
 msgstr "스크린 리더용 미디어 설명"
 
+#. Validation error for an empty problem report description.
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:89
+msgid "Describe what happened before continuing."
+msgstr ""
+
 #. Placeholder in the Additional comments textarea on the DSA report form. Prompts the reporter to explain why the content is illegal.
 #: src/features/moderation/components/report/ReportStepDetails.tsx:77
 msgid "Describe what makes the content illegal"
@@ -11095,7 +11156,7 @@ msgid "Description must be no more than {discoveryDescriptionMaxLength} characte
 msgstr "설명은 {discoveryDescriptionMaxLength}자를 초과할 수 없습니다."
 
 #. Developer settings tab showing UI component examples.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:158
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:163
 msgid "Design system"
 msgstr "디자인 시스템"
 
@@ -11109,8 +11170,8 @@ msgstr "데스크톱"
 
 #. User settings tab for desktop app integration and platform settings.
 #. User settings tab label shown on desktop builds when the OS could not be identified (fallback for the per-OS labels).
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:87
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:142
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:88
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:147
 msgid "Desktop app"
 msgstr "데스크톱 앱"
 
@@ -11134,7 +11195,7 @@ msgstr "이 Windows 빌드에서는 데스크톱 오디오를 사용할 수 없�
 msgid "Desktop away"
 msgstr "데스크톱 자리 비움"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:769
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1079
 msgid "Desktop build"
 msgstr ""
 
@@ -11201,7 +11262,7 @@ msgstr "데스크톱 버전 {version}이 출시되었습니다. 설치 파일을
 #. Settings section label for desktop window behavior.
 #: src/features/user/components/modals/tabs/DesktopSettingsTab.tsx:150
 #: src/features/user/components/settings_utils/search_index/DesktopSettingsIndex.ts:154
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:62
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:66
 msgid "Desktop window"
 msgstr "데스크톱 창"
 
@@ -11247,7 +11308,7 @@ msgstr "세부정보"
 msgid "Detect while typing"
 msgstr "입력하는 동안 감지"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:791
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1101
 msgid "Detecting…"
 msgstr ""
 
@@ -11255,7 +11316,7 @@ msgstr ""
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:20
 #: src/features/user/components/settings_utils/search_index/SharedDescriptors.ts:25
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:216
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:221
 msgid "Developer"
 msgstr "개발자"
 
@@ -11263,7 +11324,7 @@ msgstr "개발자"
 #. Settings section label for client developer mode.
 #: src/features/user/components/modals/tabs/ClientDeveloperSettingsTab.tsx:17
 #: src/features/user/components/settings_utils/search_index/ClientDeveloperSettingsIndex.ts:7
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:66
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:70
 msgid "Developer mode"
 msgstr "개발자 모드"
 
@@ -11347,18 +11408,18 @@ msgstr "장치:"
 #: src/features/user/components/modals/tabs/DevicesTab.tsx:528
 #: src/features/user/components/settings_utils/search_index/DevicesIndex.ts:11
 #: src/features/user/components/settings_utils/section_registry/AppearanceSections.ts:82
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:63
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:64
 #: src/features/voice/components/modals/ScreenSharePickerModal.tsx:133
 msgid "Devices"
 msgstr "기기"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:605
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:770
 msgid "Devices & permissions"
 msgstr ""
 
 #. Support Center section for previewing and exporting privacy-safe diagnostics.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:840
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:90
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1150
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:102
 msgid "Diagnostics to share"
 msgstr ""
 
@@ -11952,6 +12013,14 @@ msgstr "DM 사이드바"
 msgid "DNS TXT record"
 msgstr "DNS TXT 레코드"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:86
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:299
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:324
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:384
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:435
+msgid "Do later"
+msgstr ""
+
 #. Short label in the app constants.
 #. Tray status menu item. User presence that suppresses notifications.
 #: src/features/app/constants/AppConstants.ts:33
@@ -12164,7 +12233,7 @@ msgstr "데스크톱 업데이트 {version} 다운로드"
 msgid "Download desktop update {version} ({formatBytes})"
 msgstr "데스크톱 업데이트 {version} 다운로드 ({formatBytes})"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:907
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1217
 msgid "Download diagnostics"
 msgstr ""
 
@@ -12782,7 +12851,7 @@ msgstr "포함"
 #. Developer settings tab for testing URL unfurls and rendered embeds.
 #. Settings search entry label for the developer embed debugger.
 #: src/features/user/components/settings_utils/search_index/EmbedDebuggerIndex.ts:7
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:154
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:159
 msgid "Embed debugger"
 msgstr "임베드 디버거"
 
@@ -12938,7 +13007,7 @@ msgstr "이모티콘 팩 제한에 도달했습니다"
 #. Short label in the expression packs tab. Keep it concise.
 #: src/features/user/components/modals/tabs/ExpressionPacksTab.tsx:80
 #: src/features/user/components/settings_utils/search_index/ExpressionPacksIndex.ts:23
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:18
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:22
 msgid "Emoji packs"
 msgstr "이모티콘 팩"
 
@@ -13062,12 +13131,12 @@ msgid "Enable Bluesky OAuth"
 msgstr "Bluesky OAuth 사용 설정"
 
 #. Button or menu action label in the notifications. Keep it concise.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:34
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:36
 msgid "Enable browser notifications"
 msgstr "브라우저 알림 켜기"
 
 #. Button or menu action label in the notifications. Keep it concise.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:30
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:32
 msgid "Enable desktop notifications"
 msgstr "데스크톱 알림 켜기"
 
@@ -13173,7 +13242,7 @@ msgid "Enable or disable built-in translators. Enabled translators appear in the
 msgstr "내장 번역기를 켜거나 끌 수 있습니다. 번역기를 켜면 텍스트 선택 시 메시지 컨텍스트 메뉴에 표시됩니다."
 
 #. Button or menu action label in the notifications. Keep it concise.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:70
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:72
 msgid "Enable push for this device"
 msgstr "이 기기에서 푸시 알림 켜기"
 
@@ -13243,7 +13312,7 @@ msgstr "읽지 않은 배지 사용자 지정 활성화"
 
 #. Button or menu action label in the notifications. Keep it concise.
 #. Settings search entry label. Names the settings search entry in the settings UI.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:53
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:55
 #: src/features/user/components/settings_utils/search_index/NotificationsIndex.ts:6
 msgid "Enable unread message badge"
 msgstr "읽지 않은 메시지 배지 사용"
@@ -13334,6 +13403,11 @@ msgstr "유예 기간을 지금 종료할까요?"
 #: src/features/voice/components/VoiceControlBar.tsx:112
 msgid "End screen share"
 msgstr "화면 공유 중단"
+
+#. Label for the end of notification quiet hours.
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:96
+msgid "End time"
+msgstr ""
 
 #. Pre-join indicator shown beneath the Join button on a DM or group DM call where at least one connected participant (typically an outdated bot) does not support E2EE.
 #: src/features/voice/utils/VoiceMessageDescriptors.ts:332
@@ -13790,11 +13864,12 @@ msgid "Everyone is premium"
 msgstr "모든 사용자에게 최고 등급이 제공됩니다"
 
 #. Scope option (radio) that exports the user every message and metadata. Default.
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:352
 #: src/features/user/components/modals/tabs/privacy_safety_tab/data_request_modal/DataRequestModal.tsx:54
 msgid "Everything"
 msgstr "모든 항목"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:913
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1223
 msgid "Exact contents of the diagnostic file"
 msgstr ""
 
@@ -14079,7 +14154,7 @@ msgstr "표현 자동 완성"
 #. User settings tab for purchased or owned emoji/sticker expression packs.
 #: src/features/user/components/modals/tabs/ExpressionPacksTab.tsx:166
 #: src/features/user/components/settings_utils/search_index/ExpressionPacksIndex.ts:7
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:55
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:56
 msgid "Expression packs"
 msgstr "표현 팩"
 
@@ -14590,6 +14665,10 @@ msgstr "일시적으로 비활성화된 기능"
 msgid "Features"
 msgstr "기능"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:359
+msgid "Feedback or suggestion"
+msgstr ""
+
 #: src/features/user/components/modals/tabs/EmbedDebuggerTab.tsx:227
 msgid "Fetch a URL and inspect the embed payload the chat renderer receives."
 msgstr "URL을 가져와서 채팅 렌더러가 수신하는 임베드 페이로드를 검사합니다."
@@ -14776,10 +14855,15 @@ msgstr "계정 설정 완료"
 msgid "Finish account setup first"
 msgstr "먼저 계정 설정을 완료하세요"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:445
+msgid "Finish at your own pace"
+msgstr ""
+
 #. Button that saves the configuration and completes the setup wizard.
 #. Setup wizard finish step title.
 #: src/features/app/components/setup/SelfHostedSetupWizardGate.tsx:83
 #: src/features/app/components/setup/SetupWizardSteps.tsx:327
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:460
 msgid "Finish setup"
 msgstr "설정 완료"
 
@@ -14827,8 +14911,8 @@ msgid "First option"
 msgstr "첫 번째 옵션"
 
 #. Support Center section linking to common troubleshooting settings.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:664
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:82
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:829
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:86
 msgid "Fix a common problem"
 msgstr ""
 
@@ -15129,7 +15213,7 @@ msgid "Forget authorized IPs"
 msgstr "승인된 IP 지우기"
 
 #. Short label in the notifications. Keep it concise.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:74
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:76
 msgid "Forget subscriptions"
 msgstr "구독 취소하기"
 
@@ -15194,7 +15278,7 @@ msgstr "메시지 전달됨"
 msgid "Forwarded from"
 msgstr "다음으로부터 전달됨"
 
-#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:271
+#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:273
 msgid "Found {resultCount} results in {categoryCount} categories"
 msgstr "카테고리 {categoryCount}개에서 결과 {resultCount}개 발견"
 
@@ -15276,7 +15360,7 @@ msgstr "친구 추가됨"
 
 #. Section or status label for a friend request item.
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
-#: src/features/ui/state/Notification.ts:45
+#: src/features/ui/state/Notification.ts:50
 #: src/features/user/components/settings_utils/section_registry/PrivacySafetySections.ts:24
 msgid "Friend request"
 msgstr "친구 요청"
@@ -15568,12 +15652,12 @@ msgid "Get new code"
 msgstr "새 코드 받기"
 
 #. Label in the notifications.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:43
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:45
 msgid "Get notified when you receive messages. You may need to allow notifications for {productName} in your device settings. For per-channel/per-community controls, open notification settings from a community's menu."
 msgstr "메시지를 받으면 알림을 받습니다. 기기 설정에서 {productName} 알림을 허용해야 할 수도 있습니다. 채널/커뮤니티별 제어는 커뮤니티 메뉴에서 알림 설정을 여세요."
 
 #. Label in the notifications.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:48
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:50
 msgid "Get notified when you receive messages. You may need to allow notifications in your browser settings. For per-channel/per-community controls, right-click a community icon and open notification settings."
 msgstr "메시지를 받으면 알림을 받습니다. 브라우저 설정에서 알림을 허용해야 할 수도 있습니다. 채널/커뮤니티별 설정은 커뮤니티 아이콘을 마우스 오른쪽 버튼으로 클릭하고 알림 설정을 여세요."
 
@@ -15586,6 +15670,11 @@ msgstr "시스템 전체 푸시투톡 및 기타 유용한 기능을 사용하�
 #: src/features/voice/components/modals/screen_share_picker_modal/DesktopDownloadCta.tsx:20
 msgid "Get the desktop app"
 msgstr "데스크톱 앱 다운로드"
+
+#. User settings tab for the private community setup checklist.
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:97
+msgid "Getting Started"
+msgstr ""
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #. Type label for GIF media.
@@ -15788,7 +15877,7 @@ msgstr "선물 <0/>이(가) <1>{giftEndDate}</1>까지 적용됩니다. 자동 �
 #. Settings search entry label. Also used as a search synonym in the settings search bar.
 #. User settings tab for gift inventory and redemption codes.
 #: src/features/user/components/settings_utils/search_index/SharedDescriptors.ts:37
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:100
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:105
 msgid "Gifts"
 msgstr "선물"
 
@@ -15839,7 +15928,7 @@ msgstr "뒤로 가기"
 msgid "Go back and enter a valid email."
 msgstr "돌아가서 유효한 이메일을 입력하세요."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:665
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:830
 msgid "Go straight to the settings and tests that can resolve it."
 msgstr ""
 
@@ -16352,6 +16441,12 @@ msgstr "안녕하세요, {username}님! 만나서 반갑습니다."
 msgid "Help"
 msgstr "도움말"
 
+#. Support Center section for status, known issues, maintenance, and private help.
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:881
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:90
+msgid "Help & service information"
+msgstr ""
+
 #. Short label in the sidebar navigation help button.
 #: src/features/app/components/layout/sidebar_nav/HelpButton.tsx:27
 msgid "Help center"
@@ -16791,7 +16886,7 @@ msgstr "업데이트된 약관에 동의합니다"
 msgid "I am a tooltip"
 msgstr "툴팁입니다"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:676
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:841
 msgid "I can't hear or be heard"
 msgstr ""
 
@@ -16803,6 +16898,10 @@ msgstr "제가 이미 평생 {premiumProductName}을(를) 가지고 있어서 �
 #: src/features/guild/components/modals/GuildDeleteModal.tsx:56
 msgid "I changed my mind"
 msgstr "마음이 바뀌었어요"
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:409
+msgid "I checked it"
+msgstr ""
 
 #. IAR modal: preference path option label for a community report.
 #: src/features/moderation/components/report_modal/IARModalCopy.ts:32
@@ -16829,6 +16928,10 @@ msgstr "다른 방법이 필요해요"
 #: src/features/user/components/modals/tabs/UserVoiceTab.tsx:106
 msgid "I understand"
 msgstr "확인했습니다"
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:435
+msgid "I’ve reviewed it"
+msgstr ""
 
 #. Label for the icon branding asset.
 #. Short label in the guild icon upload field. Keep it concise.
@@ -17389,6 +17492,14 @@ msgstr "앱 포함"
 msgid "Include the community ID."
 msgstr "커뮤니티 ID를 포함하세요."
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:980
+msgid "Include the privacy-safe support summary shown below"
+msgstr ""
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:964
+msgid "Include the steps you took and what you saw."
+msgstr ""
+
 #. Generic label for an incoming voice or video call.
 #. Notification sound setting label. Ringtone for an incoming DM or group DM call.
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
@@ -17656,8 +17767,8 @@ msgstr "데스크톱 업데이트 {version} 설치 중…"
 msgid "Installing desktop update…"
 msgstr "데스크톱 업데이트 설치 중…"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:537
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:727
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:702
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1037
 msgid "Instance"
 msgstr ""
 
@@ -17695,7 +17806,7 @@ msgstr "인터페이스"
 #. Settings section label for interface language selection.
 #. Settings section title in the language tab. Keep it concise.
 #: src/features/user/components/modals/tabs/LanguageTab.tsx:79
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:50
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:54
 msgid "Interface language"
 msgstr "인터페이스 언어"
 
@@ -18223,6 +18334,10 @@ msgstr "이 기기에서 참여"
 msgid "Join the call"
 msgstr "통화 참여하기"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:418
+msgid "Join the community"
+msgstr ""
+
 #. Confirm dialog body shown before joining a voice channel from a context where confirmation is required.
 #: src/features/voice/hooks/usePendingVoiceConnection.tsx:16
 msgid "Join this voice channel?"
@@ -18526,12 +18641,12 @@ msgstr "한국어"
 #. User settings tab for language, locale, and time display preferences.
 #: src/features/app/components/setup/SetupWizardSteps.tsx:56
 #: src/features/user/components/settings_utils/search_index/LanguageIndex.ts:6
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:138
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:143
 msgid "Language"
 msgstr "언어"
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:54
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:58
 msgid "Language settings"
 msgstr "언어 설정"
 
@@ -18789,8 +18904,12 @@ msgstr "열려 있는 채널에 새 메시지가 도착하면 스크린 리더�
 msgid "Let the community self-moderate"
 msgstr "커뮤니티가 자율적으로 운영되도록 허용"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:478
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:643
 msgid "Let's get everything working"
+msgstr ""
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:247
+msgid "Let’s make sure your account and this device are ready."
 msgstr ""
 
 #: src/features/theme_studio/sections/ThemeStudioSettingsSection.tsx:259
@@ -19007,7 +19126,7 @@ msgid "Links"
 msgstr "링크"
 
 #. User settings tab label shown on Linux desktop builds.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:79
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:80
 msgid "Linux app"
 msgstr "Linux 앱"
 
@@ -19050,7 +19169,7 @@ msgstr "리투아니아어"
 msgid "Live"
 msgstr "라이브"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:553
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:718
 msgid "Live message connection is ready."
 msgstr ""
 
@@ -19104,7 +19223,7 @@ msgid "Loading profile"
 msgstr "프로필 로드 중"
 
 #. Short label in the notifications. Keep it concise.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:22
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:24
 msgid "Loading push subscriptions…"
 msgstr "푸시 알림 불러오는 중…"
 
@@ -19323,7 +19442,7 @@ msgid "macOS"
 msgstr "macOS"
 
 #. User settings tab label shown on macOS desktop builds.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:83
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:84
 msgid "macOS app"
 msgstr "macOS 앱"
 
@@ -19964,6 +20083,11 @@ msgstr "보통"
 msgid "Medium size (default)"
 msgstr "중간 크기(기본)"
 
+#. placeholder {0}: primaryGuild.name
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:418
+msgid "Meet {0}"
+msgstr ""
+
 #. Audit log target-type filter label. Filters entries that target a community member.
 #: src/features/app/config/AuditLogConstants.ts:156
 msgid "Member"
@@ -20175,6 +20299,10 @@ msgstr "멘션된 역할"
 msgid "Mentions"
 msgstr "멘션"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:364
+msgid "Mentions & DMs"
+msgstr ""
+
 #. Short label in the markdown tab. Keep it concise.
 #: src/features/user/components/modals/tabs/component_gallery_tab/MarkdownTab.tsx:97
 msgid "Mentions and timestamps"
@@ -20232,6 +20360,11 @@ msgstr "메시지"
 #: src/features/user/components/profile/ProfilePreview.tsx:321
 msgid "Message"
 msgstr "메시지"
+
+#. placeholder {0}: RuntimeConfig.onboarding.operator_name ?? RuntimeConfig.productName
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:929
+msgid "Message {0}"
+msgstr ""
 
 #. Prefix for the textarea placeholder text in a DM. Becomes "Message @username". The @ character is literal.
 #: src/features/channel/components/channel_textarea/shared.ts:16
@@ -20503,7 +20636,7 @@ msgstr "커뮤니티 채널 메시지"
 msgid "Messages shortcuts"
 msgstr "메시지 단축키"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:550
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:715
 msgid "Messaging"
 msgstr ""
 
@@ -21287,7 +21420,7 @@ msgstr "내 멋진 미디어"
 msgid "My awesome sticker"
 msgstr "내 멋진 스티커"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:685
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:850
 msgid "My camera isn't working"
 msgstr ""
 
@@ -21478,12 +21611,16 @@ msgstr "탐색"
 msgid "Navigation shortcuts"
 msgstr "탐색 단축키"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:917
+msgid "Need a person?"
+msgstr ""
+
 #. Short prompt shown near links that open account registration.
 #: src/features/i18n/utils/CommonMessageDescriptors.ts:86
 msgid "Need an account?"
 msgstr "계정이 없으신가요?"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:104
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:160
 msgid "Needs attention"
 msgstr ""
 
@@ -21549,7 +21686,7 @@ msgid "New"
 msgstr "새로운"
 
 #. Small badge on a new or recently added app navigation item.
-#: src/features/app/components/layout/GuildsLayout.tsx:136
+#: src/features/app/components/layout/GuildsLayout.tsx:141
 msgctxt "navigation-badge"
 msgid "New"
 msgstr "신규"
@@ -21699,6 +21836,10 @@ msgstr "다음"
 msgid "Next attachment"
 msgstr "다음 첨부 파일"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:92
+msgid "Next step"
+msgstr ""
+
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #. Short label in the base change nickname modal. Keep it concise.
 #. Short label in the rename channel modal. Keep it concise.
@@ -21831,7 +21972,7 @@ msgstr "저장한 메시지 없음"
 msgid "No bot banner"
 msgstr "봇 배너 없음"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:579
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:744
 msgid "No call is active right now."
 msgstr ""
 
@@ -22113,7 +22254,7 @@ msgid "No preview yet"
 msgstr "미리보기 없음"
 
 #. Empty-state text in the notifications.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:26
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:28
 msgid "No push subscriptions registered yet."
 msgstr "아직 푸시 알림을 구독하지 않았습니다."
 
@@ -22198,7 +22339,7 @@ msgstr "Linux 화면 공유 포털에서 반환된 화면 또는 창이 없습�
 msgid "No search results"
 msgstr "검색 결과 없음"
 
-#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:253
+#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:255
 #: src/features/app/components/dialogs/components/DesktopSettingsView.tsx:549
 msgid "No settings found"
 msgstr "설정 없음"
@@ -22293,7 +22434,7 @@ msgstr "신뢰할 수 있는 도메인 없음"
 msgid "No unread messages"
 msgstr "읽지 않은 메시지 없음"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:805
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1115
 msgid "No update found"
 msgstr ""
 
@@ -22409,7 +22550,7 @@ msgstr "채널 가입 기간 부족"
 msgid "Not available"
 msgstr "사용 불가"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:642
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:807
 msgid "Not checked yet."
 msgstr ""
 
@@ -22434,6 +22575,7 @@ msgstr "마음에 들지 않으세요? 언제든지 끌 수 있습니다."
 #: src/features/app/components/dialogs/components/plutonium/SubscriptionCard.tsx:58
 #: src/features/app/components/layout/app_layout/nagbars/VoiceSessionRestoreNagbar.tsx:35
 #: src/features/auth/state/NewDeviceMonitoring.tsx:31
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:457
 msgid "Not now"
 msgstr "나중에"
 
@@ -22448,7 +22590,7 @@ msgstr "친구 목록에 없음"
 msgid "support.permission.not_requested"
 msgstr ""
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:126
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:182
 msgid "Not required"
 msgstr ""
 
@@ -22485,6 +22627,10 @@ msgstr "없음"
 msgid "Nothing"
 msgstr "없음"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:988
+msgid "Nothing is sent automatically. Private support opens a DM; shared feedback is visible to pilot members."
+msgstr ""
+
 #: src/features/channel/components/bottomsheets/ChannelSearchBottomSheet.tsx:587
 msgid "Nothing matches"
 msgstr "일치하는 항목 없음"
@@ -22518,6 +22664,10 @@ msgstr "읽지 않은 멘션 수를 다양한 크기로 표시하는 알림 배�
 msgid "Notification overrides"
 msgstr "알림 설정 변경"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:341
+msgid "Notification preset"
+msgstr ""
+
 #. Submenu / section header that groups per-channel or per-community notification preferences.
 #: src/features/i18n/utils/CommonMessageDescriptors.ts:330
 msgid "Notification settings"
@@ -22550,12 +22700,12 @@ msgid "Notifications"
 msgstr "알림"
 
 #. User settings tab for notification and alert sound controls.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:133
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:138
 msgctxt "user-settings-tab"
 msgid "Notifications"
 msgstr "알림"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:706
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:871
 msgid "Notifications are missing"
 msgstr ""
 
@@ -22703,7 +22853,7 @@ msgstr "첨부파일 중 일부를 읽거나 업로드할 수 없습니다. 파�
 msgid "One or more files you're trying to upload exceed the maximum size limit of {maxSizeFormatted} per file."
 msgstr "업로드하려는 파일 중 하나 이상이 파일당 최대 크기인 {maxSizeFormatted}을(를) 초과합니다."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:497
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:662
 msgid "One or more items may need your attention."
 msgstr ""
 
@@ -23009,6 +23159,7 @@ msgstr "색상 선택기 열기"
 
 #. Button label in the Discovery community preview modal shown when the user is already a member.
 #: src/features/discovery/components/modals/DiscoveryGuildPreviewModal.tsx:26
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:431
 msgid "Open community"
 msgstr "커뮤니티 열기"
 
@@ -23188,6 +23339,10 @@ msgstr "오버레이 열기"
 msgid "Open popup"
 msgstr "팝업 열기"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:295
+msgid "Open profile"
+msgstr ""
+
 #. Accessible label for the avatar button in the channel header of a DM. Opens the recipient user profile.
 #: src/features/channel/components/channel_header/shared.ts:18
 msgid "Open profile for {directMessageName}"
@@ -23354,6 +23509,11 @@ msgstr "Cisco Systems, Inc.에서 제공하는 OpenH264 비디오 코덱."
 #: src/features/app/components/dialogs/components/DesktopGuildSettingsView.tsx:66
 msgid "Opens the Members page. Press Space or Enter to open."
 msgstr "멤버 페이지를 엽니다. 열려면 스페이스바 또는 Enter 키를 누르세요."
+
+#. placeholder {0}: config.operator_name
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:251
+msgid "Operated by {0}."
+msgstr ""
 
 #. Short label in the language tab. Keep it concise.
 #. Spellcheck engine option in the textarea spellcheck submenu. Uses the host operating system spellchecker.
@@ -24505,6 +24665,7 @@ msgstr "SSO를 사용하시겠어요? {ssoDisplayName}으로 계속하세요."
 
 #. macOS app menu submenu title. Keep "Preferences" to match the macOS HIG; in-app surfaces still use "settings".
 #: src/features/platform/utils/DesktopLocaleBridge.ts:25
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:380
 msgid "Preferences"
 msgstr "환경설정"
 
@@ -24574,6 +24735,14 @@ msgstr "프리미엄 유형"
 #: src/features/channel/components/channel_header_components/developer_tools/DeveloperOptionLabels.ts:157
 msgid "Premium until date"
 msgstr "~까지 프리미엄"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:942
+msgid "Prepare a clear report. You review it before anything is posted."
+msgstr ""
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1013
+msgid "Prepare shared feedback"
+msgstr ""
 
 #. Setup wizard title while the instance configuration loads.
 #: src/features/app/components/setup/SetupWizardSteps.tsx:72
@@ -24648,7 +24817,7 @@ msgstr "미리보기 버튼"
 msgid "Preview camera"
 msgstr "카메라 미리보기"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:893
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1203
 msgid "Preview diagnostics"
 msgstr ""
 
@@ -24807,7 +24976,7 @@ msgstr "우선 발언권"
 #. User settings tab for privacy and safety controls.
 #: src/features/user/components/modals/tabs/advanced_settings_tab/AdvancedSettingsCategories.ts:12
 #: src/features/user/components/settings_utils/section_registry/PrivacySafetySections.ts:60
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:104
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:109
 msgid "Privacy"
 msgstr "개인정보 보호"
 
@@ -24846,6 +25015,10 @@ msgstr "개인 정보 침해 또는 신상 털이"
 msgid "Privacy violation or stalking"
 msgstr "사생활 침해 또는 스토킹"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:241
+msgid "Private community setup"
+msgstr ""
+
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/section_registry/AppearanceSections.ts:222
 msgid "Private details"
@@ -24866,8 +25039,13 @@ msgstr "비밀 메시지"
 msgid "Pro tip:"
 msgstr "전문가 팁:"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:115
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:171
 msgid "Problem found"
+msgstr ""
+
+#. Short confirmation after a structured support report is copied.
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:84
+msgid "Problem report copied"
 msgstr ""
 
 #. Generic action label that confirms proceeding past a content warning or mature-content gate.
@@ -24887,7 +25065,7 @@ msgid "Product name"
 msgstr "제품 이름"
 
 #. User settings tab for editing the current user profile.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:92
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:93
 msgid "Profile"
 msgstr "프로필"
 
@@ -25131,7 +25309,7 @@ msgstr "구매함 {0}"
 #. Settings section label for managing purchased gift codes.
 #: src/features/user/components/modals/tabs/GiftInventoryTab.tsx:411
 #: src/features/user/components/settings_utils/search_index/GiftInventoryIndex.ts:38
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:14
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:18
 msgid "Purchased gifts"
 msgstr "구매한 선물"
 
@@ -25196,7 +25374,7 @@ msgid "Push subscription"
 msgstr "푸시 알림 구독"
 
 #. Label in the notifications.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:57
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:59
 msgid "Push subscriptions for this device"
 msgstr "이 기기의 푸시 알림 구독"
 
@@ -25336,9 +25514,15 @@ msgid "Quick switcher tabs"
 msgstr "빠른 전환 탭"
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:373
 #: src/features/user/components/settings_utils/section_registry/NotificationsSections.ts:187
 msgid "Quiet"
 msgstr "조용히"
+
+#. Notification setting that suppresses notifications during a daily local-time window.
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:84
+msgid "Quiet hours"
+msgstr ""
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/DesktopSettingsIndex.ts:274
@@ -25472,12 +25656,17 @@ msgstr "커뮤니티의 변경 및 관리 활동 기록을 읽습니다."
 msgid "Read the documentation ({domain})"
 msgstr "문서 읽기({domain})"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:420
+msgid "Read the welcome information and community rules, then find the important channels."
+msgstr ""
+
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/section_registry/AccessibilitySections.ts:163
 msgid "Reading speed"
 msgstr "읽기 속도"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:93
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:78
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:149
 msgid "Ready"
 msgstr ""
 
@@ -25639,7 +25828,7 @@ msgstr "사용하기"
 #. Settings section label for redeeming a gift code.
 #: src/features/user/components/modals/tabs/GiftInventoryTab.tsx:362
 #: src/features/user/components/settings_utils/search_index/GiftInventoryIndex.ts:10
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:10
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:14
 msgid "Redeem a gift"
 msgstr "선물 사용하기"
 
@@ -25738,7 +25927,7 @@ msgid "Refresh audio sources"
 msgstr "오디오 소스 새로고침"
 
 #. Short label in the notifications. Keep it concise.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:66
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:68
 msgid "Refresh push subscription"
 msgstr "푸시 알림 구독 새로고침"
 
@@ -25846,7 +26035,7 @@ msgstr "관계"
 msgid "Relative"
 msgstr "상대적"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:755
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1065
 msgid "Release channel"
 msgstr ""
 
@@ -25857,7 +26046,7 @@ msgstr ""
 msgid "Release delay"
 msgstr "지연 시간"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:717
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1027
 msgid "Release identity helps support confirm exactly which client you are using."
 msgstr ""
 
@@ -25928,6 +26117,10 @@ msgstr "창 기억하기"
 #: src/features/user/components/modals/tabs/DesktopSettingsTab.tsx:165
 msgid "Remember window size and position"
 msgstr "창 크기 및 위치 기억"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:983
+msgid "Remind me to attach a screenshot before sending"
+msgstr ""
 
 #. Action label for removing the selected item from a list or relationship.
 #. Action label for removing the selected item from a list or relationship.
@@ -26479,6 +26672,12 @@ msgstr "메시지 신고하기"
 #: src/features/moderation/components/report_modal/IARModalCopy.ts:110
 msgid "Report a platform rule violation"
 msgstr "플랫폼 정책 위반 신고"
+
+#. Support Center section for preparing a structured problem report.
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:941
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:94
+msgid "Report a problem or share feedback"
+msgstr ""
 
 #. IAR modal: screen-reader description for the whole modal.
 #: src/features/moderation/components/report_modal/IARModalCopy.ts:467
@@ -27143,12 +27342,16 @@ msgstr "검토 및 확인"
 msgid "Review apps that can access your account."
 msgstr "계정에 액세스할 수 있는 앱을 검토하세요."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:707
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:872
 msgid "Review desktop, push, sound, and mention settings."
 msgstr ""
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:695
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:860
 msgid "Review display, motion, accessibility, and performance settings."
+msgstr ""
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:907
+msgid "Review known issues, recovery progress, and planned maintenance."
 msgstr ""
 
 #. Settings row description for reviewing macOS permissions.
@@ -27160,6 +27363,10 @@ msgstr "마이크, 카메라, 화면 녹화 및 입력 모니터링 접근 권�
 #: src/features/user/components/settings_utils/search_index/PlutoniumIndex.ts:120
 msgid "Review past purchases and refund options"
 msgstr "이전 구매 내역 및 환불 옵션 검토"
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:320
+msgid "Review security"
+msgstr ""
 
 #. Security settings row description for linked devices.
 #: src/features/user/components/modals/tabs/account_security_tab/SecurityTab.tsx:69
@@ -27189,6 +27396,10 @@ msgstr "계속하기 전에 이 앱이 요청하는 권한을 검토하세요."
 #: src/features/app/components/setup/SetupWizardSteps.tsx:331
 msgid "Review your choices below, then finish. This saves the configuration and opens the instance."
 msgstr "아래 선택 사항을 검토한 후 완료하세요. 이렇게 하면 구성이 저장되고 인스턴스가 열립니다."
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:310
+msgid "Review your password, multi-factor authentication, recovery codes, and signed-in devices."
+msgstr ""
 
 #. Short label in the group invites bottom sheet. Keep it concise.
 #. Short label in the group invites modal. Keep it concise.
@@ -27421,11 +27632,11 @@ msgstr "페이지당 행 수"
 msgid "Run {productName} automatically when your computer starts"
 msgstr "컴퓨터 시작 시 {productName} 자동 실행"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:502
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:667
 msgid "Run a check to see your setup status."
 msgstr ""
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:523
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:688
 msgid "Run again"
 msgstr ""
 
@@ -27439,7 +27650,7 @@ msgstr "로그인 시 실행"
 msgid "Run the instance as one community instead of many. This can only be enabled now, during setup."
 msgstr "하나의 커뮤니티로 인스턴스를 실행합니다. 여러 커뮤니티로 나누지 않습니다. 설정 중에만 활성화할 수 있습니다."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:501
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:666
 msgid "Running a fresh check now."
 msgstr ""
 
@@ -28242,6 +28453,7 @@ msgstr "비밀 및 토큰"
 #. Short label in the authentication email revert page. Keep the tone plain and specific.
 #: src/features/auth/components/pages/EmailRevertPage.tsx:18
 #: src/features/auth/components/pages/EmailRevertPage.tsx:68
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:308
 msgid "Secure your account"
 msgstr "계정 보안 강화"
 
@@ -28299,6 +28511,10 @@ msgstr "이 커뮤니티의 채널 멤버 목록을 확인하세요."
 #: src/features/permissions/utils/PermissionLabelDescriptors.ts:128
 msgid "See the member list for this channel."
 msgstr "이 채널의 멤버 목록을 확인하세요."
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:889
+msgid "See whether a service is unavailable or recovering."
+msgstr ""
 
 #. Settings search synonym. Used to match this term when the user types it in the settings search bar.
 #: src/features/user/components/settings_utils/search_index/AccessibilityIndex.ts:121
@@ -28828,6 +29044,14 @@ msgstr "토큰 파일 제공"
 msgid "Service error"
 msgstr "서비스 오류"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:888
+msgid "Service status"
+msgstr ""
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:904
+msgid "Service updates"
+msgstr ""
+
 #. Section heading in the voice connection status popout for current call/session debug stats.
 #: src/features/voice/components/voice_connection_status/shared.ts:64
 msgid "Session"
@@ -29136,6 +29360,10 @@ msgstr "인증 앱 설정"
 msgid "Setup key"
 msgstr "설정 키"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:259
+msgid "Setup progress: {progressPercent}%"
+msgstr ""
+
 #. Label in the channel and chat typing users.
 #: src/features/channel/components/TypingUsers.tsx:21
 msgid "Several people are typing..."
@@ -29331,7 +29559,7 @@ msgstr "단축키 충돌"
 #. User settings tab for keyboard shortcuts and custom bindings.
 #: src/features/user/components/settings_utils/search_index/KeybindsIndex.ts:18
 #: src/features/user/components/settings_utils/section_registry/AccessibilitySections.ts:175
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:129
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:134
 msgid "Shortcuts"
 msgstr "단축키"
 
@@ -29924,7 +30152,7 @@ msgstr "로그인됨"
 
 #. Settings section label for account sessions and devices.
 #: src/features/user/components/modals/tabs/DevicesTab.tsx:515
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:42
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:46
 msgid "Signed-in devices"
 msgstr "로그인된 기기"
 
@@ -29954,6 +30182,11 @@ msgstr "로그아웃하면 이 기기에서 계정이 삭제됩니다."
 #: src/features/user/components/settings_utils/section_registry/NotificationsSections.ts:183
 msgid "Silence"
 msgstr "알림 끄기"
+
+#. Description of device-local notification quiet hours.
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:88
+msgid "Silence notification banners and sounds on this device during a daily window. Unread indicators remain."
+msgstr ""
 
 #. Short label in the accessibility tab. Keep it concise.
 #: src/features/user/components/modals/tabs/AccessibilityTab.tsx:66
@@ -30350,6 +30583,10 @@ msgstr "누군가"
 msgid "something"
 msgstr "무언가"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:360
+msgid "Something else"
+msgstr ""
+
 #. Generic error modal title for an unexpected failure.
 #. Generic error toast title.
 #: src/features/auth/flow/HandoffApprovalFlow.tsx:263
@@ -30743,7 +30980,7 @@ msgstr "맞춤법 검사"
 #: src/features/user/components/modals/tabs/LanguageTab.tsx:413
 #: src/features/user/components/modals/tabs/LanguageTab.tsx:455
 #: src/features/user/components/settings_utils/search_index/LanguageIndex.ts:74
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:58
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:62
 msgid "Spellcheck"
 msgstr "맞춤법 검사"
 
@@ -30905,6 +31142,10 @@ msgstr "로그인할 때 {appName} 자동 시작."
 msgid "Start a call in a DM or group"
 msgstr "DM 또는 그룹에서 통화 시작"
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:920
+msgid "Start a direct message with the operator. Nothing is sent automatically."
+msgstr ""
+
 #. Keyboard shortcut action label shown in the shortcuts list and keybind editor. Keep short, sentence case.
 #: src/features/input/state/input_keybind/shared.ts:149
 msgid "Start a group DM"
@@ -30968,6 +31209,11 @@ msgstr "녹음 시작"
 #: src/features/search/components/quick_switcher/QuickSwitcherModal.tsx:610
 msgid "Start searches with <0>{peoplePrefix}</0> <1>{textChannelPrefix}</1> <2>{voiceChannelPrefix}</2> <3>{communityPrefix}</3> to narrow down results."
 msgstr "검색을 시작할 때 <0>{peoplePrefix}</0>, <1>{textChannelPrefix}</1>, <2>{voiceChannelPrefix}</2>, <3>{communityPrefix}</3>을 사용하여 검색 범위를 좁힐 수 있습니다."
+
+#. Label for the beginning of notification quiet hours.
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:92
+msgid "Start time"
+msgstr ""
 
 #. Settings search entry description. One-line summary of what the settings search entry controls.
 #: src/features/user/components/settings_utils/search_index/ChatSettingsIndex.ts:151
@@ -31059,6 +31305,10 @@ msgstr "3단계"
 #: src/features/moderation/components/report/ReportStepDetails.tsx:125
 msgid "Step 4"
 msgstr "4단계"
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:266
+msgid "steps ready"
+msgstr ""
 
 #. Label for the has:sticker filter option in the mobile channel search sheet.
 #. Screen-reader fragment listing one sticker on a message. Lowercase because it appears inside a longer sentence.
@@ -31164,7 +31414,7 @@ msgstr "스티커팩 한도에 도달했습니다"
 #. Short label in the expression packs tab. Keep it concise.
 #: src/features/user/components/modals/tabs/ExpressionPacksTab.tsx:84
 #: src/features/user/components/settings_utils/search_index/ExpressionPacksIndex.ts:27
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:22
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:26
 msgid "Sticker packs"
 msgstr "스티커 팩"
 
@@ -31508,16 +31758,16 @@ msgid "Summary"
 msgstr "요약"
 
 #. User settings tab for troubleshooting, diagnostics, version information, and updates.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:150
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:155
 msgid "Support"
 msgstr ""
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:471
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:636
 msgid "Support center"
 msgstr ""
 
 #. Toast-like button state after the support summary is copied.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:65
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:79
 msgid "Support summary copied"
 msgstr ""
 
@@ -31829,7 +32079,7 @@ msgid "Syntax highlighting"
 msgstr "구문 강조"
 
 #: src/features/channel/components/ChannelUserTag.tsx:27
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:783
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1093
 msgid "System"
 msgstr "시스템"
 
@@ -32071,12 +32321,16 @@ msgstr "이용 약관 URL"
 msgid "Terrorism or violent extremism"
 msgstr "테러 또는 폭력적 극단주의"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:592
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:757
 msgid "Test audio"
 msgstr ""
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:622
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:787
 msgid "Test camera"
+msgstr ""
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:333
+msgid "Test notifications"
 msgstr ""
 
 #. Button that validates SMTP credentials.
@@ -32294,7 +32548,7 @@ msgstr "앱이 비정상적으로 종료되었습니다"
 msgid "The app has crashed. Checking for updates that might fix this issue…"
 msgstr "앱이 충돌했습니다. 이 문제를 해결할 수 있는 업데이트를 확인하는 중…"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:694
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:859
 msgid "The app looks or feels wrong"
 msgstr ""
 
@@ -32343,7 +32597,7 @@ msgstr "다운로드한 파일이 컴퓨터에 저장됩니다. 일반 패키지
 msgid "The file contains the verification token we will fetch from <0>{dnsUrl}</0>."
 msgstr "파일에 <0>{dnsUrl}</0>에서 가져올 인증 토큰이 포함되어 있습니다."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:859
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1169
 msgid "The file includes versions, operating system, service-check results, permission states, and device counts. It does not include passwords, tokens, cookies, messages, attachments, account IDs, community or channel names, participant identities, device IDs, or raw server responses."
 msgstr ""
 
@@ -32365,7 +32619,7 @@ msgstr "대부분의 커뮤니티 구성원이 사용하는 언어입니다. 둘
 msgid "The link may still work. Try again in a moment."
 msgstr "링크가 여전히 유효할 수 있습니다. 잠시 후에 다시 시도해 주세요."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:555
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:720
 msgid "The live message connection is not ready."
 msgstr ""
 
@@ -33459,7 +33713,7 @@ msgstr "시간"
 #. Settings section label for app time display format.
 #: src/features/user/components/modals/tabs/LanguageTab.tsx:373
 #: src/features/user/components/settings_utils/search_index/LanguageIndex.ts:26
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:46
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:50
 msgid "Time format"
 msgstr "시간 형식"
 
@@ -34056,7 +34310,7 @@ msgstr "메시지 수정을 다시 시도해 주세요."
 msgid "TRY gifts are one-time payments. Cards charged in TRY still need to be issued in Türkiye for the purchase to stay eligible."
 msgstr "TRY 선물은 일회성 결제입니다. 구매 자격을 유지하려면 TRY로 청구된 카드라도 터키에서 발급되어야 합니다."
 
-#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:256
+#: src/features/app/components/dialogs/components/AllSettingsRenderer.tsx:258
 msgid "Try searching for something like \"theme\", \"notifications\", or \"privacy\""
 msgstr "\"테마\", \"알림\", \"개인 정보 보호\" 등으로 검색해 보세요"
 
@@ -34590,7 +34844,7 @@ msgstr "미리 보기"
 
 #. Settings section label for the embed debugger URL input.
 #: src/features/user/components/modals/tabs/EmbedDebuggerTab.tsx:226
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:70
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:74
 msgid "Unfurl debugger"
 msgstr "임베드 디버거 URL 입력란 설정 섹션 레이블"
 
@@ -34664,7 +34918,7 @@ msgstr "알 수 없는 날짜"
 #. Short label in the notifications. Keep it concise.
 #: src/features/app/components/layout/VoiceParticipantItem.tsx:43
 #: src/features/user/components/modals/tabs/DevicesTab.tsx:66
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:78
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:80
 msgid "Unknown device"
 msgstr "알 수 없는 기기"
 
@@ -35154,7 +35408,7 @@ msgstr "최대 4K/60fps"
 
 #. Confirm button label on the reschedule scheduled-message alert.
 #: src/features/channel/components/channel_textarea/shared.ts:28
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:831
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1141
 msgid "Update"
 msgstr "업데이트"
 
@@ -35168,7 +35422,7 @@ msgstr "이 메시지를 보려면 {productName}을(를) 업데이트하세요."
 msgid "Update app"
 msgstr "앱 업데이트"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:805
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1115
 msgid "Update available"
 msgstr ""
 
@@ -35186,7 +35440,7 @@ msgstr "내 상태 업데이트"
 msgid "Update service worker"
 msgstr "서비스 워커 업데이트"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:799
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1109
 msgid "Update status"
 msgstr ""
 
@@ -35295,7 +35549,7 @@ msgstr "웹훅 아바타를 업데이트했습니다."
 msgid "Updater state"
 msgstr "업데이터 상태"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:635
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:800
 msgid "Updates"
 msgstr ""
 
@@ -36014,7 +36268,7 @@ msgid "User record"
 msgstr "사용자 기록"
 
 #. Root label for the current user settings modal and settings search paths.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:363
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:375
 msgid "User settings"
 msgstr "사용자 설정"
 
@@ -36104,9 +36358,13 @@ msgid "Uses"
 msgstr "사용 중"
 
 #. Label in the notifications.
-#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:38
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:40
 msgid "Uses the OS notification center. For per-channel/per-community controls, right-click a community icon and open notification settings."
 msgstr "OS 알림 센터를 사용합니다. 채널/커뮤니티별 설정은 커뮤니티 아이콘을 마우스 오른쪽 버튼으로 클릭하여 알림 설정을 여세요."
+
+#: src/features/user/components/modals/tabs/notifications_tab/Notifications.tsx:228
+msgid "Uses this device’s local time. Matching start and end times means all day."
+msgstr ""
 
 #: src/features/invite/components/InviteListItem.tsx:232
 msgid "Uses:"
@@ -36466,8 +36724,8 @@ msgid "support.update.available"
 msgstr ""
 
 #. Support Center section showing release identity and update controls.
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:716
-#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:86
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1026
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:98
 msgid "Version & updates"
 msgstr ""
 
@@ -36755,7 +37013,7 @@ msgid "View help article"
 msgstr "도움말 보기"
 
 #. Button on the connection banner when an incident is ongoing. Opens that incident on the status page.
-#: src/features/app/hooks/useConnectionNotice.ts:47
+#: src/features/app/hooks/useConnectionNotice.ts:58
 msgid "View incident details"
 msgstr "사고 세부 정보 보기"
 
@@ -36765,7 +37023,7 @@ msgid "View incoming call"
 msgstr "수신 전화 보기"
 
 #. Button on the connection banner when maintenance is ongoing. Opens that maintenance on the status page.
-#: src/features/app/hooks/useConnectionNotice.ts:51
+#: src/features/app/hooks/useConnectionNotice.ts:62
 msgid "View maintenance details"
 msgstr "점검 상세 보기"
 
@@ -36807,7 +37065,7 @@ msgid "View reactions"
 msgstr "이모티콘 반응 보기"
 
 #. Button on the connection banner. Opens the external service status page.
-#: src/features/app/hooks/useConnectionNotice.ts:43
+#: src/features/app/hooks/useConnectionNotice.ts:54
 msgid "View status page"
 msgstr "상태 페이지 보기"
 
@@ -36955,7 +37213,7 @@ msgstr "음성 (성인용)"
 
 #. User settings tab for microphone, speaker, camera, and call stats.
 #. User settings tab for microphone, speaker, camera, and call stats.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:125
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:130
 #: src/features/voice/utils/VoiceMessageDescriptors.ts:30
 msgid "Voice & video"
 msgstr "오디오 및 비디오"
@@ -37090,7 +37348,7 @@ msgstr "음성 연결 끊김"
 msgid "Voice entrance sound"
 msgstr "음성 입장음"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:572
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:737
 msgid "Voice is disabled on this instance."
 msgstr ""
 
@@ -37119,6 +37377,10 @@ msgstr "음성 메시지 플레이어"
 #: src/features/notification/utils/SoundLabels.ts:16
 msgid "Voice mute"
 msgstr "음성 끄기"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:357
+msgid "Voice or video problem"
+msgstr ""
 
 #. Aria label on the voice participants avatar list container.
 #: src/features/voice/components/VoiceParticipantAvatarList.tsx:39
@@ -37154,7 +37416,7 @@ msgstr "이 브라우저에서는 음성 녹음을 지원하지 않습니다."
 msgid "Voice region"
 msgstr "음성 지역"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:569
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:734
 msgid "Voice service"
 msgstr ""
 
@@ -37355,6 +37617,11 @@ msgstr "지금은 메시지를 전달할 수 없습니다."
 msgid "We couldn't import that theme library file."
 msgstr "테마 라이브러리 파일을 가져올 수 없습니다."
 
+#. Support Center error shown when creating or opening the configured operator DM fails.
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:94
+msgid "We couldn't open private support yet. Check your connection and try again."
+msgstr ""
+
 #: src/features/messaging/components/alerts/AttachmentUploadConnectivityModal.tsx:23
 msgid "We couldn't reach the attachment upload service. {PRODUCT_NAME} can fall back to the standard upload path for messages up to {fallbackSizeFormatted} total, but these attachments exceed that combined limit and can't be sent until connectivity is restored. Try again later or contact <0>{SUPPORT_EMAIL}</0> if this keeps happening."
 msgstr "첨부 파일 업로드 서비스에 연결할 수 없습니다. {PRODUCT_NAME}은(는) 총 {fallbackSizeFormatted}까지의 메시지에 대해 표준 업로드 경로로 대체할 수 있지만, 이 첨부 파일은 해당 결합된 한도를 초과하여 연결이 복원될 때까지 보낼 수 없습니다. 나중에 다시 시도하거나 문제가 계속 발생하면 <0>{SUPPORT_EMAIL}</0>으로 문의하세요."
@@ -37374,12 +37641,17 @@ msgstr "테마를 읽을 수 없습니다. 파일이 손상되었거나 유효�
 msgid "We couldn't remove that account. Try again."
 msgstr "계정을 삭제할 수 없습니다. 다시 시도해 주세요."
 
+#. Getting Started error shown when synced onboarding progress could not be saved.
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:57
+msgid "We couldn't save that yet. Check your connection and try again."
+msgstr ""
+
 #. Modal body for existing-subscription block. Directs the user to the billing portal and addresses the just-paid race case. Keep plain and reassuring.
 #: src/features/app/components/dialogs/components/plutonium/hooks/useCheckoutActions.tsx:130
 msgid "We found an existing {premiumProductFullName} subscription for this account. Manage it in the secure billing portal to update payment details or check renewal status. If you just paid, wait a minute and reopen this page."
 msgstr "이 계정에 기존 {premiumProductFullName} 구독이 있습니다. 결제 정보를 업데이트하거나 갱신 상태를 확인하려면 보안 결제 포털에서 관리하세요. 방금 결제했다면 잠시 기다렸다가 이 페이지를 다시 여세요."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:499
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:664
 msgid "We found something that may stop the app working correctly."
 msgstr ""
 
@@ -37521,7 +37793,7 @@ msgstr "웹 {buildVersion}"
 msgid "Web authentication"
 msgstr "웹 인증"
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:741
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1051
 msgid "Web build"
 msgstr ""
 
@@ -37628,6 +37900,11 @@ msgstr "다시 오신 것을 환영합니다"
 msgid "Welcome in, {username}!"
 msgstr "{username}님, 환영합니다!"
 
+#. placeholder {0}: RuntimeConfig.productName
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:244
+msgid "Welcome to {0}"
+msgstr ""
+
 #: src/features/channel/components/ChannelWelcomeSection.tsx:53
 msgid "Welcome to {channelDisplayName}"
 msgstr "{channelDisplayName}에 오신 것을 환영합니다"
@@ -37705,10 +37982,18 @@ msgstr "{username}님, 환영합니다! 여기서 새로운 대화를 시작해 
 msgid "Welcome, {username}. We're happy to have you here."
 msgstr "{username}님, 환영합니다! 함께하게 되어 기쁩니다."
 
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:971
+msgid "What did you expect? (optional)"
+msgstr ""
+
 #. IAR modal: accessible label (aria-label only — not shown visually) for the primary-path radio group on step 1.
 #: src/features/moderation/components/report_modal/IARModalCopy.ts:36
 msgid "What do you need?"
 msgstr "무엇을 도와드릴까요?"
+
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:961
+msgid "What happened?"
+msgstr ""
 
 #. IAR modal: category-step title for the platform-report path. User picks a broad area before drilling in.
 #: src/features/moderation/components/report_modal/IARModalCopy.ts:49
@@ -37936,7 +38221,7 @@ msgid "Window state"
 msgstr "창 상태"
 
 #. User settings tab label shown on Windows desktop builds. Refers to the Microsoft Windows OS.
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:75
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:76
 msgid "Windows app"
 msgstr "Windows 앱"
 
@@ -38095,7 +38380,7 @@ msgstr "커뮤니티 소유권을 <0>{0}</0>님에게 이전합니다. 이 작�
 msgid "You are banned from this community and cannot join."
 msgstr "이 커뮤니티에서 차단되어 참여할 수 없습니다."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:577
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:742
 msgid "You are connected to a call."
 msgstr ""
 
@@ -38194,6 +38479,10 @@ msgstr "{cooldownEndsOn} 이후에 다시 환불할 수 있습니다. 결제 관
 #: src/features/guild/components/modals/guild_tabs/guild_overview_tab/sections/MessageHistoryThresholdContent.tsx:86
 msgid "You can remove the <0>{readMessageHistoryPermissionLabel}</0> permission from the <1>{EVERYONE_MENTION}</1> role in <2>{rolesSettingsPath}</2> and grant it to one or more trusted roles instead."
 msgstr "<2>{rolesSettingsPath}</2>에서 <1>{EVERYONE_MENTION}</1> 역할의 <0>{readMessageHistoryPermissionLabel}</0> 권한을 제거하고, 대신 신뢰할 수 있는 역할에 부여할 수 있습니다."
+
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:447
+msgid "You can reopen Getting Started from Settings at any time."
+msgstr ""
 
 #: src/features/app/components/dialogs/components/LogoutModal.tsx:26
 msgid "You can sign back in at any time."
@@ -38662,7 +38951,7 @@ msgstr "이 커뮤니티에서 메시지를 보내려면 이메일 인증이 필
 msgid "You or someone you're adding already has the maximum number of group DMs open. Leave one and try again."
 msgstr "회원님 또는 추가하려는 상대방이 이미 최대 그룹 DM 수를 열었습니다. 그룹 DM 중 하나를 나가고 다시 시도해 주세요."
 
-#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:856
+#: src/features/user/components/modals/tabs/support_center_tab/SupportCenterTab.tsx:1166
 msgid "You stay in control"
 msgstr ""
 
@@ -38856,6 +39145,10 @@ msgstr "이전 요금제를 사용 중이십니다. 현재 이 플랜의 가격�
 msgid "You're on timeout in this community"
 msgstr "이 커뮤니티에서 활동이 제한되었습니다"
 
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:445
+msgid "You’re ready"
+msgstr ""
+
 #. Label in the message send too quick modal.
 #: src/features/messaging/components/alerts/MessageSendTooQuickModal.tsx:8
 msgid "You're sending messages too quickly"
@@ -38979,7 +39272,7 @@ msgstr "{premiumProductName} 구독이 만료되었습니다. 모든 {premiumPro
 msgid "Your {productName} session expired. Sign in again to continue authorizing this application."
 msgstr "{productName} 세션이 만료되었습니다. 이 애플리케이션의 인증을 계속하려면 다시 로그인하세요."
 
-#: src/features/user/components/settings_utils/SettingsConstants.tsx:210
+#: src/features/user/components/settings_utils/SettingsConstants.tsx:215
 msgid "Your account"
 msgstr "내 계정"
 
@@ -39245,6 +39538,12 @@ msgstr "회원님의 지역"
 #: src/features/auth/components/modals/required_action/RequiredActionDescriptors.ts:61
 msgid "Your registration needs an extra anti-spam check before you can continue."
 msgstr "계속하려면 추가 스팸 방지 확인이 필요합니다."
+
+#. Getting Started section containing the private community setup trail.
+#: src/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab.tsx:275
+#: src/features/user/components/settings_utils/section_registry/GeneralSettingsSections.ts:10
+msgid "Your setup checklist"
+msgstr ""
 
 #. Subtitle under the preview-paused overlay reassuring the user that the screen share is still live for others.
 #: src/features/voice/components/voice_participant_tile/shared.ts:61

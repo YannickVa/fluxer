@@ -12,6 +12,55 @@
 	gap: 1rem;
 }
 
+.quietHoursTimes {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 10rem));
+	gap: var(--spacing-3);
+	padding: var(--spacing-3);
+	background: var(--background-secondary);
+	border: 0.0625rem solid var(--border-color);
+	border-radius: 0.625rem;
+}
+
+.quietHoursTimes label {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-1-5);
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--text-secondary);
+}
+
+.quietHoursTimes input {
+	min-height: 2.25rem;
+	padding: 0 var(--spacing-2-5);
+	font: inherit;
+	font-weight: 500;
+	color: var(--text-primary);
+	color-scheme: dark;
+	background: var(--form-surface-background);
+	border: 0.0625rem solid var(--border-color);
+	border-radius: 0.5rem;
+}
+
+.quietHoursTimes p {
+	grid-column: 1 / -1;
+	margin: 0;
+	font-size: 0.75rem;
+	line-height: 1.4;
+	color: var(--text-tertiary);
+}
+
+@media (max-width: 30rem) {
+	.quietHoursTimes {
+		grid-template-columns: 1fr;
+	}
+
+	.quietHoursTimes p {
+		grid-column: 1;
+	}
+}
+
 .pushSection {
 	display: flex;
 	flex-direction: column;
