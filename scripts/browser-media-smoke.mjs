@@ -251,6 +251,21 @@ async function login(page, credentials, timeoutMs) {
 	await page.locator(FRIENDS_VIEW_SELECTOR).waitFor({state: 'visible', timeout: timeoutMs});
 }
 
+async function dismissPilotOnboardingIfVisible(page, timeoutMs) {
+	const dismissButton = page.getByRole('button', {name: /^not now$/i});
+	try {
+		await dismissButton.waitFor({state: 'visible', timeout: Math.min(5_000, timeoutMs)});
+	} catch {
+		return false;
+	}
+
+	await dismissButton.click();
+	await page
+		.locator('[data-flx="user.user-settings-modal.modal-root"]')
+		.waitFor({state: 'hidden', timeout: timeoutMs});
+	return true;
+}
+
 async function enableAudioPlaybackIfPrompted(page) {
 	const modal = page.locator('[data-flx="voice.audio-playback-permission-modal.confirm-modal"]');
 	if (await modal.isVisible().catch(() => false)) {
@@ -445,6 +460,15 @@ try {
 
 	await Promise.all([login(pageA, userA, timeoutMs), login(pageB, userB, timeoutMs)]);
 	pass('two isolated sessions authenticate');
+	const onboardingDismissed = await Promise.all([
+		dismissPilotOnboardingIfVisible(pageA, timeoutMs),
+		dismissPilotOnboardingIfVisible(pageB, timeoutMs),
+	]);
+	if (onboardingDismissed.some(Boolean)) {
+		pass('optional pilot onboarding can be dismissed without blocking voice access', {
+			sessionsDismissed: onboardingDismissed.filter(Boolean).length,
+		});
+	}
 
 	await Promise.all([
 		joinVoiceChannel(pageA, guildId, voiceChannelId, timeoutMs),
