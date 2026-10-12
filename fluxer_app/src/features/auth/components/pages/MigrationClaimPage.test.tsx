@@ -208,6 +208,7 @@ describe('Migration claim screen safety', () => {
 		await input('confirmation', 'Synthetic password! 492');
 		await submit();
 		expect(send).toHaveBeenCalledTimes(3);
+		expect(JSON.parse(send.mock.calls[2]![1]!.body as string).consent).toBe(false);
 		expect(container.textContent).toContain('Your account is ready');
 		expect(container.querySelector('input')).toBeNull();
 		expect(container.querySelector('a')?.getAttribute('href')).toBe('/login');

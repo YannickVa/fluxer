@@ -3,6 +3,7 @@
 import {buildNamedFluxerEnvOverrides} from '@fluxer/config/src/config_loader/EnvironmentOverrides';
 import {deriveEndpointsFromDomain} from '@fluxer/config/src/EndpointDerivation';
 import type {MasterConfig} from '@fluxer/config/src/MasterConfig';
+import {isMigrationRunId} from '@fluxer/config/src/MigrationTargetFingerprint';
 
 type ConfigObject = Record<string, unknown>;
 
@@ -396,11 +397,7 @@ function validateMigrationClaimConfig(config: MasterConfig): void {
 		throw new Error('Migration claiming requires a self-hosted PostgreSQL instance.');
 	if (typeof claim.instance_fingerprint !== 'string' || !/^[0-9a-f]{64}$/.test(claim.instance_fingerprint))
 		throw new Error('FLUXER_MIGRATION_CLAIM_INSTANCE_FINGERPRINT must be a SHA-256 digest.');
-	if (
-		typeof claim.migration_run_id !== 'string' ||
-		!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(claim.migration_run_id)
-	)
-		throw new Error('FLUXER_MIGRATION_CLAIM_RUN_ID must be a UUID.');
+	if (!isMigrationRunId(claim.migration_run_id)) throw new Error('FLUXER_MIGRATION_CLAIM_RUN_ID must be a UUID.');
 	if (
 		typeof claim.source_guild_id !== 'string' ||
 		!/^[1-9][0-9]{0,19}$/.test(claim.source_guild_id) ||

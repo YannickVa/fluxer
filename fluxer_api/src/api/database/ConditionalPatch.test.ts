@@ -198,14 +198,21 @@ describe('Conditional claim-write query primitive', () => {
 		expect(sql).toContain('UPDATE "synthetic_kv"');
 		expect(sql).toContain('row_data = row_data || $3::jsonb');
 		expect(sql).toContain('expires_at > now()');
-		expect(sql).toContain('IS DISTINCT FROM expected.value');
-		expect(sql).toContain('expected.value @>');
+		expect(sql).toContain('IS NOT DISTINCT FROM');
+		expect(sql).toContain('@>');
+		expect(sql).not.toContain('jsonb_each');
 		expect(sql).not.toContain('synthetic@example.com');
 		expect(JSON.parse(params[2]!)).toEqual({
 			email: 'synthetic@example.com',
 			dob: {__fluxer_type: 'local_date', value: '2000-02-29'},
 		});
-		expect(JSON.parse(params[3]!)).toEqual({
+		const expected = Object.fromEntries(
+			Array.from({length: (params.length - 3) / 2}, (_, index) => [
+				params[3 + index * 2],
+				JSON.parse(params[4 + index * 2]!),
+			]),
+		);
+		expect(expected).toEqual({
 			email: null,
 			version: 1,
 			traits: {__fluxer_type: 'set', value: ['bound', 'migrated']},

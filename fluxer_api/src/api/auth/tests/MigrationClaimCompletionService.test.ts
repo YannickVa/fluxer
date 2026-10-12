@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {ValidationErrorCodes} from '@fluxer/constants/src/ValidationErrorCodes';
 import {InputValidationError} from '@fluxer/errors/src/domains/core/InputValidationError';
 import {InvalidTokenError} from '@fluxer/errors/src/domains/core/InvalidTokenError';
 import {RateLimitError} from '@fluxer/errors/src/domains/core/RateLimitError';
@@ -397,6 +398,16 @@ describe('Restricted migrated-account claim completion', () => {
 		expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
 		expect(results.filter((result) => result.status === 'rejected')).toHaveLength(7);
 		expect((await api.services.users.findUniqueAssert(ID)).passwordHash).toBe('synthetic-race-hash');
+	});
+
+	it('reports a late email reservation conflict as terminal after consuming the proof', async () => {
+		const {data} = await prepared();
+		vi.spyOn(api.services.users, 'claimMigratedAccount').mockRejectedValue(
+			InputValidationError.fromCode('email', ValidationErrorCodes.EMAIL_ALREADY_IN_USE),
+		);
+		await expect(service.complete(data, request())).rejects.toBeInstanceOf(InvalidTokenError);
+		await expect(service.complete(data, request())).rejects.toBeInstanceOf(InvalidTokenError);
+		expect((await api.services.users.findUniqueAssert(ID)).passwordHash).toBeNull();
 	});
 
 	it('does not restore consumed proofs after an uncertain final write', async () => {

@@ -200,15 +200,22 @@ export class MigrationClaimCompletionService {
 		this.ttl(challenge.expiresAt);
 		await this.deps.authorize?.();
 		const now = new Date();
-		const claimed = await this.api.services.users.claimMigratedAccount(user.id, proof.discordUserId, {
-			authorize: this.deps.authorize,
-			expiresAt: new Date(Math.min(proof.expiresAt, challenge.expiresAt)),
-			email: challenge.email,
-			passwordHash,
-			dateOfBirth,
-			termsAgreedAt: termsRequired ? now : null,
-			privacyAgreedAt: privacyRequired ? now : null,
-		});
+		const claimed = await this.api.services.users
+			.claimMigratedAccount(user.id, proof.discordUserId, {
+				authorize: this.deps.authorize,
+				expiresAt: new Date(Math.min(proof.expiresAt, challenge.expiresAt)),
+				email: challenge.email,
+				passwordHash,
+				dateOfBirth,
+				termsAgreedAt: termsRequired ? now : null,
+				privacyAgreedAt: privacyRequired ? now : null,
+			})
+			.catch((error: unknown) => {
+				// Credentials are already consumed; a late email conflict cannot be retried
+				// with this proof. Send the terminal claim error instead of a form error.
+				if (error instanceof InputValidationError) throw new InvalidTokenError();
+				throw error;
+			});
 		return {user_id: claimed.id.toString(), login_required: true};
 	}
 

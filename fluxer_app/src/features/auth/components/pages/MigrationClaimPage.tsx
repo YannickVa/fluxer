@@ -149,7 +149,7 @@ const MigrationClaimPage = observer(function MigrationClaimPage() {
 						view.dateOfBirthRequired && form.year && form.month && form.day
 							? `${form.year.padStart(4, '0')}-${form.month.padStart(2, '0')}-${form.day.padStart(2, '0')}`
 							: undefined,
-					consent: !legal.requirement || form.consent,
+					consent: form.consent,
 				}),
 			);
 		}
