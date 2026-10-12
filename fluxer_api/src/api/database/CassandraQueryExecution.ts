@@ -101,7 +101,10 @@ export async function executeQuery<T = Record<string, unknown>, P extends Cassan
 		const rows = await collectSelectRows<T>(queryType, result);
 		if (getIsDev()) {
 			const durationMs = performance.now() - startTime;
-			logQuery(queryType, cql, bound as Record<string, unknown>, durationMs, rows.length);
+			// Conditional claim writes may bind credentials and birth dates. Keep their
+			// values out of developer query logs as well as production logs.
+			const logParams = typeof queryOrPrepared !== 'string' && queryOrPrepared.kvMeta?.conditions ? {} : bound;
+			logQuery(queryType, cql, logParams as Record<string, unknown>, durationMs, rows.length);
 		}
 		return rows;
 	} catch (err: unknown) {
@@ -230,6 +233,8 @@ interface BatchQuery {
 
 async function executeBatch(queries: Array<BatchQuery>, atomic = true): Promise<void> {
 	if (queries.length === 0) return;
+	if (queries.some(({meta}) => meta?.conditions))
+		throw new Error('Conditional patches must execute individually and inspect the applied result');
 	for (const {query} of queries) {
 		if (isUnsafePreparedStatement(query)) {
 			throw new Error('Cannot prepare a statement that looks like `SELECT *`');

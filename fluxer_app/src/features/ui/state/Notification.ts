@@ -413,6 +413,8 @@ class NotificationState {
 	}
 
 	handleMessageCreate({message}: {message: WireMessage}): boolean {
+		// Silent messages must also bypass the focused-channel sound fast path.
+		if ((message.flags & MessageFlags.SUPPRESS_NOTIFICATIONS) !== 0) return false;
 		if (StreamerMode.shouldDisableNotifications) {
 			return false;
 		}

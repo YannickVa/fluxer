@@ -91,11 +91,12 @@ export class InMemoryProvider extends ICacheService {
 	}
 
 	async getAndDelete<T>(key: string): Promise<T | null> {
-		const value = await this.get<T>(key);
-		if (value !== null) {
-			this.cache.delete(key);
-		}
-		return value;
+		// No await between observation and removal: concurrent callers must not both
+		// receive a one-time auth ticket, matching the production provider's GETDEL.
+		const entry = this.cache.get(key) as CacheEntry<T> | undefined;
+		if (!entry) return null;
+		this.cache.delete(key);
+		return this.isExpired(entry) ? null : entry.value;
 	}
 
 	async exists(key: string): Promise<boolean> {

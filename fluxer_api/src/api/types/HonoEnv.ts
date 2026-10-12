@@ -11,6 +11,7 @@ import type {AdminApiKeyService} from '../admin/services/AdminApiKeyService';
 import type {AdminArchiveService} from '../admin/services/AdminArchiveService';
 import type {AuthRequestService} from '../auth/AuthRequestService';
 import type {DesktopHandoffService} from '../auth/services/DesktopHandoffService';
+import type {MigrationClaimCompletionService} from '../auth/services/MigrationClaimCompletionService';
 import type {SsoService} from '../auth/services/SsoService';
 import type {ApplicationID, UserID} from '../BrandedTypes';
 import type {IBlueskyOAuthService} from '../bluesky/IBlueskyOAuthService';
@@ -113,6 +114,7 @@ export interface HonoEnv {
 		oauthBearerUserId?: UserID;
 		auditLogReason: string | null;
 		authRequestService: AuthRequestService;
+		migrationClaimCompletionService: MigrationClaimCompletionService;
 		ssoService: SsoService;
 		authSession: AuthSession;
 		desktopHandoffService: DesktopHandoffService;

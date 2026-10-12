@@ -153,6 +153,12 @@ export interface MasterConfig {
 		};
 	};
 	auth: {
+		migration_claim?: {
+			enabled: boolean;
+			instance_fingerprint: string;
+			migration_run_id: string;
+			source_guild_id: string;
+		};
 		sudo_mode_secret: string;
 		connection_initiation_secret: string;
 		sso_allow_private_addresses: boolean;

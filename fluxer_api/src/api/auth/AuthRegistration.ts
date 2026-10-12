@@ -13,7 +13,7 @@ import {getSameIpDecisionKey, getSubnet} from '@fluxer/ip_utils/src/IpAddress';
 import type {RegisterRequest} from '@fluxer/schema/src/domains/auth/AuthSchemas';
 import {parseAcceptLanguage} from '@pkgs/locale/src/LocaleService';
 import type {RateLimitResult} from '@pkgs/rate_limit/src/IRateLimitService';
-import {types} from 'cassandra-driver';
+import type {types} from 'cassandra-driver';
 import {ms} from 'itty-time';
 import type {ApiContext} from '../ApiContext';
 import {createEmailVerificationToken, createInviteCode, createUserID, type UserID} from '../BrandedTypes';
@@ -65,14 +65,6 @@ function throwRegistrationRateLimit(result: RateLimitResult): never {
 		limit: result.limit,
 		resetTime: result.resetTime,
 	});
-}
-
-function parseDobLocalDate(dateOfBirth: string): types.LocalDate {
-	try {
-		return types.LocalDate.fromString(dateOfBirth);
-	} catch {
-		throw InputValidationError.fromCode('date_of_birth', ValidationErrorCodes.INVALID_DATE_OF_BIRTH_FORMAT);
-	}
 }
 
 interface RegisterParams {
@@ -156,10 +148,7 @@ export async function register(
 			throw InputValidationError.fromCode('date_of_birth', ValidationErrorCodes.INVALID_DATE_OF_BIRTH_FORMAT);
 		}
 		const minAge = accountPolicyEvaluator.getMinimumAgeForRegion(countryCode, DEFAULT_MINIMUM_AGE);
-		if (!AuthUtility.validateAge(ctx, {dateOfBirth: dateOfBirthInput, minAge})) {
-			throw InputValidationError.fromCode('date_of_birth', ValidationErrorCodes.MUST_BE_MINIMUM_AGE, {minAge});
-		}
-		dateOfBirth = parseDobLocalDate(dateOfBirthInput);
+		dateOfBirth = AuthUtility.validateDateOfBirth(ctx, {dateOfBirth: dateOfBirthInput, minAge});
 		isAdult = AgeUtils.isUserAdult(dateOfBirthInput);
 	}
 	if (data.password && (await AuthPassword.isPasswordPwned(ctx, data.password))) {

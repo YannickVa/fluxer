@@ -4,6 +4,14 @@ import {ms} from 'itty-time';
 import type {RouteRateLimitConfig} from '../middleware/RateLimitMiddleware';
 
 export const AdminRateLimitConfigs = {
+	ADMIN_MIGRATION_CLAIM_ISSUE: {
+		bucket: 'admin:migration_claim:issue',
+		config: {limit: 10, windowMs: ms('1 minute')},
+	} as RouteRateLimitConfig,
+	ADMIN_MIGRATION_CLAIM_REVOKE: {
+		bucket: 'admin:migration_claim:revoke',
+		config: {limit: 30, windowMs: ms('1 minute')},
+	} as RouteRateLimitConfig,
 	ADMIN_LOOKUP: {
 		bucket: 'admin:lookup',
 		config: {limit: 200, windowMs: ms('1 minute')},

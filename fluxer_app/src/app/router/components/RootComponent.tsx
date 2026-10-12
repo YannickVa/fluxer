@@ -62,6 +62,7 @@ export const RootComponent: React.FC<{children?: React.ReactNode}> = observer(({
 	const shouldSkipAutoRedirect = isAutoRedirectExemptRoute || (pathname === Routes.LOGIN && isHandoff);
 	const isStandaloneRoute = useMemo(() => {
 		return (
+			pathname === Routes.MIGRATION_CLAIM ||
 			pathname.startsWith(Routes.LOGIN) ||
 			pathname.startsWith(Routes.REGISTER) ||
 			pathname.startsWith(Routes.FORGOT_PASSWORD) ||

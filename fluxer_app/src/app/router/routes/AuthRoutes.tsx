@@ -33,6 +33,10 @@ const ForgotPasswordPage = createAuthRoutePage(
 	() => import('@app/features/auth/components/pages/ForgotPasswordPage'),
 );
 const LoginPage = createAuthRoutePage('LoginPage', () => import('@app/features/auth/components/pages/LoginPage'));
+const MigrationClaimPage = createAuthRoutePage(
+	'MigrationClaimPage',
+	() => import('@app/features/auth/components/pages/MigrationClaimPage'),
+);
 const OAuthAuthorizePage = createAuthRoutePage(
 	'OAuthAuthorizePage',
 	() => import('@app/features/auth/components/pages/OAuthAuthorizePage'),
@@ -183,6 +187,13 @@ const loginRoute = createAuthPageRoute({
 		const redirectTo = safeRedirectTarget(qp.get('redirect_to'));
 		return new Redirect(redirectTo || Routes.ME);
 	}),
+});
+// Deliberately no authenticated redirect: preserve that session and explain private-window claiming.
+const migrationClaimRoute = createAuthPageRoute({
+	id: 'migrationClaim',
+	path: Routes.MIGRATION_CLAIM,
+	page: MigrationClaimPage,
+	dataFlx: 'app.router.auth-routes.migration-claim-page',
 });
 const ssoCallbackRoute = createAuthPageRoute({
 	id: 'ssoCallback',
@@ -371,6 +382,7 @@ const themeLoginRoute = createAuthPageRoute({
 
 export const authRouteTree = authLayoutRoute.addChildren([
 	loginRoute,
+	migrationClaimRoute,
 	ssoCallbackRoute,
 	registerRoute,
 	oauthAuthorizeRoute,

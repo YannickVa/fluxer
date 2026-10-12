@@ -362,6 +362,12 @@ export function buildAPIConfigFromMaster(master: MasterConfig): APIConfig {
 			oauthClientSecret: master.services.admin.oauth_client_secret,
 		},
 		auth: {
+			migrationClaim: {
+				enabled: master.auth.migration_claim?.enabled ?? false,
+				instanceFingerprint: master.auth.migration_claim?.instance_fingerprint ?? '',
+				migrationRunId: master.auth.migration_claim?.migration_run_id ?? '',
+				sourceGuildId: master.auth.migration_claim?.source_guild_id ?? '',
+			},
 			sudoModeSecret: master.auth.sudo_mode_secret,
 			connectionInitiationSecret: master.auth.connection_initiation_secret,
 			ssoAllowPrivateAddresses: master.auth.sso_allow_private_addresses,

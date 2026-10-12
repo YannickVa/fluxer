@@ -1,5 +1,27 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+interface BirthDate {
+	year: number;
+	month: number;
+	day: number;
+}
+
+function isValidBirthDate({year, month, day}: BirthDate): boolean {
+	if (!Number.isInteger(year) || year < 1 || year > 9999 || !Number.isInteger(month) || month < 1 || month > 12)
+		return false;
+	const leapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+	const daysInMonth = [31, leapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1]!;
+	return Number.isInteger(day) && day >= 1 && day <= daysInMonth;
+}
+
+/** Calendar date only: parsing a birthday as a UTC instant can change its day. */
+export function parseDateOfBirth(value: string): BirthDate | null {
+	if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+	const [year, month, day] = value.split('-').map(Number);
+	const birthDate = {year: year!, month: month!, day: day!};
+	return isValidBirthDate(birthDate) ? birthDate : null;
+}
+
 export function calculateAge(
 	dateOfBirth:
 		| {
@@ -10,16 +32,11 @@ export function calculateAge(
 		| string,
 ): number {
 	const today = new Date();
-	let birthDate: Date;
-	if (typeof dateOfBirth === 'string') {
-		const [year, month, day] = dateOfBirth.split('-').map(Number);
-		birthDate = new Date(year, month - 1, day);
-	} else {
-		birthDate = new Date(dateOfBirth.year, dateOfBirth.month - 1, dateOfBirth.day);
-	}
-	const age = today.getFullYear() - birthDate.getFullYear();
-	const monthDiff = today.getMonth() - birthDate.getMonth();
-	const dayDiff = today.getDate() - birthDate.getDate();
+	const birthDate = typeof dateOfBirth === 'string' ? parseDateOfBirth(dateOfBirth) : dateOfBirth;
+	if (!birthDate || !isValidBirthDate(birthDate)) return Number.NaN;
+	const age = today.getFullYear() - birthDate.year;
+	const monthDiff = today.getMonth() + 1 - birthDate.month;
+	const dayDiff = today.getDate() - birthDate.day;
 	return monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
 }
 

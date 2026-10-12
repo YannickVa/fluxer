@@ -25,6 +25,7 @@ export interface IPostgresClient extends PostgresQueryable {
 	shutdown(): Promise<void>;
 	isConnected(): boolean;
 	transaction<T>(fn: (client: PostgresQueryable) => Promise<T>): Promise<T>;
+	withAdvisoryLock<T>(key: bigint, fn: (signal: AbortSignal) => Promise<T>): Promise<T>;
 	kvTable(): string;
 }
 
@@ -109,6 +110,62 @@ class PostgresClient implements IPostgresClient {
 		} finally {
 			client.release();
 		}
+	}
+
+	/** Hold one dedicated session; pool.query alone cannot retain a session-level lock. */
+	async withAdvisoryLock<T>(key: bigint, fn: (signal: AbortSignal) => Promise<T>): Promise<T> {
+		const client = await this.getPool().connect();
+		const controller = new AbortController();
+		let held = false;
+		let discard = false;
+		let outcome: {ok: true; value: T} | {ok: false; error: unknown};
+		const onError = () => {
+			discard = true;
+			controller.abort(new Error('Postgres advisory lock connection lost.'));
+		};
+		client.on('error', onError);
+		try {
+			let acquired: QueryResult<{locked: boolean}>;
+			try {
+				acquired = await client.query<{locked: boolean}>('SELECT pg_try_advisory_lock($1::bigint) AS locked', [
+					key.toString(),
+				]);
+			} catch (error) {
+				// The server may have acquired the session lock before its response failed.
+				// Never return uncertain lock ownership to the pool.
+				discard = true;
+				throw error;
+			}
+			if (acquired.rows[0]?.locked !== true) throw new Error('Another operation holds the Postgres advisory lock.');
+			held = true;
+			controller.signal.throwIfAborted();
+			const result = await fn(controller.signal);
+			controller.signal.throwIfAborted();
+			outcome = {ok: true, value: result};
+		} catch (error) {
+			outcome = {ok: false, error};
+		}
+		try {
+			if (held && !discard) {
+				const released = await client.query<{unlocked: boolean}>('SELECT pg_advisory_unlock($1::bigint) AS unlocked', [
+					key.toString(),
+				]);
+				if (released.rows[0]?.unlocked !== true) throw new Error('Postgres advisory lock ownership was lost.');
+			}
+		} catch (error) {
+			discard = true;
+			outcome = {
+				ok: false,
+				error: outcome.ok
+					? error
+					: new AggregateError([outcome.error, error], 'Postgres advisory operation and lock cleanup failed.'),
+			};
+		} finally {
+			client.removeListener('error', onError);
+			client.release(discard);
+		}
+		if (!outcome.ok) throw outcome.error;
+		return outcome.value;
 	}
 
 	kvTable(): string {

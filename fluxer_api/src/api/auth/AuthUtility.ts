@@ -3,9 +3,12 @@
 import crypto from 'node:crypto';
 import {promisify} from 'node:util';
 import {UserFlags} from '@fluxer/constants/src/UserConstants';
+import {ValidationErrorCodes} from '@fluxer/constants/src/ValidationErrorCodes';
 import {BotUserAuthEndpointAccessDeniedError} from '@fluxer/errors/src/domains/auth/BotUserAuthEndpointAccessDeniedError';
+import {InputValidationError} from '@fluxer/errors/src/domains/core/InputValidationError';
 import {AccountPermanentlySuspendedError} from '@fluxer/errors/src/domains/user/AccountPermanentlySuspendedError';
 import {AccountTemporarilySuspendedError} from '@fluxer/errors/src/domains/user/AccountTemporarilySuspendedError';
+import {types} from 'cassandra-driver';
 import type {ApiContext} from '../ApiContext';
 import type {UserID} from '../BrandedTypes';
 import type {User} from '../models/User';
@@ -65,13 +68,18 @@ export function getTokenIdHash(_ctx: ApiContext, token: string): Uint8Array {
 }
 
 export function validateAge(_ctx: ApiContext, {dateOfBirth, minAge}: ValidateAgeParams): boolean {
-	const birthDate = new Date(dateOfBirth);
-	const age = AgeUtils.calculateAge({
-		year: birthDate.getFullYear(),
-		month: birthDate.getMonth() + 1,
-		day: birthDate.getDate(),
-	});
-	return age >= minAge;
+	return Number.isInteger(minAge) && minAge > 0 && AgeUtils.calculateAge(dateOfBirth) >= minAge;
+}
+
+/** Shared registration/claim validation; the caller supplies the trusted instance age policy. */
+export function validateDateOfBirth(ctx: ApiContext, {dateOfBirth, minAge}: ValidateAgeParams): types.LocalDate {
+	if (!AgeUtils.parseDateOfBirth(dateOfBirth)) {
+		throw InputValidationError.fromCode('date_of_birth', ValidationErrorCodes.INVALID_DATE_OF_BIRTH_FORMAT);
+	}
+	if (!validateAge(ctx, {dateOfBirth, minAge})) {
+		throw InputValidationError.fromCode('date_of_birth', ValidationErrorCodes.MUST_BE_MINIMUM_AGE, {minAge});
+	}
+	return types.LocalDate.fromString(dateOfBirth);
 }
 
 export function assertNonBotUser(_ctx: ApiContext, user: User): void {

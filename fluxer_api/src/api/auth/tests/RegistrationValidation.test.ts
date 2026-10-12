@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import {afterAll, beforeAll, beforeEach, describe, expect, it} from 'vitest';
+import {createUserID} from '../../BrandedTypes';
+import {getInstanceConfigRepository, getUserRepository} from '../../middleware/ServiceSingletons';
 import type {ApiTestHarness} from '../../test/ApiTestHarness';
 import {createBuilder, createBuilderWithoutAuth} from '../../test/TestRequestBuilder';
 import {createAuthHarness, createTestAccount, createUniqueEmail, createUniqueUsername} from './AuthTestUtils';
@@ -119,6 +121,40 @@ describe('Registration validation', () => {
 			})
 			.expect(400)
 			.execute();
+	});
+	it.each([
+		'2000-02-30',
+		'2001-02-29',
+		'1900-02-29',
+		'2000-04-31',
+	])('rejects impossible birth date %s through the actual registration endpoint', async (dateOfBirth) => {
+		const json = await createBuilderWithoutAuth<ValidationErrorResponse>(harness)
+			.post('/auth/register')
+			.body({
+				email: createUniqueEmail(),
+				username: createUniqueUsername(),
+				password: 'a-strong-password',
+				date_of_birth: dateOfBirth,
+				consent: true,
+			})
+			.expect(400, 'INVALID_FORM_BODY')
+			.execute();
+		expect(json.errors?.find((error) => error.path === 'date_of_birth')?.code).toBe('INVALID_DATE_OF_BIRTH_FORMAT');
+	});
+	it('preserves the instance option not to collect a birth date during ordinary registration', async () => {
+		await getInstanceConfigRepository().setAppPublicConfig({registration: {collect_date_of_birth: false}});
+		const result = await createBuilderWithoutAuth<{user_id: string; token: string}>(harness)
+			.post('/auth/register')
+			.body({
+				email: createUniqueEmail(),
+				username: createUniqueUsername(),
+				password: 'a-strong-password',
+				consent: true,
+			})
+			.execute();
+		const user = await getUserRepository().findUniqueAssert(createUserID(BigInt(result.user_id)));
+		expect(result.token).toBeTruthy();
+		expect(user.dateOfBirth).toBeNull();
 	});
 	it('allows emoji in global name', async () => {
 		const globalName = '🌻 Sunflower';

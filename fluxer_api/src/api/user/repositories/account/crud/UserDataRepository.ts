@@ -2,7 +2,7 @@
 
 import {UserFlags} from '@fluxer/constants/src/UserConstants';
 import {createUserID, type UserID} from '../../../../BrandedTypes';
-import {fetchMany, fetchOne, fetchPage, upsertOne} from '../../../../database/CassandraQueryExecution';
+import {executeQuery, fetchMany, fetchOne, fetchPage, upsertOne} from '../../../../database/CassandraQueryExecution';
 import {Db, type DbOp, nextVersion} from '../../../../database/CassandraTypes';
 import {
 	applyPatchToRow,
@@ -45,6 +45,15 @@ type UserPatch = Partial<{
 }>;
 
 export class UserDataRepository {
+	async findRow(userId: UserID): Promise<UserRow | null> {
+		return fetchOne<UserRow>(FETCH_USER_BY_ID_CQL, {user_id: userId});
+	}
+
+	async patchUserIf(userId: UserID, patch: UserPatch, expected: Partial<Omit<UserRow, 'user_id'>>): Promise<boolean> {
+		const result = await executeQuery<{'[applied]': boolean}>(Users.patchByPkIf({user_id: userId}, patch, expected));
+		return result[0]?.['[applied]'] === true;
+	}
+
 	async findUnique(userId: UserID): Promise<User | null> {
 		if (userId === FLUXER_BOT_USER_ID) {
 			return new User({

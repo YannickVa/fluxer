@@ -147,6 +147,7 @@ function defaultConfig(): MasterConfig {
 			},
 		},
 		auth: {
+			migration_claim: {enabled: false, instance_fingerprint: '', migration_run_id: '', source_guild_id: ''},
 			sudo_mode_secret: '',
 			connection_initiation_secret: '',
 			sso_allow_private_addresses: false,
@@ -386,6 +387,28 @@ function validateApiWorkerConfig(config: MasterConfig): void {
 	}
 }
 
+function validateMigrationClaimConfig(config: MasterConfig): void {
+	const claim = config.auth.migration_claim;
+	if (!claim) return;
+	assertBoolean(claim.enabled, 'FLUXER_MIGRATION_CLAIM_ENABLED');
+	if (!claim.enabled) return;
+	if (!config.instance.self_hosted || config.database.backend !== 'postgres')
+		throw new Error('Migration claiming requires a self-hosted PostgreSQL instance.');
+	if (typeof claim.instance_fingerprint !== 'string' || !/^[0-9a-f]{64}$/.test(claim.instance_fingerprint))
+		throw new Error('FLUXER_MIGRATION_CLAIM_INSTANCE_FINGERPRINT must be a SHA-256 digest.');
+	if (
+		typeof claim.migration_run_id !== 'string' ||
+		!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(claim.migration_run_id)
+	)
+		throw new Error('FLUXER_MIGRATION_CLAIM_RUN_ID must be a UUID.');
+	if (
+		typeof claim.source_guild_id !== 'string' ||
+		!/^[1-9][0-9]{0,19}$/.test(claim.source_guild_id) ||
+		BigInt(claim.source_guild_id) > 0xffffffffffffffffn
+	)
+		throw new Error('FLUXER_MIGRATION_CLAIM_SOURCE_GUILD_ID must be an unsigned Discord ID.');
+}
+
 function normalizeConfig(config: MasterConfig): MasterConfig {
 	assertOneOf(config.env, ['development', 'production', 'test'], 'FLUXER_ENV');
 	assertOneOf(config.domain.public_scheme, ['http', 'https'], 'FLUXER_PUBLIC_SCHEME');
@@ -403,6 +426,7 @@ function normalizeConfig(config: MasterConfig): MasterConfig {
 	);
 	validatePostgresConfig(config);
 	validateApiWorkerConfig(config);
+	validateMigrationClaimConfig(config);
 	requireString(config.domain.base_domain, 'FLUXER_BASE_DOMAIN');
 	requireString(config.auth.sudo_mode_secret, 'FLUXER_SUDO_MODE_SECRET');
 	requireString(config.auth.connection_initiation_secret, 'FLUXER_CONNECTION_INITIATION_SECRET');

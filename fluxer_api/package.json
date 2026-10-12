@@ -74,6 +74,7 @@
 		"zod": "catalog:"
 	},
 	"devDependencies": {
+		"@electric-sql/pglite": "0.5.8",
 		"@types/archiver": "catalog:",
 		"@types/lodash": "catalog:",
 		"@types/luxon": "catalog:",

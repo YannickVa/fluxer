@@ -326,6 +326,23 @@
 	color: var(--text-primary);
 }
 
+/* Legal text must wrap inside narrow auth cards, not overflow a fixed-height checkbox. */
+.consentRow .consentControl {
+	min-width: 0;
+	flex: 1 1 auto;
+	align-items: flex-start;
+	height: auto !important;
+}
+
+.consentControl > :global([role='checkbox']:not(button)) {
+	min-width: 0;
+	flex: 1;
+}
+
+.consentControl > :global(button) {
+	flex-shrink: 0;
+}
+
 .policyLink {
 	color: var(--text-link);
 	text-decoration: none;

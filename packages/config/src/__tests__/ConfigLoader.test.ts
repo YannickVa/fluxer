@@ -72,6 +72,70 @@ describe('ConfigLoader', () => {
 		expect(() => getConfig()).toThrow('Config not loaded');
 	});
 
+	test('migration claiming defaults to disabled with no inferred migration identity', async () => {
+		stubMinimalEnv();
+		expect((await loadConfig()).auth.migration_claim).toEqual({
+			enabled: false,
+			instance_fingerprint: '',
+			migration_run_id: '',
+			source_guild_id: '',
+		});
+	});
+
+	test('loads an explicitly configured server-only migration claim context', async () => {
+		stubMinimalEnv({
+			FLUXER_SELF_HOSTED: 'true',
+			FLUXER_MIGRATION_CLAIM_ENABLED: 'true',
+			FLUXER_MIGRATION_CLAIM_INSTANCE_FINGERPRINT: 'a'.repeat(64),
+			FLUXER_MIGRATION_CLAIM_RUN_ID: '09b9adba-70d0-41d9-9fc4-bb7b9f6a2e68',
+			FLUXER_MIGRATION_CLAIM_SOURCE_GUILD_ID: '1400000000000000000',
+		});
+		expect((await loadConfig()).auth.migration_claim).toMatchObject({
+			enabled: true,
+			source_guild_id: '1400000000000000000',
+		});
+	});
+
+	test.each([
+		['FLUXER_MIGRATION_CLAIM_ENABLED', 'not-a-boolean'],
+		['FLUXER_MIGRATION_CLAIM_INSTANCE_FINGERPRINT', 'private-invalid-digest'],
+		['FLUXER_MIGRATION_CLAIM_RUN_ID', 'private-invalid-run'],
+		['FLUXER_MIGRATION_CLAIM_SOURCE_GUILD_ID', '01400000000000000000'],
+		['FLUXER_MIGRATION_CLAIM_SOURCE_GUILD_ID', '18446744073709551616'],
+		['FLUXER_MIGRATION_CLAIM_SOURCE_GUILD_ID', 'private-invalid-id'],
+	])('refuses invalid enabled migration configuration %s without including its value', async (key, value) => {
+		stubMinimalEnv({
+			FLUXER_SELF_HOSTED: 'true',
+			FLUXER_MIGRATION_CLAIM_ENABLED: 'true',
+			FLUXER_MIGRATION_CLAIM_INSTANCE_FINGERPRINT: 'a'.repeat(64),
+			FLUXER_MIGRATION_CLAIM_RUN_ID: '09b9adba-70d0-41d9-9fc4-bb7b9f6a2e68',
+			FLUXER_MIGRATION_CLAIM_SOURCE_GUILD_ID: '1400000000000000000',
+			[key]: value,
+		});
+		try {
+			await loadConfig();
+			throw new Error('Invalid configuration unexpectedly accepted');
+		} catch (error) {
+			expect((error as Error).message).toContain(key);
+			expect((error as Error).message).not.toContain(value);
+		}
+	});
+
+	test.each([
+		['FLUXER_SELF_HOSTED', 'false'],
+		['FLUXER_DATABASE_BACKEND', 'cassandra'],
+	])('refuses migration claiming on an unsupported instance', async (key, value) => {
+		stubMinimalEnv({
+			FLUXER_SELF_HOSTED: 'true',
+			FLUXER_MIGRATION_CLAIM_ENABLED: 'true',
+			FLUXER_MIGRATION_CLAIM_INSTANCE_FINGERPRINT: 'a'.repeat(64),
+			FLUXER_MIGRATION_CLAIM_RUN_ID: '09b9adba-70d0-41d9-9fc4-bb7b9f6a2e68',
+			FLUXER_MIGRATION_CLAIM_SOURCE_GUILD_ID: '1400000000000000000',
+			[key]: value,
+		});
+		await expect(loadConfig()).rejects.toThrow('self-hosted PostgreSQL');
+	});
+
 	test('resetConfig clears the cache', async () => {
 		stubMinimalEnv();
 		await loadConfig();

@@ -39,6 +39,7 @@ import type {UserSettings} from '../../models/UserSettings';
 import type {VisionarySlot} from '../../models/VisionarySlot';
 import type {WebAuthnCredential} from '../../models/WebAuthnCredential';
 import {ReadStateRepository} from '../../read_state/ReadStateRepository';
+import type {MigratedAccountClaimData} from './IUserAccountRepository';
 import type {
 	HistoricalDmChannelSummary,
 	ListHistoricalDmChannelOptions,
@@ -73,6 +74,10 @@ export class UserRepository implements IUserRepositoryAggregate {
 
 	async create(data: UserRow): Promise<User> {
 		return this.accountRepo.create(data);
+	}
+
+	async claimMigratedAccount(userId: UserID, discordUserId: string, data: MigratedAccountClaimData): Promise<User> {
+		return this.accountRepo.claimMigratedAccount(userId, discordUserId, data);
 	}
 
 	async upsert(data: UserRow, oldData?: UserRow | null): Promise<User> {

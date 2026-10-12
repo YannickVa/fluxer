@@ -238,6 +238,37 @@ WHERE ${pk.map((k) => `${k} = :${k}`).join(' AND ')};
 		return prepared(cql, params, kvMeta as KvQueryMeta<Record<string, unknown>>);
 	}
 	const deleteByPkCql = `DELETE FROM ${def.name} WHERE ${pk.map((k) => `${k} = :${k}`).join(' AND ')};`;
+	function patchByPkIf(
+		pkValues: Pick<Row, PK>,
+		patch: Partial<{[K in Exclude<ColumnName<Row>, PK>]: DbOp<RowValue<Row, K>>}>,
+		expected: Partial<Pick<Row, Exclude<ColumnName<Row>, PK>>>,
+	): PreparedQuery {
+		const expectedKeys = Object.keys(expected) as Array<Exclude<ColumnName<Row>, PK>>;
+		if (expectedKeys.length === 0) throw new Error('Conditional patch requires at least one expected column');
+		for (const key of [...Object.keys(patch), ...expectedKeys]) {
+			if (!nonPkColumns.includes(key as Exclude<ColumnName<Row>, PK>))
+				throw new Error('Conditional patch contains an unknown or primary-key column');
+		}
+		for (const key of expectedKeys) {
+			if (expected[key] === undefined) throw new Error('Conditional patch contains an undefined expected value');
+		}
+		for (const key of pk) {
+			if (pkValues[key] == null) throw new Error('Conditional patch requires a complete primary key');
+		}
+		const query = patchByPk(pkValues, patch);
+		expectedKeys.sort((a, b) => columns.indexOf(a) - columns.indexOf(b));
+		const conditions = expectedKeys.map((col, index) => {
+			let expectedParam = `condition_value_${index}`;
+			while (columns.includes(expectedParam as ColumnName<Row>) || expectedParam in query.params) expectedParam += '_';
+			query.params[expectedParam] = expected[col] as CassandraParam;
+			return {col, expectedParam};
+		});
+		return prepared(
+			`${query.cql.trim().replace(/;$/, '')} IF ${conditions.map(({col, expectedParam}) => `${col} = :${expectedParam}`).join(' AND ')};`,
+			query.params,
+			{...query.kvMeta!, conditions},
+		);
+	}
 	registerKvMeta(deleteByPkCql, {
 		action: 'delete',
 		table: tableSpec,
@@ -501,6 +532,7 @@ WHERE ${pk.map((k) => `${k} = :${k}`).join(' AND ')};
 			return prepared(cql, params, kvMeta as KvQueryMeta<Record<string, unknown>>);
 		},
 		patchByPk,
+		patchByPkIf,
 		deleteCql,
 		delete: del,
 		deleteByPk,

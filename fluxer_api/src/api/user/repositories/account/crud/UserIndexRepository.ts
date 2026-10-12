@@ -2,7 +2,7 @@
 
 import {getSameIpDecisionKey} from '@fluxer/ip_utils/src/IpAddress';
 import type {UserID} from '../../../../BrandedTypes';
-import {BatchBuilder} from '../../../../database/CassandraQueryExecution';
+import {BatchBuilder, upsertOne} from '../../../../database/CassandraQueryExecution';
 import type {UserRow} from '../../../../database/types/UserTypes';
 import {
 	UserByEmail,
@@ -14,6 +14,10 @@ import {
 } from '../../../../Tables';
 
 export class UserIndexRepository {
+	async syncEmailIndex(userId: UserID, email: string): Promise<void> {
+		await upsertOne(UserByEmail.upsertAll({email_lower: email.toLowerCase(), user_id: userId}));
+	}
+
 	async syncIndices(data: UserRow, oldData?: UserRow | null): Promise<void> {
 		const batch = new BatchBuilder();
 		if (!!data.username && data.discriminator != null && data.discriminator !== undefined) {

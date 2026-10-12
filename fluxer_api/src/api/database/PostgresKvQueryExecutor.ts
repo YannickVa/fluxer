@@ -434,6 +434,7 @@ export class PostgresKvQueryExecutor {
 			case 'insert':
 				return (await this.upsert(meta, query.params, db)) as Array<T>;
 			case 'patch':
+				if (meta.conditions) return (await this.conditionalPatch(meta, query.params, db)) as Array<T>;
 				await this.patch(meta, query.params, db);
 				return [];
 			case 'delete':
@@ -466,6 +467,8 @@ export class PostgresKvQueryExecutor {
 		queries: Array<{query: string; params: object; meta?: KvQueryMeta}>,
 		atomic = true,
 	): Promise<void> {
+		if (queries.some(({meta}) => meta?.conditions))
+			throw new Error('Conditional patches must execute individually and inspect the applied result');
 		if (atomic) {
 			await this.client.transaction(async (db) => {
 				for (const query of queries) {
@@ -526,29 +529,27 @@ export class PostgresKvQueryExecutor {
 	private async upsert(meta: KvQueryMeta, params: CassandraParams, db: PostgresQueryable): Promise<Array<Row>> {
 		const incoming = rowFromParams(meta, params);
 		const key = rowKey(meta, incoming);
-		const existing = await this.getRow(meta, key, db);
-		if (meta.ifNotExists && existing) {
-			return [{'[applied]': false}];
-		}
 		if (meta.ifNotExists) {
 			await db.query(
 				`DELETE FROM ${this.table} WHERE table_name = $1 AND row_key = $2 AND expires_at IS NOT NULL AND expires_at <= now()`,
 				[meta.table.name, key],
 			);
 		}
-		const next = {...(existing ?? {}), ...incoming};
 		const expiresAt = ttlExpiresAt(meta, params) ?? null;
 		const result = await db.query(
-			`INSERT INTO ${this.table} (table_name, partition_key, row_key, row_data, expires_at, updated_at)
+			`INSERT INTO ${this.table} AS current (table_name, partition_key, row_key, row_data, expires_at, updated_at)
 VALUES ($1, $2, $3, $4::jsonb, $5, now())
 ON CONFLICT (table_name, row_key)
-DO UPDATE SET partition_key = EXCLUDED.partition_key, row_data = EXCLUDED.row_data, expires_at = EXCLUDED.expires_at, updated_at = now()
+DO UPDATE SET partition_key = EXCLUDED.partition_key,
+row_data = CASE WHEN current.expires_at IS NOT NULL AND current.expires_at <= now()
+THEN EXCLUDED.row_data ELSE current.row_data || EXCLUDED.row_data END,
+expires_at = EXCLUDED.expires_at, updated_at = now()
 WHERE NOT $6`,
 			[
 				meta.table.name,
-				partitionKey(meta, next),
+				partitionKey(meta, incoming),
 				key,
-				JSON.stringify(encodeRow(next)),
+				JSON.stringify(encodeRow(incoming)),
 				expiresAt,
 				meta.ifNotExists === true,
 			],
@@ -561,20 +562,22 @@ WHERE NOT $6`,
 
 	private async patch(meta: KvQueryMeta, params: CassandraParams, db: PostgresQueryable): Promise<void> {
 		const key = rowKeyFromParams(meta, params);
-		const stored = await this.getStoredRow(meta, key, db);
-		const base = stored?.row ?? paramsRow(params, (meta.pkColumns ?? meta.table.primaryKey) as ReadonlyArray<string>);
+		const base = paramsRow(params, (meta.pkColumns ?? meta.table.primaryKey) as ReadonlyArray<string>);
 		const next = {...base};
 		for (const column of meta.patchKeys ?? []) {
 			next[column] = column in params ? params[column] : null;
 		}
 		const ttl = ttlExpiresAt(meta, params);
-		const expiresAt = ttl === undefined ? (stored?.expiresAt ?? null) : ttl;
 		await db.query(
-			`INSERT INTO ${this.table} (table_name, partition_key, row_key, row_data, expires_at, updated_at)
+			`INSERT INTO ${this.table} AS current (table_name, partition_key, row_key, row_data, expires_at, updated_at)
 VALUES ($1, $2, $3, $4::jsonb, $5, now())
 ON CONFLICT (table_name, row_key)
-DO UPDATE SET partition_key = EXCLUDED.partition_key, row_data = EXCLUDED.row_data, expires_at = EXCLUDED.expires_at, updated_at = now()`,
-			[meta.table.name, partitionKey(meta, next), key, JSON.stringify(encodeRow(next)), expiresAt ?? null],
+DO UPDATE SET partition_key = EXCLUDED.partition_key,
+row_data = CASE WHEN current.expires_at IS NOT NULL AND current.expires_at <= now()
+THEN EXCLUDED.row_data ELSE current.row_data || EXCLUDED.row_data END,
+expires_at = CASE WHEN $6::boolean OR (current.expires_at IS NOT NULL AND current.expires_at <= now())
+THEN EXCLUDED.expires_at ELSE current.expires_at END, updated_at = now()`,
+			[meta.table.name, partitionKey(meta, next), key, JSON.stringify(encodeRow(next)), ttl ?? null, ttl !== undefined],
 		);
 	}
 
@@ -592,20 +595,38 @@ DO UPDATE SET partition_key = EXCLUDED.partition_key, row_data = EXCLUDED.row_da
 		]);
 	}
 
-	private async getStoredRow(
+	private async conditionalPatch(
 		meta: KvQueryMeta,
-		key: string,
+		params: CassandraParams,
 		db: PostgresQueryable,
-	): Promise<{row: Row; expiresAt: Date | null} | null> {
-		const result = await db.query<StoredRow & {expires_at: Date | null}>(
-			`SELECT row_key, row_data, expires_at FROM ${this.table} WHERE table_name = $1 AND row_key = $2 AND (expires_at IS NULL OR expires_at > now()) LIMIT 1`,
-			[meta.table.name, key],
+	): Promise<Array<Row>> {
+		if (!meta.conditions?.length) throw new Error('Conditional patch requires expected values');
+		const patch: Row = {};
+		for (const col of meta.patchKeys ?? []) patch[col] = params[col];
+		const expected: Row = {};
+		for (const {col, expectedParam} of meta.conditions) {
+			if (!(expectedParam in params) || params[expectedParam] === undefined)
+				throw new Error('Conditional patch is missing an expected value');
+			expected[col] = params[expectedParam];
+		}
+		const values: Array<unknown> = [meta.table.name, rowKeyFromParams(meta, params), JSON.stringify(encodeRow(patch))];
+		// Keep comparisons on the UPDATE target itself. A planner-flattened anti-join
+		// over jsonb_each can retain a stale match after a concurrent row-lock wait.
+		const predicates = Object.entries(encodeRow(expected)).map(([column, value]) => {
+			values.push(column, JSON.stringify(value));
+			const key = `$${values.length - 1}::text`;
+			const wanted = `$${values.length}::jsonb`;
+			const actual = `COALESCE(row_data -> ${key}, 'null'::jsonb)`;
+			return `CASE WHEN ${wanted} ->> '__fluxer_type' = 'set'
+THEN ${actual} @> ${wanted} AND ${wanted} @> ${actual}
+ELSE ${actual} IS NOT DISTINCT FROM ${wanted} END`;
+		});
+		const result = await db.query(
+			`UPDATE ${this.table} SET row_data = row_data || $3::jsonb, updated_at = now()
+WHERE table_name = $1 AND row_key = $2 AND (expires_at IS NULL OR expires_at > now())
+AND ${predicates.map((predicate) => `(${predicate})`).join('\nAND ')}`,
+			values,
 		);
-		const row = result.rows[0];
-		return row ? {row: decodeRow(row.row_data), expiresAt: row.expires_at ?? null} : null;
-	}
-
-	private async getRow(meta: KvQueryMeta, key: string, db: PostgresQueryable): Promise<Row | null> {
-		return (await this.getStoredRow(meta, key, db))?.row ?? null;
+		return [{'[applied]': result.rowCount === 1}];
 	}
 }

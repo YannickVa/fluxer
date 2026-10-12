@@ -61,3 +61,6 @@
 
 **/.DS_Store
 **/Thumbs.db
+
+# Local migration records and review evidence
+/.ai/tasks/

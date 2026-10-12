@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {MIGRATION_CLAIM_PATH} from '@app/features/auth/flow/MigrationClaimLink';
 import {marketingUrl} from '@app/features/messaging/utils/MessagingUrlUtils';
 
 export const Routes = {
 	HOME: '/',
 	LOGIN: '/login',
+	MIGRATION_CLAIM: MIGRATION_CLAIM_PATH,
 	REGISTER: '/register',
 	FORGOT_PASSWORD: '/forgot',
 	RESET_PASSWORD: '/reset',

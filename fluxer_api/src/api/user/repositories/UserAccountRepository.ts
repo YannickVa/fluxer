@@ -10,7 +10,7 @@ import {UserDeletionRepository} from './account/UserDeletionRepository';
 import {UserGuildRepository} from './account/UserGuildRepository';
 import {UserLookupRepository} from './account/UserLookupRepository';
 import {TokenRepository} from './auth/TokenRepository';
-import type {IUserAccountRepository} from './IUserAccountRepository';
+import type {IUserAccountRepository, MigratedAccountClaimData} from './IUserAccountRepository';
 
 export class UserAccountRepository implements IUserAccountRepository {
 	private accountRepo: UserAccountCrudRepository;
@@ -32,6 +32,10 @@ export class UserAccountRepository implements IUserAccountRepository {
 
 	async create(data: UserRow): Promise<User> {
 		return this.accountRepo.create(data);
+	}
+
+	async claimMigratedAccount(userId: UserID, discordUserId: string, data: MigratedAccountClaimData): Promise<User> {
+		return this.accountRepo.claimMigratedAccount(userId, discordUserId, data);
 	}
 
 	async findUnique(userId: UserID): Promise<User | null> {

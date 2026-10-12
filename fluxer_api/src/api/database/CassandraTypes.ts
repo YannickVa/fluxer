@@ -68,6 +68,7 @@ export interface KvQueryMeta<Row extends object = Record<string, unknown>> {
 		expectedValue: unknown;
 	};
 	ifNotExists?: boolean;
+	conditions?: ReadonlyArray<{col: ColumnName<Row>; expectedParam: string}>;
 }
 
 export interface PreparedQuery<P extends CassandraParams = CassandraParams> {
@@ -156,6 +157,12 @@ export interface Table<Row extends object, PK extends ColumnName<Row>, PartKey e
 		patch: Partial<{
 			[K in Exclude<ColumnName<Row>, PK>]: DbOp<RowValue<Row, K>>;
 		}>,
+	): PreparedQuery;
+	/** Execute individually; the caller must inspect the returned [applied] result. */
+	patchByPkIf(
+		pk: Pick<Row, PK>,
+		patch: Partial<{[K in Exclude<ColumnName<Row>, PK>]: DbOp<RowValue<Row, K>>}>,
+		expected: Partial<Pick<Row, Exclude<ColumnName<Row>, PK>>>,
 	): PreparedQuery;
 	deleteCql(opts?: {where?: WhereExpr<Row> | ReadonlyArray<WhereExpr<Row>>}): string;
 	delete(opts?: {where?: WhereExpr<Row> | ReadonlyArray<WhereExpr<Row>>}): QueryTemplate;

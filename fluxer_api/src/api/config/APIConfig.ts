@@ -257,6 +257,12 @@ export interface APIConfig {
 		oauthClientSecret?: string;
 	};
 	auth: {
+		migrationClaim?: {
+			enabled: boolean;
+			instanceFingerprint: string;
+			migrationRunId: string;
+			sourceGuildId: string;
+		};
 		sudoModeSecret: string;
 		connectionInitiationSecret: string;
 		ssoAllowPrivateAddresses: boolean;

@@ -5,11 +5,11 @@ import type {CacheLogger} from '@pkgs/cache/src/CacheProviderTypes';
 export function safeJsonParse<T>(value: string, logger?: CacheLogger): T | null {
 	try {
 		return JSON.parse(value);
-	} catch (error) {
+	} catch {
 		if (logger) {
-			const truncatedValue = value.length > 200 ? `${value.substring(0, 200)}...` : value;
-			const errorMessage = error instanceof Error ? error.message : String(error);
-			logger.error({errorMessage, value: truncatedValue}, '[CacheProvider] JSON parse error');
+			// Auth/session cache entries can contain credentials. Native JSON errors may
+			// include the offending text too, so omit both payload and parser message.
+			logger.error({valueLength: value.length}, '[CacheProvider] Invalid JSON entry; contents omitted');
 		}
 		return null;
 	}

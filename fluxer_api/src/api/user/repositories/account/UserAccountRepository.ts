@@ -5,11 +5,14 @@ import {
 	LEGACY_DEAD_USER_FLAGS_MASK,
 	LEGACY_PREMIUM_FLAGS_MASK,
 } from '@fluxer/constants/src/UserConstants';
+import {InvalidTokenError} from '@fluxer/errors/src/domains/core/InvalidTokenError';
 import type {IKVProvider} from '@pkgs/kv_client/src/IKVProvider';
 import type {UserID} from '../../../BrandedTypes';
 import {Db, type DbOp} from '../../../database/CassandraTypes';
 import type {UserRow} from '../../../database/types/UserTypes';
 import {User} from '../../../models/User';
+import {assertMigrationClaimEligible} from '../../MigrationAccountEligibility';
+import type {MigratedAccountClaimData} from '../IUserAccountRepository';
 import {UserDataRepository} from './crud/UserDataRepository';
 import {type EmailClaimReservation, UserEmailOwnershipRepository} from './crud/UserEmailOwnershipRepository';
 import {UserIndexRepository} from './crud/UserIndexRepository';
@@ -33,6 +36,74 @@ export class UserAccountRepository {
 
 	async create(data: UserRow): Promise<User> {
 		return this.upsert(data);
+	}
+
+	async claimMigratedAccount(userId: UserID, discordUserId: string, data: MigratedAccountClaimData): Promise<User> {
+		if (!Number.isFinite(data.expiresAt.getTime()) || data.expiresAt.getTime() <= Date.now())
+			throw new InvalidTokenError();
+		const current = await this.dataRepo.findRow(userId);
+		assertMigrationClaimEligible(current ? new User(current) : null, userId.toString(), discordUserId);
+		if (!current || !data.email.trim() || !data.passwordHash || (!current.date_of_birth && !data.dateOfBirth))
+			throw new InvalidTokenError();
+		if (current.date_of_birth && data.dateOfBirth && current.date_of_birth.toString() !== data.dateOfBirth.toString())
+			throw new InvalidTokenError();
+		// Compare the raw stored fields, not model defaults. Every eligibility input
+		// and the existing DOB must still match at the single conditional write.
+		const guardColumns = [
+			'version',
+			'bot',
+			'system',
+			'email',
+			'password_hash',
+			'password_last_changed_at',
+			'email_verified',
+			'email_bounced',
+			'totp_secret',
+			'authenticator_types',
+			'has_verified_phone',
+			'flags',
+			'acls',
+			'traits',
+			'pending_deletion_at',
+			'temp_banned_until',
+			'date_of_birth',
+			'suspicious_activity_flags',
+			'terms_agreed_at',
+			'privacy_agreed_at',
+		] as const satisfies ReadonlyArray<keyof UserRow>;
+		const expected = Object.fromEntries(guardColumns.map((col) => [col, current[col] ?? null]));
+		const updates = {
+			email: data.email.trim().toLowerCase(),
+			email_verified: true,
+			email_bounced: false,
+			password_hash: data.passwordHash,
+			password_last_changed_at: new Date(),
+			date_of_birth: current.date_of_birth ?? data.dateOfBirth!,
+			terms_agreed_at: current.terms_agreed_at ?? data.termsAgreedAt,
+			privacy_agreed_at: current.privacy_agreed_at ?? data.privacyAgreedAt,
+			version: current.version + 1,
+		} satisfies Partial<UserRow>;
+		const patch = Object.fromEntries(Object.entries(updates).map(([col, value]) => [col, Db.set(value)]));
+		const reservation = await this.emailOwnershipRepo.claimEmail(data.email, userId);
+		// Email ownership may involve asynchronous I/O. Recheck the original proof
+		// deadline immediately before authorizing the final database write.
+		await data.authorize?.();
+		if (data.expiresAt.getTime() <= Date.now()) throw new InvalidTokenError();
+		const applied = await this.dataRepo.patchUserIf(userId, patch, expected);
+		// Keep reservations for reconciliation on both uncertain writes and CAS losses.
+		// Same-account, same-email requests can share a reservation token: aborting a
+		// loser could delete the winner's ownership. Unused reservations are bounded by
+		// the existing grace period; canonical account readback resolves committed ones.
+		if (!applied) {
+			throw new InvalidTokenError();
+		}
+		await this.emailOwnershipRepo.finalizeEmailClaim(reservation);
+		// Claiming changes only the email lookup. Do not replay unrelated username,
+		// activity or billing indexes from the earlier account snapshot.
+		await this.indexRepo.syncEmailIndex(userId, updates.email);
+		const user = await this.dataRepo.findUniqueAssert(userId);
+		await this.searchRepo.updateUser(user);
+		return user;
 	}
 
 	async findUnique(userId: UserID): Promise<User | null> {

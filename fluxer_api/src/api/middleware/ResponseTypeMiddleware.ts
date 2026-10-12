@@ -106,6 +106,8 @@ interface OpenAPIMetadata {
 type SecurityScheme = 'botToken' | 'oauth2Token' | 'bearerToken' | 'sessionToken' | 'adminApiKey';
 
 interface OpenAPIRouteMetadata {
+	/** Omit credential-bearing response bodies and validator excerpts from failure logs. */
+	sensitiveResponse?: boolean;
 	operationId: string;
 	summary: string;
 	description: string;
@@ -229,14 +231,14 @@ export function OpenAPI(
 		if (!result.success) {
 			const validationErrors = result.error.issues.map((issue) => ({
 				path: issue.path.join('.') || 'root',
-				message: issue.message,
+				message: metadata.sensitiveResponse ? 'Invalid response field' : issue.message,
 			}));
 			const errorContext = {
 				method: ctx.req.method,
 				path: ctx.req.path,
 				status: response.status,
 				validationErrors,
-				body,
+				body: metadata.sensitiveResponse ? '[redacted]' : body,
 			};
 			const responseValidationError = new ResponseValidationError(validationErrors);
 			responseValidationLogger.error(errorContext, 'Response validation failed');

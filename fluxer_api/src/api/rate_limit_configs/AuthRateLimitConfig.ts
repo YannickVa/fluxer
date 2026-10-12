@@ -4,6 +4,18 @@ import {ms} from 'itty-time';
 import type {RouteRateLimitConfig} from '../middleware/RateLimitMiddleware';
 
 export const AuthRateLimitConfigs = {
+	AUTH_MIGRATION_REDEEM: {
+		bucket: 'auth:migration:redeem',
+		config: {limit: 10, windowMs: ms('1 minute')},
+	} as RouteRateLimitConfig,
+	AUTH_MIGRATION_EMAIL: {
+		bucket: 'auth:migration:email',
+		config: {limit: 5, windowMs: ms('1 minute')},
+	} as RouteRateLimitConfig,
+	AUTH_MIGRATION_COMPLETE: {
+		bucket: 'auth:migration:complete',
+		config: {limit: 10, windowMs: ms('1 minute')},
+	} as RouteRateLimitConfig,
 	AUTH_REGISTER: {
 		bucket: 'auth:register',
 		config: {limit: 10, windowMs: ms('10 seconds')},

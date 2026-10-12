@@ -7,6 +7,7 @@
 		"./*": "./*"
 	},
 	"scripts": {
+		"test": "node --import tsx --test src/*.test.ts",
 		"typecheck": "tsgo --noEmit"
 	},
 	"dependencies": {
@@ -15,6 +16,7 @@
 	"devDependencies": {
 		"@types/node": "catalog:",
 		"@types/pg": "catalog:",
-		"@typescript/native-preview": "catalog:"
+		"@typescript/native-preview": "catalog:",
+		"tsx": "catalog:"
 	}
 }

@@ -32,6 +32,16 @@ function expectResolvedState(overrides: Partial<ReadStateEntryStatusInput>, expe
 }
 
 describe('readStateEntryStatusMachine', () => {
+	it('keeps imported history read with no badges while subsequent live messages become unread', () => {
+		const imported = resolveReadStateEntryStatus(
+			input({ackMessageId: LAST_ID, lastMessageId: LAST_ID, mentionCount: 0}),
+		);
+		expect(imported).toMatchObject({state: 'read', hasUnread: false, hasMentions: false});
+		const live = resolveReadStateEntryStatus(
+			input({ackMessageId: LAST_ID, lastMessageId: fromTimestamp(BASE_TIMESTAMP + 3000), mentionCount: 1}),
+		);
+		expect(live).toMatchObject({state: 'unread', hasUnread: true, hasMentions: true});
+	});
 	it('routes the read-state status by priority', () => {
 		expectResolvedState({canTrackUnreads: false, mentionCount: 1, ackMessageId: ACK_ID}, 'untracked');
 		expectResolvedState({hasBlockedDirectMessageRecipient: true, mentionCount: 1, ackMessageId: ACK_ID}, 'blocked');

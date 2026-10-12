@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {isDeepStrictEqual} from 'node:util';
 import {getKvMeta} from '../database/CassandraMetaRegistry';
 import type {CassandraQueryExecutorForTesting} from '../database/CassandraQueryExecution';
 import type {CassandraParams, KvQueryMeta, PreparedQuery, WhereExpr} from '../database/CassandraTypes';
@@ -192,6 +193,25 @@ export class InMemoryCassandraQueryExecutor implements CassandraQueryExecutorFor
 				this.upsert(meta, query.params);
 				return [];
 			case 'patch':
+				if (meta.conditions) {
+					if (!meta.conditions.length) throw new Error('Conditional patch requires expected values');
+					if (
+						meta.conditions.some(
+							({expectedParam}) => !(expectedParam in query.params) || query.params[expectedParam] === undefined,
+						)
+					)
+						throw new Error('Conditional patch is missing an expected value');
+					const row = this.table(meta).get(this.keyFromParams(meta, query.params));
+					if (
+						!row ||
+						!meta.conditions.every(({col, expectedParam}) =>
+							isDeepStrictEqual(row[col] ?? null, query.params[expectedParam]),
+						)
+					)
+						return [{'[applied]': false}] as Array<T>;
+					this.patch(meta, query.params);
+					return [{'[applied]': true}] as Array<T>;
+				}
 				this.patch(meta, query.params);
 				return [];
 			case 'delete':
@@ -204,6 +224,8 @@ export class InMemoryCassandraQueryExecutor implements CassandraQueryExecutorFor
 	}
 
 	async executeBatch(queries: Array<{query: string; params: object; meta?: KvQueryMeta}>): Promise<void> {
+		if (queries.some(({meta}) => meta?.conditions))
+			throw new Error('Conditional patches must execute individually and inspect the applied result');
 		for (const query of queries) {
 			await this.executeQuery({
 				cql: query.query,

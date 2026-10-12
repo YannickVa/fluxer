@@ -2,6 +2,7 @@
 
 import {registerAdminControllers} from '../admin/controllers/index';
 import {AuthController} from '../auth/AuthController';
+import {MigrationClaimController} from '../auth/MigrationClaimController';
 import {BlueskyOAuthController} from '../bluesky/BlueskyOAuthController';
 import {Config} from '../Config';
 import {ChannelController} from '../channel/ChannelController';
@@ -45,6 +46,7 @@ export function registerControllers(routes: HonoApp, config: APIConfig): void {
 	GeolocationController(routes);
 	registerAdminControllers(routes);
 	AuthController(routes);
+	MigrationClaimController(routes);
 	ChannelController(routes);
 	ConnectionController(routes);
 	BlueskyOAuthController(routes);

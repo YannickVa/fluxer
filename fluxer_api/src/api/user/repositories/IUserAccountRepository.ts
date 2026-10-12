@@ -1,10 +1,24 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import type {types} from 'cassandra-driver';
 import type {GuildID, UserID} from '../../BrandedTypes';
 import type {UserRow} from '../../database/types/UserTypes';
 import type {User} from '../../models/User';
 
+/** Trusted service inputs, only after ownership, email, age/password and consent checks. */
+export interface MigratedAccountClaimData {
+	/** Revalidate server-controlled run policy after email-reservation I/O. */
+	authorize?: () => Promise<void>;
+	expiresAt: Date;
+	email: string;
+	passwordHash: string;
+	dateOfBirth: types.LocalDate | null;
+	termsAgreedAt: Date | null;
+	privacyAgreedAt: Date | null;
+}
+
 export interface IUserAccountRepository {
+	claimMigratedAccount(userId: UserID, discordUserId: string, data: MigratedAccountClaimData): Promise<User>;
 	create(data: UserRow): Promise<User>;
 	upsert(data: UserRow, oldData?: UserRow | null): Promise<User>;
 	patchUpsert(userId: UserID, patchData: Partial<UserRow>, oldData?: UserRow | null): Promise<User>;

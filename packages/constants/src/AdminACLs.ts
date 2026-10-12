@@ -78,6 +78,7 @@ export const AdminACLs = {
 	MESSAGE_DELETE: 'message:delete',
 	MESSAGE_LOOKUP: 'message:lookup',
 	MESSAGE_SHRED: 'message:shred',
+	MIGRATION_CLAIM_MANAGE: 'migration_claim:manage',
 	REPORT_RESOLVE: 'report:resolve',
 	REPORT_VIEW: 'report:view',
 	REPORT_VIEW_REPORTER_PII: 'report:view:reporter_pii',

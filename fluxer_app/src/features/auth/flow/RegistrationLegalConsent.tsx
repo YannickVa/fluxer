@@ -42,6 +42,7 @@ export function RegistrationLegalConsent({checked, config, onChange}: Registrati
 	return (
 		<div className={styles.consentRow} data-flx="auth.flow.registration-legal-consent.consent-row">
 			<Checkbox
+				className={styles.consentControl}
 				checked={checked}
 				onChange={onChange}
 				data-flx="auth.flow.registration-legal-consent.checkbox.consent-change"
