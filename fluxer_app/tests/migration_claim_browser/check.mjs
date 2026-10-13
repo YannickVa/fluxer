@@ -21,6 +21,8 @@ const aliases = Object.fromEntries(
 	[
 		'app/Routes',
 		'features/app/state/RuntimeConfig',
+		'features/auth/flow/AuthRuntimeTargetGate',
+		'features/devtools/state/DeveloperOptions',
 		'features/auth/state/Authentication',
 		'features/platform/state/AuthSession',
 		'features/window/hooks/useFluxerDocumentTitle',
@@ -72,7 +74,7 @@ const compiler = rspack({
 	plugins: [
 		new HtmlRspackPlugin({
 			templateContent:
-				'<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"></head><body><div id="root"></div></body></html>',
+				'<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body><div id="root"></div></body></html>',
 		}),
 	],
 });
@@ -137,6 +139,16 @@ try {
 	]) {
 		const context = await browser.newContext({viewport: {width, height}});
 		const page = await context.newPage();
+		await page.addInitScript(() => {
+			window.__claimFixturePointerInputs = 0;
+			document.addEventListener(
+				'pointerdown',
+				() => {
+					window.__claimFixturePointerInputs++;
+				},
+				true,
+			);
+		});
 		const errors = [];
 		page.on('pageerror', (error) => errors.push(error.message));
 		let requests = 0;
@@ -174,7 +186,7 @@ try {
 		assert.equal(await page.locator(':focus').textContent(), 'Confirm ownership');
 		await page.keyboard.press('Enter');
 		await page.getByLabel('Email', {exact: true}).fill('synthetic@example.invalid');
-		await page.getByRole('button', {name: 'Send verification code', exact: true}).click();
+		await page.getByRole('button', {name: 'Send verification code', exact: true}).press('Enter');
 		await page.getByLabel('Email verification code', {exact: true}).waitFor();
 		await page.evaluate(() => document.fonts.ready);
 		const consentLayout = await page
@@ -206,11 +218,11 @@ try {
 				['Year', '1998'],
 			]) {
 				await page.getByPlaceholder(placeholder, {exact: true}).fill(text);
-				await page.getByRole('option', {name: text, exact: true}).click();
+				await page.getByRole('option', {name: text, exact: true}).press('Enter');
 			}
 		}
-		await page.locator('button[role="checkbox"]').click();
-		await page.getByRole('button', {name: 'Finish claiming', exact: true}).click();
+		await page.locator('button[role="checkbox"]').press('Space');
+		await page.getByRole('button', {name: 'Finish claiming', exact: true}).press('Enter');
 		await page.getByRole('heading', {name: 'Your account is ready', exact: true}).waitFor();
 		assert.equal(completed.date_of_birth, '1998-03-11');
 		assert.equal(completed.consent, true);
@@ -219,6 +231,7 @@ try {
 		await page.getByRole('alert').waitFor();
 		assert.equal(await page.locator('input').count(), 0);
 		assert.deepEqual(errors, []);
+		assert.equal(await page.evaluate(() => window.__claimFixturePointerInputs), 0);
 		await context.close();
 		console.log(
 			`${name}: explicit ownership, scrubbed URL, keyboard confirmation, real email/password/DOB/consent controls, completed claim, no overflow, pagehide cleanup passed.`,

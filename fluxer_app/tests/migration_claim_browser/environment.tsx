@@ -17,9 +17,19 @@ export default observable({
 	logoUrl: null,
 	wordmarkUrl: null,
 	enabled: false,
+	selfHostedModeOverride: false,
 	keyboardModeEnabled: true,
 	scrollbarVisibility: 'always',
 });
+export function AuthRuntimeTargetGate({children}: {children: (snapshot: unknown) => ReactNode}) {
+	return children({
+		apiEndpoint: `${location.origin}/api`,
+		apiCodeVersion: 1,
+		marketingEndpoint: location.origin,
+		features: {self_hosted: true},
+		appPublic: {legal: {terms_url: '/terms', privacy_url: '/privacy'}},
+	});
+}
 export const shouldDisableAutofocusOnMobile = () => innerWidth < 600;
 export const Routes = {LOGIN: '/login', ME: '/channels/@me', terms: () => '/terms', privacy: () => '/privacy'};
 export const useFluxerDocumentTitle = (title: string) => {

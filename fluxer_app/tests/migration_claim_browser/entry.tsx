@@ -23,6 +23,7 @@ const presentation = {
 	setSplashUrl: () => {},
 	setShowLogoSide: () => {},
 	setCardVariant: () => {},
+	setContentMode: () => {},
 	setSplashCardAlignment: () => {},
 };
 createRoot(document.getElementById('root')!).render(
@@ -31,7 +32,7 @@ createRoot(document.getElementById('root')!).render(
 			<AuthLayoutContext.Provider value={presentation}>
 				<main className={layout.container}>
 					<div className={layout.leftSplit}>
-						<AuthCardContainer showLogoSide={false} variant="standard">
+						<AuthCardContainer variant="standard">
 							<MigrationClaimPage />
 						</AuthCardContainer>
 					</div>
