@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {enforceGuildMfa, getGuildMfaFilteredPermissions, hasRequiredGuildMfa} from './GuildMfaGuard';
 import type {ApiContext} from '@app/api/ApiContext';
 import type {EmojiID, GuildID, RoleID, StickerID, UserID} from '@app/api/BrandedTypes';
 import {createChannelID, createWebhookID} from '@app/api/BrandedTypes';
@@ -66,6 +65,7 @@ import type {
 import type {GuildUpdateRequest} from '@fluxer/schema/src/domains/guild/GuildRequestSchemas';
 import type {GuildResponse} from '@fluxer/schema/src/domains/guild/GuildResponseSchemas';
 import type {ICacheService} from '@pkgs/cache/src/ICacheService';
+import {enforceGuildMfa, getGuildMfaFilteredPermissions, hasRequiredGuildMfa} from './GuildMfaGuard';
 
 interface StoredAuditLogWebhookResponse extends Omit<AuditLogWebhookResponse, 'type'> {
 	type: number;

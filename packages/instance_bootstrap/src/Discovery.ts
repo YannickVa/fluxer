@@ -6,8 +6,8 @@ import {HttpStatus, MimeType} from '@fluxer/constants/src/HttpConstants';
 import type {LimitKey} from '@fluxer/constants/src/LimitConfigMetadata';
 import {InstanceEndpointKind, normalizeInstanceEndpoint} from '@fluxer/instance_bootstrap/src/EndpointNormalization';
 import {normalizeInstanceMemberConfig} from '@fluxer/instance_bootstrap/src/MemberConfig';
-import type {InstanceOnboarding, InstanceSupport} from '@fluxer/instance_bootstrap/src/Types';
 import {CanonicalNetworkProtocol} from '@fluxer/instance_bootstrap/src/NetworkOrigin';
+import type {InstanceOnboarding, InstanceSupport} from '@fluxer/instance_bootstrap/src/Types';
 import {
 	AGE_POLICY_ACTIONS,
 	CURRENT_INSTANCE_CODENAME,

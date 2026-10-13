@@ -25,7 +25,11 @@ vi.mock('@app/features/auth/flow/instance_selector/InstanceDirectoryStorage', ()
 	loadKnownInstances: mocks.known,
 }));
 vi.mock('@app/features/auth/flow/AuthShellLoadingState', () => ({AuthShellLoadingState: () => null}));
-vi.mock('@app/features/auth/flow/AuthRouteLoadError', () => ({AuthRouteLoadError: () => <span>error</span>}));
+vi.mock('@app/features/auth/flow/AuthRouteLoadError', () => ({
+	AuthRouteLoadError: () => (
+		<span data-flx="auth.flow.auth-runtime-target-boundary-test.auth-route-load-error.span">error</span>
+	),
+}));
 
 const {AuthRuntimeTargetBoundary, warmAuthRuntimeTarget} = await import('./AuthRuntimeTargetBoundary');
 const {useAuthRuntimeTarget} = await import('../state/AuthRuntimeTarget');
@@ -39,16 +43,17 @@ afterEach(() => {
 	vi.clearAllMocks();
 	target = null;
 });
-async function renderBoundary() {
+async function renderBoundary(waitMs = 0) {
 	Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true);
 	const root = createRoot(document.createElement('div'));
 	await act(async () =>
 		root.render(
-			<AuthRuntimeTargetBoundary>
-				<Probe />
+			<AuthRuntimeTargetBoundary data-flx="auth.flow.auth-runtime-target-boundary-test.render-boundary.auth-runtime-target-boundary">
+				<Probe data-flx="auth.flow.auth-runtime-target-boundary-test.render-boundary.probe" />
 			</AuthRuntimeTargetBoundary>,
 		),
 	);
+	if (waitMs > 0) await act(async () => new Promise((resolve) => setTimeout(resolve, waitMs)));
 	await act(async () => root.unmount());
 	Reflect.deleteProperty(globalThis, 'IS_REACT_ACT_ENVIRONMENT');
 }
@@ -63,7 +68,9 @@ test('uses a migrated endpoint as an editable default on a fresh profile', async
 	mocks.accounts.mockReturnValue([]);
 	mocks.known.mockResolvedValue([]);
 	await warm();
+	expect(mocks.resolve).not.toHaveBeenCalled();
 	await renderBoundary();
+	expect(mocks.resolve).toHaveBeenCalledTimes(1);
 	expect(target?.snapshot).toEqual(defaultSnapshot);
 	expect(target?.initialSnapshot).toBeNull();
 	target?.reset();
@@ -120,11 +127,14 @@ test('a stalled default discovery times out and leaves the instance selector usa
 			}),
 	);
 	expect(await warmAuthRuntimeTarget(new AbortController().signal)).toBeNull();
-	await renderBoundary();
+	expect(mocks.resolve).not.toHaveBeenCalled();
+	await renderBoundary(3200);
+	expect(mocks.resolve).toHaveBeenCalledTimes(1);
+	expect(target).not.toBeNull();
 	expect(target?.snapshot).toBeNull();
 });
 
-test('an outer cancellation during default discovery remains a cancellation', async () => {
+test('unmounting cancels pending optional discovery with the outer cancellation reason', async () => {
 	mocks.accounts.mockReturnValue([]);
 	mocks.known.mockResolvedValue([]);
 	mocks.initial.mockResolvedValue(null);
@@ -133,17 +143,66 @@ test('an outer cancellation during default discovery remains a cancellation', as
 	const started = new Promise<void>((resolve) => {
 		markStarted = resolve;
 	});
+	let discoverySignal: AbortSignal | undefined;
 	mocks.resolve.mockImplementation(
 		({signal}: {signal: AbortSignal}) =>
 			new Promise((_, reject) => {
+				discoverySignal = signal;
 				signal.addEventListener('abort', () => reject(signal.reason), {once: true});
 				markStarted();
 			}),
 	);
-	const controller = new AbortController();
-	const cancelled = warmAuthRuntimeTarget(controller.signal);
-	const rejection = expect(cancelled).rejects.toThrow('synthetic cancellation');
+	await warmAuthRuntimeTarget(new AbortController().signal);
+	Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true);
+	const container = document.createElement('div');
+	const root = createRoot(container);
+	await act(async () =>
+		root.render(
+			<AuthRuntimeTargetBoundary data-flx="auth.flow.auth-runtime-target-boundary-test.auth-runtime-target-boundary">
+				<Probe data-flx="auth.flow.auth-runtime-target-boundary-test.probe" />
+			</AuthRuntimeTargetBoundary>,
+		),
+	);
 	await started;
-	controller.abort(new Error('synthetic cancellation'));
-	await rejection;
+	await act(async () => root.unmount());
+	expect(discoverySignal?.aborted).toBe(true);
+	expect(discoverySignal?.reason.name).toBe('AbortError');
+	Reflect.deleteProperty(globalThis, 'IS_REACT_ACT_ENVIRONMENT');
 });
+
+test('unavailable remembered-instance storage skips the default and leaves manual selection usable', async () => {
+	mocks.accounts.mockReturnValue([]);
+	mocks.known.mockRejectedValue(new Error('storage unavailable'));
+	await warm();
+	await renderBoundary();
+	expect(target).not.toBeNull();
+	expect(target?.snapshot).toBeNull();
+	expect(mocks.defaultInput).not.toHaveBeenCalled();
+	expect(mocks.resolve).not.toHaveBeenCalled();
+});
+
+test('an unavailable optional desktop default leaves manual selection usable', async () => {
+	mocks.accounts.mockReturnValue([]);
+	mocks.known.mockResolvedValue([]);
+	await warm();
+	mocks.defaultInput.mockRejectedValue(new Error('default IPC unavailable'));
+	await renderBoundary();
+	expect(target).not.toBeNull();
+	expect(target?.snapshot).toBeNull();
+	expect(mocks.resolve).not.toHaveBeenCalled();
+});
+
+test.each(['known', 'defaultInput', 'resolve'] as const)(
+	'a stalled %s read shares the optional discovery deadline',
+	async (step) => {
+		mocks.accounts.mockReturnValue([]);
+		mocks.known.mockResolvedValue([]);
+		await warm();
+		mocks[step].mockImplementation(() => new Promise(() => {}));
+		await renderBoundary(3200);
+		expect(target).not.toBeNull();
+		expect(target?.snapshot).toBeNull();
+		expect(mocks[step]).toHaveBeenCalledTimes(1);
+		if (step !== 'resolve') expect(mocks.resolve).not.toHaveBeenCalled();
+	},
+);

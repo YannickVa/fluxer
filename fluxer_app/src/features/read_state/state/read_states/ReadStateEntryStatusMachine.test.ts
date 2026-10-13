@@ -2,10 +2,7 @@
 
 import {fromTimestamp} from '@fluxer/snowflake/src/SnowflakeUtils';
 import {describe, expect, it} from 'vitest';
-import {
-	type ReadStateEntryStatusInput,
-	resolveReadStateEntryStatus,
-} from './ReadStateEntryStatusMachine';
+import {type ReadStateEntryStatusInput, resolveReadStateEntryStatus} from './ReadStateEntryStatusMachine';
 
 const BASE_TIMESTAMP = Date.UTC(2024, 0, 1);
 const ACK_ID = fromTimestamp(BASE_TIMESTAMP + 1000);
@@ -24,7 +21,10 @@ function input(overrides: Partial<ReadStateEntryStatusInput> = {}): ReadStateEnt
 	};
 }
 
-function expectResolvedState(overrides: Partial<ReadStateEntryStatusInput>, expected: ReturnType<typeof resolveReadStateEntryStatus>['state']): void {
+function expectResolvedState(
+	overrides: Partial<ReadStateEntryStatusInput>,
+	expected: ReturnType<typeof resolveReadStateEntryStatus>['state'],
+): void {
 	expect(resolveReadStateEntryStatus(input(overrides)).state).toBe(expected);
 }
 
@@ -75,5 +75,4 @@ describe('readStateEntryStatusMachine', () => {
 			isUnreadOrMentioned: false,
 		});
 	});
-
 });

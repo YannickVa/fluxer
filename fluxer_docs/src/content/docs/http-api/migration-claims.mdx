@@ -1,0 +1,80 @@
+---
+# SPDX-License-Identifier: AGPL-3.0-or-later
+title: Migration claims
+description: Privately delivered ownership proofs, email verification, and migrated account completion.
+---
+
+import RouteHeader from '@/components/RouteHeader.astro';
+
+These local authentication routes require an explicitly enabled migration with verified readiness. They remain unavailable under enforced SSO. Every request uses an explicit JSON POST with no query string. Responses use `Cache-Control: no-store` and `Referrer-Policy: no-referrer`. Treat every ownership credential, proof, challenge and email code as confidential; never log them or use an ownership proof as a session token.
+
+## Redeem an ownership credential
+
+<RouteHeader method="POST" path="/v1/auth/migration/redeem" unauthenticated />
+
+Consumes a one-time ownership credential only after explicit confirmation. Returns a restricted proof; creates no login session. Link previews must not submit this operation.
+
+### JSON body
+
+| Field | Type | Description |
+| --- | --- | --- |
+| token | string | Privately delivered ownership credential |
+| confirm | boolean | Must be true |
+
+### Response body
+
+| Field | Type | Description |
+| --- | --- | --- |
+| proof | string | Restricted account claim proof |
+| expires_at | ISO8601 timestamp | Original ownership deadline |
+| username | string | Bound migrated account username |
+| date_of_birth_required | boolean | Whether a birth date must be supplied |
+
+## Request an email verification code
+
+<RouteHeader method="POST" path="/v1/auth/migration/email" unauthenticated />
+
+Sends a code to the requested email address. The challenge is bound to the proof and cannot extend its original ownership deadline. Resending is subject to the returned cooldown.
+
+### JSON body
+
+| Field | Type | Description |
+| --- | --- | --- |
+| proof | string | Restricted account claim proof |
+| email | string | Address to verify |
+
+### Response body
+
+| Field | Type | Description |
+| --- | --- | --- |
+| challenge | string | Proof-bound email challenge |
+| expires_at | ISO8601 timestamp | Challenge deadline, bounded by ownership expiry |
+| resend_available_at | ISO8601 timestamp | Earliest allowed resend time |
+
+## Complete a migrated account claim
+
+<RouteHeader method="POST" path="/v1/auth/migration/complete" unauthenticated />
+
+Verifies the email code, password, regional age requirements and required consent before atomically claiming the account. Rejected or expired proofs cannot claim an account. Completion creates no session; the user must sign in normally afterwards.
+
+### JSON body
+
+| Field | Type | Description |
+| --- | --- | --- |
+| proof | string | Restricted account claim proof |
+| challenge | string | Proof-bound email challenge |
+| code | string | Email verification code (1-32 characters) |
+| password | string | New password subject to instance password validation |
+| date_of_birth? | string | Birth date as YYYY-MM-DD; required when not already recorded |
+| consent? | boolean | Agreement to instance terms and privacy policy when required; defaults to false |
+
+### Response body
+
+| Field | Type | Description |
+| --- | --- | --- |
+| user_id | snowflake | Claimed account ID |
+| login_required | boolean | Always true |
+
+## Errors and limits
+
+Each operation has its own route bucket and the global HTTP limit. Validation failures return 400. Invalid, expired, consumed or revoked credentials, proofs and challenges return 401 `INVALID_TOKEN`; stop the claim flow. Access or policy rejection returns 403, rate limits return 429 and unavailable migration or provider operations return 503. Error responses contain no ownership credentials. See [HTTP errors](/http-api/errors/) and [rate limits](/topics/rate-limits/).

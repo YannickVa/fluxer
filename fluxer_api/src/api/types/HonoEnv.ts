@@ -6,6 +6,7 @@ import type {AdminApiKeyService} from '@app/api/admin/services/AdminApiKeyServic
 import type {AdminArchiveService} from '@app/api/admin/services/AdminArchiveService';
 import type {AuthRequestService} from '@app/api/auth/AuthRequestService';
 import type {DesktopHandoffService} from '@app/api/auth/services/DesktopHandoffService';
+import type {MigrationClaimCompletionService} from '@app/api/auth/services/MigrationClaimCompletionService';
 import type {SsoService} from '@app/api/auth/services/SsoService';
 import type {ApplicationID, UserID} from '@app/api/BrandedTypes';
 import type {IBlueskyOAuthService} from '@app/api/bluesky/IBlueskyOAuthService';
@@ -86,7 +87,6 @@ import type {IEmailService} from '@pkgs/email/src/IEmailService';
 import type {IRateLimitService} from '@pkgs/rate_limit/src/IRateLimitService';
 import type {IWorkerService} from '@pkgs/worker/src/contracts/IWorkerService';
 import type {Hono} from 'hono';
-import type {MigrationClaimCompletionService} from '@app/api/auth/services/MigrationClaimCompletionService';
 import type {ZodType} from 'zod';
 
 export interface HonoEnv {

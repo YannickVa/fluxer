@@ -59,7 +59,7 @@ import {getSameIpDecisionKey, getSubnet} from '@fluxer/ip_utils/src/IpAddress';
 import type {RegisterRequest} from '@fluxer/schema/src/domains/auth/AuthSchemas';
 import {UsernameType} from '@fluxer/schema/src/primitives/UserValidators';
 import {parseAcceptLanguage} from '@pkgs/locale/src/resolution/AcceptLanguageNegotiation';
-import {types} from 'cassandra-driver';
+import type {types} from 'cassandra-driver';
 import {ms} from 'itty-time';
 
 interface RegisterParams {

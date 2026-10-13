@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {normalizeInstanceMemberConfig} from '@fluxer/instance_bootstrap/src/MemberConfig';
-
 import type {RuntimeConfigSnapshot} from '@app/features/app/state/RuntimeConfigSnapshot';
 import {resolveInstanceAssetUrl} from '@app/features/auth/InstanceBranding';
+import {normalizeInstanceMemberConfig} from '@fluxer/instance_bootstrap/src/MemberConfig';
 import {describe, expect, test} from 'vitest';
 
 type Branding = RuntimeConfigSnapshot['appPublic']['branding'];

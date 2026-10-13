@@ -218,24 +218,23 @@ describe('PostgreSQL KV writes against an ephemeral embedded PostgreSQL engine',
 		expect(later.getTime()).toBeGreaterThan(expiry.getTime());
 	});
 
-	it.each([
-		'patch',
-		'patchWithTtl',
-		'upsert',
-	] as const)('treats an expired row as absent during %s, without resurrecting its data', async (operation) => {
-		await pg.query("UPDATE synthetic_kv SET expires_at = now() - interval '1 second'");
-		const query =
-			operation === 'upsert'
-				? Rows.upsertAll({id: 'synthetic', value: 'new'} as SyntheticRow)
-				: operation === 'patchWithTtl'
-					? Rows.patchByPkWithTtl({id: 'synthetic'}, {value: Db.set('new')}, 60)
-					: Rows.patchByPk({id: 'synthetic'}, {value: Db.set('new')});
-		await db.executeQuery(query);
-		expect(await stored()).toEqual({id: 'synthetic', value: 'new'});
-		const expiry = (await pg.query<{expires_at: Date | null}>('SELECT expires_at FROM synthetic_kv')).rows[0]!
-			.expires_at;
-		expect(expiry !== null).toBe(operation === 'patchWithTtl');
-	});
+	it.each(['patch', 'patchWithTtl', 'upsert'] as const)(
+		'treats an expired row as absent during %s, without resurrecting its data',
+		async (operation) => {
+			await pg.query("UPDATE synthetic_kv SET expires_at = now() - interval '1 second'");
+			const query =
+				operation === 'upsert'
+					? Rows.upsertAll({id: 'synthetic', value: 'new'} as SyntheticRow)
+					: operation === 'patchWithTtl'
+						? Rows.patchByPkWithTtl({id: 'synthetic'}, {value: Db.set('new')}, 60)
+						: Rows.patchByPk({id: 'synthetic'}, {value: Db.set('new')});
+			await db.executeQuery(query);
+			expect(await stored()).toEqual({id: 'synthetic', value: 'new'});
+			const expiry = (await pg.query<{expires_at: Date | null}>('SELECT expires_at FROM synthetic_kv')).rows[0]!
+				.expires_at;
+			expect(expiry !== null).toBe(operation === 'patchWithTtl');
+		},
+	);
 
 	it('allows insert-if-absent to replace an expired generation but never keeps its fields', async () => {
 		await pg.query("UPDATE synthetic_kv SET expires_at = now() - interval '1 second'");

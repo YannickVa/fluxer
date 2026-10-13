@@ -7,7 +7,7 @@ import {fetchOne} from '../../database/CassandraQueryExecution';
 import {MigrationClaimReadiness} from '../../database/MigrationClaimReadiness';
 import {type MigrationClaimContext, MigrationClaimContextSchema} from './MigrationClaimTicketService';
 
-export {MigrationClaimReadiness, type MigrationClaimReadinessRow} from '../../database/MigrationClaimReadiness';
+export {MigrationClaimReadiness} from '../../database/MigrationClaimReadiness';
 
 /** Revocation remains available after readiness/deactivation stops new claims. */
 export function requireMigrationClaimRevocationContext(config: APIConfig): MigrationClaimContext {

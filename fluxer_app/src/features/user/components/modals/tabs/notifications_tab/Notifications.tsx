@@ -207,26 +207,29 @@ export const Notifications: FC<NotificationsProps> = observer(
 						description={i18n._(QUIET_HOURS_DESCRIPTION_DESCRIPTOR)}
 						value={NotificationState.quietHoursEnabled}
 						onChange={NotificationState.setQuietHoursEnabled}
+						data-flx="user.notifications-tab.notifications.switch.set-quiet-hours-enabled"
 					/>
 					{NotificationState.quietHoursEnabled ? (
-						<div className={styles.quietHoursTimes}>
-							<label>
-								<span>{i18n._(START_TIME_DESCRIPTOR)}</span>
+						<div className={styles.quietHoursTimes} data-flx="user.notifications-tab.notifications.quiet-hours-times">
+							<label data-flx="user.notifications-tab.notifications.label">
+								<span data-flx="user.notifications-tab.notifications.span">{i18n._(START_TIME_DESCRIPTOR)}</span>
 								<input
 									type="time"
 									value={formatQuietHoursTime(NotificationState.quietHoursStartMinutes)}
 									onChange={(event) => handleQuietHoursStartChange(event.target.value)}
+									data-flx="user.notifications-tab.notifications.input.quiet-hours-start-change.time"
 								/>
 							</label>
-							<label>
-								<span>{i18n._(END_TIME_DESCRIPTOR)}</span>
+							<label data-flx="user.notifications-tab.notifications.label--2">
+								<span data-flx="user.notifications-tab.notifications.span--2">{i18n._(END_TIME_DESCRIPTOR)}</span>
 								<input
 									type="time"
 									value={formatQuietHoursTime(NotificationState.quietHoursEndMinutes)}
 									onChange={(event) => handleQuietHoursEndChange(event.target.value)}
+									data-flx="user.notifications-tab.notifications.input.quiet-hours-end-change.time"
 								/>
 							</label>
-							<p>
+							<p data-flx="user.notifications-tab.notifications.p">
 								<Trans>Uses this device’s local time. Matching start and end times means all day.</Trans>
 							</p>
 						</div>

@@ -143,17 +143,18 @@ describe('Isolated migration claim transport', () => {
 		expect(JSON.stringify(flow.view)).not.toContain('PRIVATE');
 	});
 
-	it.each([
-		401, 429, 503, 502,
-	])('sanitizes failure status %s and never retries a one-time redemption', async (status) => {
-		const {flow, send} = fixture();
-		send.mockResolvedValueOnce(new Response(`PRIVATE ${TOKEN}`, {status}));
-		await flow.confirm();
-		await flow.confirm();
-		expect(send).toHaveBeenCalledTimes(1);
-		expect(flow.view.stage).toBe('stopped');
-		expect(JSON.stringify(flow.view)).not.toContain('PRIVATE');
-	});
+	it.each([401, 429, 503, 502])(
+		'sanitizes failure status %s and never retries a one-time redemption',
+		async (status) => {
+			const {flow, send} = fixture();
+			send.mockResolvedValueOnce(new Response(`PRIVATE ${TOKEN}`, {status}));
+			await flow.confirm();
+			await flow.confirm();
+			expect(send).toHaveBeenCalledTimes(1);
+			expect(flow.view.stage).toBe('stopped');
+			expect(JSON.stringify(flow.view)).not.toContain('PRIVATE');
+		},
+	);
 
 	it('sanitizes malformed successful response bodies without leaking proof material', async () => {
 		const {api, send} = fixture();

@@ -467,6 +467,26 @@ test('a snowflake is typed string, so a snowflake documented as integer fails', 
 	]);
 });
 
+test('a line break in a long field name preserves schema and optionality checks', () => {
+	for (const lineBreak of ['<br/>', '<br />']) {
+		const source = mutate('| owner_id? | snowflake |', `| owner_${lineBreak}id? | snowflake |`);
+		const result = verify(source);
+		assert.deepEqual(findings(result), []);
+		assert.equal(result.counters.typesCompared, verify(PAGE).counters.typesCompared);
+		const mistyped = verify(
+			source.replace(`| owner_${lineBreak}id? | snowflake |`, `| owner_${lineBreak}id? | integer |`),
+		);
+		assert.ok(
+			mistyped.mismatches.some((finding) => finding.kind === 'type-mismatch' && finding.detail.includes('owner_id')),
+			JSON.stringify(findings(mistyped)),
+		);
+		const misspelled = verify(source.replace(`owner_${lineBreak}id?`, `owner_${lineBreak}idx?`));
+		assert.ok(
+			misspelled.mismatches.some((finding) => finding.kind === 'body-missing' && finding.detail === 'owner_id'),
+		);
+	}
+});
+
 test('a type outside every anyOf branch fails', () => {
 	const result = verify(mutate('| value | boolean | The value |', '| value | integer | The value |'));
 	assert.deepEqual(findings(result), [

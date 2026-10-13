@@ -1221,6 +1221,8 @@ mod tests {
     #[test]
     fn auth_entry_paths_are_the_signed_out_entry_routes() {
         for path in [
+            "/migration/claim",
+            "/migration/claim/",
             "/login",
             "/login/",
             "/register",
@@ -1237,6 +1239,8 @@ mod tests {
             assert!(is_auth_entry_path(path), "{path} is an auth entry route");
         }
         for path in [
+            "/migration/claimx",
+            "/migration",
             "/",
             "/app",
             "/channels/@me",
@@ -1262,10 +1266,14 @@ mod tests {
         };
 
         let auth = read_document(serve_spa_index(&state, &HeaderMap::new(), "/login").await).await;
+        let claim =
+            read_document(serve_spa_index(&state, &HeaderMap::new(), "/migration/claim").await)
+                .await;
         let app =
             read_document(serve_spa_index(&state, &HeaderMap::new(), "/channels/@me").await).await;
 
         assert!(auth.contains("auth-entry-shell"));
+        assert!(claim.contains("auth-entry-shell"));
         assert!(!app.contains("auth-entry-shell"));
     }
 

@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import {createHash, randomBytes} from 'node:crypto';
+import type {UserRepository} from '@app/api/user/repositories/UserRepository';
 import {InvalidTokenError} from '@fluxer/errors/src/domains/core/InvalidTokenError';
 import type {ICacheService} from '@pkgs/cache/src/ICacheService';
 import {z} from 'zod';
 import {createUserID, type UserID} from '../../BrandedTypes';
 import type {User} from '../../models/User';
-import type {UserRepository} from '@app/api/user/repositories/UserRepository';
 import {assertMigrationClaimEligible} from '../../user/MigrationAccountEligibility';
 
 const LIFETIME_SECONDS = 15 * 60;

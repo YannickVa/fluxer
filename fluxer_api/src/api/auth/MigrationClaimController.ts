@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import {AdminACLs} from '@fluxer/constants/src/AdminACLs';
+import {getRegionalMinimumAge} from '@fluxer/constants/src/RegionalMinimumAge';
 import {UserFlags} from '@fluxer/constants/src/UserConstants';
 import {ValidationErrorCodes} from '@fluxer/constants/src/ValidationErrorCodes';
 import {MfaNotEnabledError} from '@fluxer/errors/src/domains/auth/MfaNotEnabledError';
@@ -33,7 +34,6 @@ import {getInstanceConfigRepository} from '../middleware/ServiceSingletons';
 import {SudoModeMiddleware} from '../middleware/SudoModeMiddleware';
 import type {User} from '../models/User';
 import {RateLimitConfigs} from '../RateLimitConfig';
-import {getRegionalMinimumAge} from '@fluxer/constants/src/RegionalMinimumAge';
 import type {HonoApp, HonoEnv} from '../types/HonoEnv';
 import {LEGACY_SUSPICIOUS_DISABLED_FLAG} from '../user/MigrationAccountEligibility';
 import {Validator} from '../Validator';
@@ -41,8 +41,8 @@ import {MigrationClaimCompletionService} from './services/MigrationClaimCompleti
 import {MigrationClaimOperatorService} from './services/MigrationClaimOperatorService';
 import {requireMigrationClaimContext, requireMigrationClaimRevocationContext} from './services/MigrationClaimPolicy';
 import {MigrationClaimTicketService} from './services/MigrationClaimTicketService';
-import {requireSudoMode} from './services/SudoVerificationService';
 import {userHasMfa} from './services/SudoMethods';
+import {requireSudoMode} from './services/SudoVerificationService';
 
 const claimLogger = createLogger('migration_claim');
 

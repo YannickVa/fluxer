@@ -689,8 +689,8 @@ fn build_tailwind(manifest_dir: &Path, out_dir: &Path) {
     let input = manifest_dir.join("src/styles/app.css");
     let output = output_dir.join("app.css");
     let candidates = [
-        manifest_dir.join("node_modules/.bin/tailwindcss"),
-        manifest_dir.join("../node_modules/.bin/tailwindcss"),
+        manifest_dir.join("node_modules/@tailwindcss/cli/dist/index.mjs"),
+        manifest_dir.join("../node_modules/@tailwindcss/cli/dist/index.mjs"),
     ];
     let Some(cli) = candidates.iter().find(|c| c.exists()) else {
         panic!(
@@ -699,7 +699,10 @@ fn build_tailwind(manifest_dir: &Path, out_dir: &Path) {
             candidates
         );
     };
-    let status = Command::new(cli)
+    // Invoke the JavaScript entry point directly: pnpm's POSIX shim is not
+    // executable by Command on Windows, and no shell is needed on either OS.
+    let status = Command::new("node")
+        .arg(cli)
         .arg("-i")
         .arg(&input)
         .arg("-o")

@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import type {UserID} from '@app/api/BrandedTypes';
 import {isDeepStrictEqual} from 'node:util';
+import type {UserID} from '@app/api/BrandedTypes';
 import {Db, type DbOp} from '@app/api/database/CassandraTypes';
 import type {UserRow} from '@app/api/database/types/UserTypes';
 import {Logger} from '@app/api/Logger';
 import {User} from '@app/api/models/User';
+import {assertMigrationClaimEligible, LEGACY_SUSPICIOUS_DISABLED_FLAG} from '@app/api/user/MigrationAccountEligibility';
 import {
 	UserDataRepository,
 	type UserDeletionTransition,
@@ -17,6 +18,7 @@ import {
 import {UserIndexRepository} from '@app/api/user/repositories/account/crud/UserIndexRepository';
 import {UserSearchRepository} from '@app/api/user/repositories/account/crud/UserSearchRepository';
 import {UserLookupRepository} from '@app/api/user/repositories/account/UserLookupRepository';
+import type {MigratedAccountClaimData} from '@app/api/user/repositories/IUserAccountRepository';
 import {
 	extractPremiumFlagsFromLegacyUserFlags,
 	LEGACY_DEAD_USER_FLAGS_MASK,
@@ -24,8 +26,6 @@ import {
 } from '@fluxer/constants/src/UserConstants';
 import {InvalidTokenError} from '@fluxer/errors/src/domains/core/InvalidTokenError';
 import type {IKVProvider} from '@pkgs/kv_client/src/IKVProvider';
-import {assertMigrationClaimEligible, LEGACY_SUSPICIOUS_DISABLED_FLAG} from '@app/api/user/MigrationAccountEligibility';
-import type {MigratedAccountClaimData} from '@app/api/user/repositories/IUserAccountRepository';
 
 export interface UserDeletionScheduleUpdate {
 	pending_deletion_at: Date | null;

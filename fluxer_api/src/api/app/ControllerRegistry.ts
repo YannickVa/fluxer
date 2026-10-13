@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {MigrationClaimController} from '@app/api/auth/MigrationClaimController';
 import {registerAdminControllers} from '@app/api/admin/controllers/index';
 import {AttachmentController} from '@app/api/attachment/AttachmentController';
 import {AuthController} from '@app/api/auth/AuthController';
+import {MigrationClaimController} from '@app/api/auth/MigrationClaimController';
 import {OriginHandoffController} from '@app/api/auth/OriginHandoffController';
 import {PasskeyBridgeController} from '@app/api/auth/PasskeyBridgeController';
 import {BlueskyOAuthController} from '@app/api/bluesky/BlueskyOAuthController';

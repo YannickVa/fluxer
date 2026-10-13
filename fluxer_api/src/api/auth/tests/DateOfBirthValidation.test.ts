@@ -60,31 +60,26 @@ describe('Shared registration and migration-claim birth-date validation', () => 
 		expectDobError(value, 13, ValidationErrorCodes.INVALID_DATE_OF_BIRTH_FORMAT);
 	});
 
-	it.each([
-		'2000-02-29',
-		'2004-02-29',
-		'1900-02-28',
-		'2000-04-30',
-		'0001-01-01',
-		'0099-12-31',
-	])('preserves the exact calendar date %s without time-zone or year normalization', (value) => {
-		today();
-		expect(validateDateOfBirth(ctx, {dateOfBirth: value, minAge: 13}).toString()).toBe(value);
-	});
+	it.each(['2000-02-29', '2004-02-29', '1900-02-28', '2000-04-30', '0001-01-01', '0099-12-31'])(
+		'preserves the exact calendar date %s without time-zone or year normalization',
+		(value) => {
+			today();
+			expect(validateDateOfBirth(ctx, {dateOfBirth: value, minAge: 13}).toString()).toBe(value);
+		},
+	);
 
-	it.each([
-		'America/Los_Angeles',
-		'Europe/Brussels',
-		'Pacific/Kiritimati',
-	])('does not grant minimum-age or mature eligibility a day early in %s', (timeZone) => {
-		vi.stubEnv('TZ', timeZone);
-		today();
-		expect(validateAge(ctx, {dateOfBirth: '2013-09-30', minAge: 13})).toBe(true);
-		expect(validateAge(ctx, {dateOfBirth: '2013-10-01', minAge: 13})).toBe(false);
-		expect(AgeUtils.isUserAdult('2008-09-30')).toBe(true);
-		expect(AgeUtils.isUserAdult('2008-10-01')).toBe(false);
-		expect(AgeUtils.calculateAge({year: 2013, month: 9, day: 30})).toBe(13);
-	});
+	it.each(['America/Los_Angeles', 'Europe/Brussels', 'Pacific/Kiritimati'])(
+		'does not grant minimum-age or mature eligibility a day early in %s',
+		(timeZone) => {
+			vi.stubEnv('TZ', timeZone);
+			today();
+			expect(validateAge(ctx, {dateOfBirth: '2013-09-30', minAge: 13})).toBe(true);
+			expect(validateAge(ctx, {dateOfBirth: '2013-10-01', minAge: 13})).toBe(false);
+			expect(AgeUtils.isUserAdult('2008-09-30')).toBe(true);
+			expect(AgeUtils.isUserAdult('2008-10-01')).toBe(false);
+			expect(AgeUtils.calculateAge({year: 2013, month: 9, day: 30})).toBe(13);
+		},
+	);
 
 	it('uses the supplied instance minimum age without replacing it with the default', () => {
 		today();

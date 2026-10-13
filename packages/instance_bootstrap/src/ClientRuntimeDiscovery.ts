@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {normalizeInstanceMemberConfig} from '@fluxer/instance_bootstrap/src/MemberConfig';
 import {
 	type InstanceDiscoveryDocument,
 	type InstanceGeneration,
 	InvalidInstanceDiscoveryDocumentError,
 } from '@fluxer/instance_bootstrap/src/Discovery';
+import {normalizeInstanceMemberConfig} from '@fluxer/instance_bootstrap/src/MemberConfig';
 import type {
 	InstanceAgePolicy,
 	InstanceAppPublic,

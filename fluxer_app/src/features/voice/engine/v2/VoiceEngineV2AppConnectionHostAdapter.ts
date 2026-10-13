@@ -52,13 +52,7 @@ import {
 	loadVideoDecoderExclusions,
 } from '@app/features/voice/utils/VideoDecoderCapabilities';
 import {getScreenShareBitrateCeilingBps} from '@app/features/voice/utils/VideoQualityEntitlement';
-import type {
-	ExternalE2EEKeyProvider,
-	LocalTrack,
-	Room,
-	RoomOptions,
-	TrackPublishOptions,
-} from 'livekit-client';
+import type {ExternalE2EEKeyProvider, LocalTrack, Room, RoomOptions, TrackPublishOptions} from 'livekit-client';
 import {Room as LiveKitRoom, Track} from 'livekit-client';
 import {makeObservable, observableRef} from 'mobx';
 import type {Subscription} from 'rxjs';

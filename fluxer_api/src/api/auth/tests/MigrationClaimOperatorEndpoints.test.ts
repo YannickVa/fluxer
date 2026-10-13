@@ -176,35 +176,38 @@ describe('Privileged migration ownership operations', () => {
 		expect(await auditActions()).toEqual([]);
 	});
 
-	it.each([
-		ISSUE,
-		REVOKE,
-	])('requires authenticated operator, dedicated ACL, enrolled MFA and explicit confirmation on %s', async (path) => {
-		await enable();
-		const data = body(path === ISSUE);
-		expect((await post(path, data, '')).status).toBe(401);
-		await upsertOne(
-			Users.patchByPk({user_id: createUserID(BigInt(admin.userId))}, {acls: Db.set(new Set([AdminACLs.AUTHENTICATE]))}),
-		);
-		expect((await post(path, data)).status).toBe(403);
-		await upsertOne(
-			Users.patchByPk(
-				{user_id: createUserID(BigInt(admin.userId))},
-				{acls: Db.set(new Set([AdminACLs.AUTHENTICATE, AdminACLs.MIGRATION_CLAIM_MANAGE]))},
-			),
-		);
-		expect((await post(path, {...data, confirm: false})).status).toBe(400);
-		await upsertOne(
-			Users.patchByPk(
-				{user_id: createUserID(BigInt(admin.userId))},
-				{authenticator_types: Db.set(new Set()), totp_secret: Db.set(null)},
-			),
-		);
-		const noMfa = await post(path, data);
-		expect(noMfa.status).toBe(400);
-		privateHeaders(noMfa);
-		expect(await auditActions()).toEqual([]);
-	});
+	it.each([ISSUE, REVOKE])(
+		'requires authenticated operator, dedicated ACL, enrolled MFA and explicit confirmation on %s',
+		async (path) => {
+			await enable();
+			const data = body(path === ISSUE);
+			expect((await post(path, data, '')).status).toBe(401);
+			await upsertOne(
+				Users.patchByPk(
+					{user_id: createUserID(BigInt(admin.userId))},
+					{acls: Db.set(new Set([AdminACLs.AUTHENTICATE]))},
+				),
+			);
+			expect((await post(path, data)).status).toBe(403);
+			await upsertOne(
+				Users.patchByPk(
+					{user_id: createUserID(BigInt(admin.userId))},
+					{acls: Db.set(new Set([AdminACLs.AUTHENTICATE, AdminACLs.MIGRATION_CLAIM_MANAGE]))},
+				),
+			);
+			expect((await post(path, {...data, confirm: false})).status).toBe(400);
+			await upsertOne(
+				Users.patchByPk(
+					{user_id: createUserID(BigInt(admin.userId))},
+					{authenticator_types: Db.set(new Set()), totp_secret: Db.set(null)},
+				),
+			);
+			const noMfa = await post(path, data);
+			expect(noMfa.status).toBe(400);
+			privateHeaders(noMfa);
+			expect(await auditActions()).toEqual([]);
+		},
+	);
 
 	it('requires valid step-up rather than treating a password or missing MFA code as confirmation', async () => {
 		await enable();
@@ -288,37 +291,35 @@ describe('Privileged migration ownership operations', () => {
 		expect((await auditActions()).map((row) => row.action)).toContain('migration_claim_revoked');
 	});
 
-	it.each([
-		'ACL',
-		'MFA',
-		'disabled',
-		'readiness',
-	] as const)('rechecks operator/readiness after asynchronous auditing: %s removal refuses before publication', async (kind) => {
-		await enable();
-		const audit = AdminAuditService.prototype.createAuditLog;
-		vi.spyOn(AdminAuditService.prototype, 'createAuditLog').mockImplementationOnce(async function (
-			this: AdminAuditService,
-			params,
-		) {
-			await audit.call(this, params);
-			if (kind === 'readiness') await upsertOne(MigrationClaimReadiness.deleteByPk({scope: 'active'}));
-			else
-				await upsertOne(
-					Users.patchByPk(
-						{user_id: createUserID(BigInt(admin.userId))},
-						kind === 'ACL'
-							? {acls: Db.set(new Set())}
-							: kind === 'MFA'
-								? {authenticator_types: Db.set(new Set()), totp_secret: Db.set(null)}
-								: {flags: Db.set(UserFlags.DISABLED)},
-					),
-				);
-		});
-		const issue = vi.spyOn(MigrationClaimTicketService.prototype, 'issue');
-		expect((await post()).status).not.toBe(200);
-		expect(issue).not.toHaveBeenCalled();
-		expect((await auditActions()).map((row) => row.action)).toEqual(['migration_claim_issue_requested']);
-	});
+	it.each(['ACL', 'MFA', 'disabled', 'readiness'] as const)(
+		'rechecks operator/readiness after asynchronous auditing: %s removal refuses before publication',
+		async (kind) => {
+			await enable();
+			const audit = AdminAuditService.prototype.createAuditLog;
+			vi.spyOn(AdminAuditService.prototype, 'createAuditLog').mockImplementationOnce(async function (
+				this: AdminAuditService,
+				params,
+			) {
+				await audit.call(this, params);
+				if (kind === 'readiness') await upsertOne(MigrationClaimReadiness.deleteByPk({scope: 'active'}));
+				else
+					await upsertOne(
+						Users.patchByPk(
+							{user_id: createUserID(BigInt(admin.userId))},
+							kind === 'ACL'
+								? {acls: Db.set(new Set())}
+								: kind === 'MFA'
+									? {authenticator_types: Db.set(new Set()), totp_secret: Db.set(null)}
+									: {flags: Db.set(UserFlags.DISABLED)},
+						),
+					);
+			});
+			const issue = vi.spyOn(MigrationClaimTicketService.prototype, 'issue');
+			expect((await post()).status).not.toBe(200);
+			expect(issue).not.toHaveBeenCalled();
+			expect((await auditActions()).map((row) => row.action)).toEqual(['migration_claim_issue_requested']);
+		},
+	);
 
 	it('audit failure after ticket creation withholds the credential and revokes its generation', async () => {
 		await enable();
@@ -351,39 +352,39 @@ describe('Privileged migration ownership operations', () => {
 		expect(revoke).not.toHaveBeenCalled();
 	});
 
-	it.each([
-		'publication',
-		'success audit',
-	] as const)('withholds and invalidates a credential when readiness disappears after %s', async (phase) => {
-		await enable();
-		const issue = MigrationClaimTicketService.prototype.issue;
-		const issued = vi.spyOn(MigrationClaimTicketService.prototype, 'issue').mockImplementation(async function (
-			this: MigrationClaimTicketService,
-			userId,
-			discordUserId,
-		) {
-			const ticket = await issue.call(this, userId, discordUserId);
-			if (phase === 'publication') await upsertOne(MigrationClaimReadiness.deleteByPk({scope: 'active'}));
-			return ticket;
-		});
-		if (phase === 'success audit') {
-			const audit = AdminAuditService.prototype.createAuditLog;
-			vi.spyOn(AdminAuditService.prototype, 'createAuditLog').mockImplementation(async function (
-				this: AdminAuditService,
-				params,
+	it.each(['publication', 'success audit'] as const)(
+		'withholds and invalidates a credential when readiness disappears after %s',
+		async (phase) => {
+			await enable();
+			const issue = MigrationClaimTicketService.prototype.issue;
+			const issued = vi.spyOn(MigrationClaimTicketService.prototype, 'issue').mockImplementation(async function (
+				this: MigrationClaimTicketService,
+				userId,
+				discordUserId,
 			) {
-				await audit.call(this, params);
-				if (params.action === 'migration_claim_issued')
-					await upsertOne(MigrationClaimReadiness.deleteByPk({scope: 'active'}));
+				const ticket = await issue.call(this, userId, discordUserId);
+				if (phase === 'publication') await upsertOne(MigrationClaimReadiness.deleteByPk({scope: 'active'}));
+				return ticket;
 			});
-		}
-		const response = await post();
-		expect(response.status).toBe(503);
-		privateHeaders(response);
-		const ticket = await issued.mock.results[0]!.value;
-		expect(await response.text()).not.toContain(ticket.token);
-		await expect(tickets().consume(ticket.token)).rejects.toThrow();
-	});
+			if (phase === 'success audit') {
+				const audit = AdminAuditService.prototype.createAuditLog;
+				vi.spyOn(AdminAuditService.prototype, 'createAuditLog').mockImplementation(async function (
+					this: AdminAuditService,
+					params,
+				) {
+					await audit.call(this, params);
+					if (params.action === 'migration_claim_issued')
+						await upsertOne(MigrationClaimReadiness.deleteByPk({scope: 'active'}));
+				});
+			}
+			const response = await post();
+			expect(response.status).toBe(503);
+			privateHeaders(response);
+			const ticket = await issued.mock.results[0]!.value;
+			expect(await response.text()).not.toContain(ticket.token);
+			await expect(tickets().consume(ticket.token)).rejects.toThrow();
+		},
+	);
 
 	it('a failed revocation success audit returns no success, although the credential stays revoked', async () => {
 		await enable();
@@ -424,23 +425,23 @@ describe('Privileged migration ownership operations', () => {
 		expect(revoke).not.toHaveBeenCalled();
 	});
 
-	it.each([
-		ISSUE,
-		REVOKE,
-	])('rejects query credentials, non-JSON bodies and client-selected context for %s', async (path) => {
-		await enable();
-		const data = body(path === ISSUE);
-		for (const response of [
-			await post(`${path}?token=PRIVATE`, data),
-			await post(path, data, admin.token, {'content-type': 'text/plain'}),
-			await post(path, {...data, migration_run_id: RUN}),
-		]) {
-			expect(response.status).toBe(400);
-			privateHeaders(response);
-			expect(await response.text()).not.toContain('PRIVATE');
-		}
-		expect(await auditActions()).toEqual([]);
-	});
+	it.each([ISSUE, REVOKE])(
+		'rejects query credentials, non-JSON bodies and client-selected context for %s',
+		async (path) => {
+			await enable();
+			const data = body(path === ISSUE);
+			for (const response of [
+				await post(`${path}?token=PRIVATE`, data),
+				await post(path, data, admin.token, {'content-type': 'text/plain'}),
+				await post(path, {...data, migration_run_id: RUN}),
+			]) {
+				expect(response.status).toBe(400);
+				privateHeaders(response);
+				expect(await response.text()).not.toContain('PRIVATE');
+			}
+			expect(await auditActions()).toEqual([]);
+		},
+	);
 
 	it.each([ISSUE, REVOKE])('GET/HEAD requests cannot mutate claim credentials on %s', async (path) => {
 		await enable();

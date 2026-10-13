@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import InstanceSnapshotStore, {type RuntimeConfigSnapshot} from '@app/features/app/state/InstanceSnapshotStore';
-import {loadKnownInstances} from '@app/features/auth/flow/instance_selector/InstanceDirectoryStorage';
-import Accounts from '@app/features/auth/state/Accounts';
 import {AuthRouteLoadError} from '@app/features/auth/flow/AuthRouteLoadError';
 import {AuthShellLoadingState} from '@app/features/auth/flow/AuthShellLoadingState';
+import {loadKnownInstances} from '@app/features/auth/flow/instance_selector/InstanceDirectoryStorage';
+import Accounts from '@app/features/auth/state/Accounts';
 import {AuthRuntimeTarget, AuthRuntimeTargetProvider} from '@app/features/auth/state/AuthRuntimeTarget';
 import {getElectronAPI, isDesktop} from '@app/features/ui/utils/NativeUtils';
 import {type ReactNode, useCallback, useEffect, useReducer, useState} from 'react';
@@ -94,6 +94,24 @@ interface DesktopAuthRuntime {
 	readonly defaultSnapshot: RuntimeConfigSnapshot | null;
 }
 
+function waitForOptionalDesktopInput<T>(load: () => Promise<T> | T, signal: AbortSignal): Promise<T> {
+	return new Promise((resolve, reject) => {
+		if (signal.aborted) {
+			reject(signal.reason);
+			return;
+		}
+		const onAbort = () => reject(signal.reason);
+		signal.addEventListener('abort', onAbort, {once: true});
+		void Promise.resolve()
+			.then(() => {
+				signal.throwIfAborted();
+				return load();
+			})
+			.then(resolve, reject)
+			.finally(() => signal.removeEventListener('abort', onAbort));
+	});
+}
+
 function readWarmAuthRuntime(desktop: boolean): WarmAuthRuntime | null {
 	const warm = warmAuthRuntime;
 	if (warm === null || warm.desktop !== desktop) {
@@ -157,7 +175,7 @@ async function resolveBrowserAuthRuntime(signal: AbortSignal): Promise<RuntimeCo
 	return resolution.snapshot;
 }
 
-async function resolveDesktopAuthRuntime(signal: AbortSignal): Promise<DesktopAuthRuntime> {
+async function resolveDesktopAuthRuntime(signal: AbortSignal, resolveDefault = true): Promise<DesktopAuthRuntime> {
 	const api = getElectronAPI()?.desktopRuntimeConfig;
 	if (api === undefined) {
 		throw new DesktopAuthRuntimeUnavailableError();
@@ -168,15 +186,21 @@ async function resolveDesktopAuthRuntime(signal: AbortSignal): Promise<DesktopAu
 		const resolution = await InstanceSnapshotStore.resolve({input: initialInput, signal});
 		return {initialSnapshot: resolution.snapshot, defaultSnapshot: null};
 	}
-	if (Accounts.getAllAccounts().length > 0 || (await loadKnownInstances()).length > 0) {
+	if (!resolveDefault || Accounts.getAllAccounts().length > 0) {
 		return {initialSnapshot: null, defaultSnapshot: null};
 	}
-	const defaultInput = await api.defaultInput?.();
-	signal.throwIfAborted();
-	if (!defaultInput) return {initialSnapshot: null, defaultSnapshot: null};
 	try {
 		const defaultSignal = AbortSignal.any([signal, AbortSignal.timeout(3000)]);
-		const resolution = await InstanceSnapshotStore.resolve({input: defaultInput, signal: defaultSignal});
+		const knownInstances = await waitForOptionalDesktopInput(loadKnownInstances, defaultSignal);
+		signal.throwIfAborted();
+		if (knownInstances.length > 0) return {initialSnapshot: null, defaultSnapshot: null};
+		const defaultInput = await waitForOptionalDesktopInput(() => api.defaultInput?.(), defaultSignal);
+		signal.throwIfAborted();
+		if (!defaultInput) return {initialSnapshot: null, defaultSnapshot: null};
+		const resolution = await waitForOptionalDesktopInput(
+			() => InstanceSnapshotStore.resolve({input: defaultInput, signal: defaultSignal}),
+			defaultSignal,
+		);
 		signal.throwIfAborted();
 		return {initialSnapshot: null, defaultSnapshot: resolution.snapshot};
 	} catch {
@@ -188,7 +212,9 @@ async function resolveDesktopAuthRuntime(signal: AbortSignal): Promise<DesktopAu
 export async function warmAuthRuntimeTarget(signal: AbortSignal): Promise<RuntimeConfigSnapshot | null> {
 	const desktop = isDesktop();
 	if (desktop) {
-		const resolved = await resolveDesktopAuthRuntime(signal);
+		warmAuthRuntime = null;
+		const resolved = await resolveDesktopAuthRuntime(signal, false);
+		if (resolved.initialSnapshot === null) return null;
 		warmAuthRuntime = {
 			desktop,
 			runtime: resolved.initialSnapshot,

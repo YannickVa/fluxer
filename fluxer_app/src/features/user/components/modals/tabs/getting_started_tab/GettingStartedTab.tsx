@@ -73,38 +73,72 @@ interface StepRowProps {
 const StepStatusPill: React.FC<{status: StepStatus}> = ({status}) => {
 	if (status === 'complete') {
 		return (
-			<span className={clsx(styles.statusPill, styles.statusComplete)}>
-				<CheckCircleIcon size={remFromPx(14)} weight="fill" />
+			<span
+				className={clsx(styles.statusPill, styles.statusComplete)}
+				data-flx="user.getting-started-tab.getting-started-tab.step-status-pill.status-pill"
+			>
+				<CheckCircleIcon
+					size={remFromPx(14)}
+					weight="fill"
+					data-flx="user.getting-started-tab.getting-started-tab.step-status-pill.check-circle-icon"
+				/>
 				<Trans>Ready</Trans>
 			</span>
 		);
 	}
 	if (status === 'skipped') {
 		return (
-			<span className={clsx(styles.statusPill, styles.statusSkipped)}>
-				<CircleIcon size={remFromPx(14)} weight="fill" />
+			<span
+				className={clsx(styles.statusPill, styles.statusSkipped)}
+				data-flx="user.getting-started-tab.getting-started-tab.step-status-pill.status-pill--2"
+			>
+				<CircleIcon
+					size={remFromPx(14)}
+					weight="fill"
+					data-flx="user.getting-started-tab.getting-started-tab.step-status-pill.circle-icon"
+				/>
 				<Trans>Do later</Trans>
 			</span>
 		);
 	}
 	return (
-		<span className={clsx(styles.statusPill, styles.statusAttention)}>
+		<span
+			className={clsx(styles.statusPill, styles.statusAttention)}
+			data-flx="user.getting-started-tab.getting-started-tab.step-status-pill.status-pill--3"
+		>
 			<Trans>Next step</Trans>
 		</span>
 	);
 };
 
 const StepRow: React.FC<StepRowProps> = ({icon, title, description, status, children}) => (
-	<div className={styles.stepRow}>
-		<div className={styles.stepIcon}>{icon}</div>
-		<div className={styles.stepCopy}>
-			<div className={styles.stepTitleRow}>
-				<h3 className={styles.stepTitle}>{title}</h3>
-				<StepStatusPill status={status} />
-			</div>
-			<p className={styles.stepDescription}>{description}</p>
+	<div className={styles.stepRow} data-flx="user.getting-started-tab.getting-started-tab.step-row.step-row">
+		<div className={styles.stepIcon} data-flx="user.getting-started-tab.getting-started-tab.step-row.step-icon">
+			{icon}
 		</div>
-		<div className={styles.stepActions}>{children}</div>
+		<div className={styles.stepCopy} data-flx="user.getting-started-tab.getting-started-tab.step-row.step-copy">
+			<div
+				className={styles.stepTitleRow}
+				data-flx="user.getting-started-tab.getting-started-tab.step-row.step-title-row"
+			>
+				<h3 className={styles.stepTitle} data-flx="user.getting-started-tab.getting-started-tab.step-row.step-title">
+					{title}
+				</h3>
+				<StepStatusPill
+					status={status}
+					data-flx="user.getting-started-tab.getting-started-tab.step-row.step-status-pill"
+				/>
+			</div>
+			<p
+				className={styles.stepDescription}
+				data-flx="user.getting-started-tab.getting-started-tab.step-row.step-description"
+			>
+				{description}
+			</p>
+		</div>
+		<div className={styles.stepActions} data-flx="user.getting-started-tab.getting-started-tab.step-row.step-actions">
+			{children}
+		</div>
 	</div>
 );
 
@@ -227,27 +261,41 @@ const GettingStartedTab: React.FC = observer(() => {
 	};
 
 	return (
-		<SettingsTabContainer className={styles.container}>
-			<div className={styles.hero}>
-				<div className={styles.brandMark} aria-hidden="true">
+		<SettingsTabContainer
+			className={styles.container}
+			data-flx="user.getting-started-tab.getting-started-tab.container"
+		>
+			<div className={styles.hero} data-flx="user.getting-started-tab.getting-started-tab.hero">
+				<div
+					className={styles.brandMark}
+					aria-hidden="true"
+					data-flx="user.getting-started-tab.getting-started-tab.brand-mark"
+				>
 					{RuntimeConfig.iconUrl ? (
-						<img src={RuntimeConfig.iconUrl} alt="" />
+						<img src={RuntimeConfig.iconUrl} alt="" data-flx="user.getting-started-tab.getting-started-tab.img" />
 					) : (
-						<UsersThreeIcon size={remFromPx(30)} weight="duotone" />
+						<UsersThreeIcon
+							size={remFromPx(30)}
+							weight="duotone"
+							data-flx="user.getting-started-tab.getting-started-tab.users-three-icon"
+						/>
 					)}
 				</div>
-				<div className={styles.heroCopy}>
-					<span className={styles.eyebrow}>
+				<div className={styles.heroCopy} data-flx="user.getting-started-tab.getting-started-tab.hero-copy">
+					<span className={styles.eyebrow} data-flx="user.getting-started-tab.getting-started-tab.eyebrow">
 						<Trans>Private community setup</Trans>
 					</span>
-					<h2 className={styles.heroTitle}>
+					<h2 className={styles.heroTitle} data-flx="user.getting-started-tab.getting-started-tab.hero-title">
 						<Trans>Welcome to {RuntimeConfig.productName}</Trans>
 					</h2>
-					<p className={styles.heroDescription}>
+					<p
+						className={styles.heroDescription}
+						data-flx="user.getting-started-tab.getting-started-tab.hero-description"
+					>
 						{config.welcome_message ?? <Trans>Let’s make sure your account and this device are ready.</Trans>}
 					</p>
 					{config.operator_name || config.availability_message ? (
-						<p className={styles.operatorLine}>
+						<p className={styles.operatorLine} data-flx="user.getting-started-tab.getting-started-tab.operator-line">
 							{config.operator_name ? <Trans>Operated by {config.operator_name}.</Trans> : null}{' '}
 							{config.availability_message}
 						</p>
@@ -257,26 +305,48 @@ const GettingStartedTab: React.FC = observer(() => {
 					className={styles.progressPanel}
 					role="status"
 					aria-label={i18n._(msg`Setup progress: ${progressPercent}%`)}
+					data-flx="user.getting-started-tab.getting-started-tab.progress-panel"
 				>
-					<div className={styles.progressSummary}>
-						<strong>
+					<div
+						className={styles.progressSummary}
+						data-flx="user.getting-started-tab.getting-started-tab.progress-summary"
+					>
+						<strong data-flx="user.getting-started-tab.getting-started-tab.strong">
 							{completedCount}/{enabledSteps.length}
 						</strong>
-						<span>
+						<span data-flx="user.getting-started-tab.getting-started-tab.span">
 							<Trans>steps ready</Trans>
 						</span>
 					</div>
-					<div className={styles.progressTrack} aria-hidden="true">
-						<div className={styles.progressValue} style={{width: `${progressPercent}%`}} />
+					<div
+						className={styles.progressTrack}
+						aria-hidden="true"
+						data-flx="user.getting-started-tab.getting-started-tab.progress-track"
+					>
+						<div
+							className={styles.progressValue}
+							style={{width: `${progressPercent}%`}}
+							data-flx="user.getting-started-tab.getting-started-tab.progress-value"
+						/>
 					</div>
 				</div>
 			</div>
 
-			<SettingsSection id="getting-started-checklist" title={<Trans>Your setup checklist</Trans>}>
-				<div className={styles.stepList}>
+			<SettingsSection
+				id="getting-started-checklist"
+				title={<Trans>Your setup checklist</Trans>}
+				data-flx="user.getting-started-tab.getting-started-tab.getting-started-checklist"
+			>
+				<div className={styles.stepList} data-flx="user.getting-started-tab.getting-started-tab.step-list">
 					{config.steps.profile ? (
 						<StepRow
-							icon={<IdentificationCardIcon size={ICON_SIZE} weight="duotone" />}
+							icon={
+								<IdentificationCardIcon
+									size={ICON_SIZE}
+									weight="duotone"
+									data-flx="user.getting-started-tab.getting-started-tab.identification-card-icon"
+								/>
+							}
 							title={<Trans>Complete your profile</Trans>}
 							description={
 								<Trans>
@@ -285,17 +355,24 @@ const GettingStartedTab: React.FC = observer(() => {
 								</Trans>
 							}
 							status={getStepStatus('profile')}
+							data-flx="user.getting-started-tab.getting-started-tab.step-row"
 						>
 							<Button
 								small
 								variant="secondary"
 								onClick={() => openSettings('my_profile')}
-								rightIcon={<ArrowRightIcon />}
+								rightIcon={<ArrowRightIcon data-flx="user.getting-started-tab.getting-started-tab.arrow-right-icon" />}
+								data-flx="user.getting-started-tab.getting-started-tab.button.open-settings"
 							>
 								<Trans>Open profile</Trans>
 							</Button>
 							{!actualCompletion.profile && !acknowledgedSteps.has('profile') ? (
-								<Button small variant="ghost" onClick={() => void acknowledgeStep('profile')}>
+								<Button
+									small
+									variant="ghost"
+									onClick={() => void acknowledgeStep('profile')}
+									data-flx="user.getting-started-tab.getting-started-tab.button"
+								>
 									<Trans>Do later</Trans>
 								</Button>
 							) : null}
@@ -304,23 +381,38 @@ const GettingStartedTab: React.FC = observer(() => {
 
 					{config.steps.security ? (
 						<StepRow
-							icon={<ShieldCheckIcon size={ICON_SIZE} weight="duotone" />}
+							icon={
+								<ShieldCheckIcon
+									size={ICON_SIZE}
+									weight="duotone"
+									data-flx="user.getting-started-tab.getting-started-tab.shield-check-icon"
+								/>
+							}
 							title={<Trans>Secure your account</Trans>}
 							description={
 								<Trans>Review your password, multi-factor authentication, recovery codes, and signed-in devices.</Trans>
 							}
 							status={getStepStatus('security')}
+							data-flx="user.getting-started-tab.getting-started-tab.step-row--2"
 						>
 							<Button
 								small
 								variant="secondary"
 								onClick={() => openSettings('account_security', 'security')}
-								rightIcon={<ArrowRightIcon />}
+								rightIcon={
+									<ArrowRightIcon data-flx="user.getting-started-tab.getting-started-tab.arrow-right-icon--2" />
+								}
+								data-flx="user.getting-started-tab.getting-started-tab.button.open-settings--2"
 							>
 								<Trans>Review security</Trans>
 							</Button>
 							{config.mfa_policy !== 'required' && !actualCompletion.security && !acknowledgedSteps.has('security') ? (
-								<Button small variant="ghost" onClick={() => void acknowledgeStep('security')}>
+								<Button
+									small
+									variant="ghost"
+									onClick={() => void acknowledgeStep('security')}
+									data-flx="user.getting-started-tab.getting-started-tab.button--2"
+								>
 									<Trans>Do later</Trans>
 								</Button>
 							) : null}
@@ -329,7 +421,13 @@ const GettingStartedTab: React.FC = observer(() => {
 
 					{config.steps.notifications ? (
 						<StepRow
-							icon={<BellIcon size={ICON_SIZE} weight="duotone" />}
+							icon={
+								<BellIcon
+									size={ICON_SIZE}
+									weight="duotone"
+									data-flx="user.getting-started-tab.getting-started-tab.bell-icon"
+								/>
+							}
 							title={<Trans>Test notifications</Trans>}
 							description={
 								<Trans>
@@ -337,8 +435,14 @@ const GettingStartedTab: React.FC = observer(() => {
 								</Trans>
 							}
 							status={getStepStatus('notifications')}
+							data-flx="user.getting-started-tab.getting-started-tab.step-row--3"
 						>
-							<div className={styles.presetGroup} role="group" aria-label={i18n._(msg`Notification preset`)}>
+							<div
+								className={styles.presetGroup}
+								role="group"
+								aria-label={i18n._(msg`Notification preset`)}
+								data-flx="user.getting-started-tab.getting-started-tab.preset-group"
+							>
 								<button
 									type="button"
 									className={clsx(
@@ -348,6 +452,7 @@ const GettingStartedTab: React.FC = observer(() => {
 									aria-pressed={notificationPreset === 'everything'}
 									disabled={!primaryGuild}
 									onClick={() => applyNotificationPreset('everything')}
+									data-flx="user.getting-started-tab.getting-started-tab.preset-button.apply-notification-preset"
 								>
 									<Trans>Everything</Trans>
 								</button>
@@ -360,6 +465,7 @@ const GettingStartedTab: React.FC = observer(() => {
 									aria-pressed={notificationPreset === 'mentions_dms'}
 									disabled={!primaryGuild}
 									onClick={() => applyNotificationPreset('mentions_dms')}
+									data-flx="user.getting-started-tab.getting-started-tab.preset-button.apply-notification-preset--2"
 								>
 									<Trans>Mentions & DMs</Trans>
 								</button>
@@ -369,18 +475,34 @@ const GettingStartedTab: React.FC = observer(() => {
 									aria-pressed={notificationPreset === 'quiet'}
 									disabled={!primaryGuild}
 									onClick={() => applyNotificationPreset('quiet')}
+									data-flx="user.getting-started-tab.getting-started-tab.preset-button.apply-notification-preset--3"
 								>
 									<Trans>Quiet</Trans>
 								</button>
 							</div>
-							<Button small variant="secondary" onClick={() => void handleNotificationTest()}>
+							<Button
+								small
+								variant="secondary"
+								onClick={() => void handleNotificationTest()}
+								data-flx="user.getting-started-tab.getting-started-tab.button--3"
+							>
 								<Trans>Allow & test</Trans>
 							</Button>
-							<Button small variant="ghost" onClick={() => openSettings('notifications')}>
+							<Button
+								small
+								variant="ghost"
+								onClick={() => openSettings('notifications')}
+								data-flx="user.getting-started-tab.getting-started-tab.button.open-settings--3"
+							>
 								<Trans>Preferences</Trans>
 							</Button>
 							{!actualCompletion.notifications && !acknowledgedSteps.has('notifications') ? (
-								<Button small variant="ghost" onClick={() => void acknowledgeStep('notifications')}>
+								<Button
+									small
+									variant="ghost"
+									onClick={() => void acknowledgeStep('notifications')}
+									data-flx="user.getting-started-tab.getting-started-tab.button--4"
+								>
 									<Trans>Do later</Trans>
 								</Button>
 							) : null}
@@ -389,23 +511,38 @@ const GettingStartedTab: React.FC = observer(() => {
 
 					{config.steps.media ? (
 						<StepRow
-							icon={<CameraIcon size={ICON_SIZE} weight="duotone" />}
+							icon={
+								<CameraIcon
+									size={ICON_SIZE}
+									weight="duotone"
+									data-flx="user.getting-started-tab.getting-started-tab.camera-icon"
+								/>
+							}
 							title={<Trans>Check voice & video</Trans>}
 							description={
 								<Trans>Confirm your microphone, speaker, and camera on this device. A camera is optional.</Trans>
 							}
 							status={getStepStatus('media')}
+							data-flx="user.getting-started-tab.getting-started-tab.step-row--4"
 						>
 							<Button
 								small
 								variant="secondary"
 								onClick={() => openSettings('support_center', 'system-check')}
-								rightIcon={<ArrowRightIcon />}
+								rightIcon={
+									<ArrowRightIcon data-flx="user.getting-started-tab.getting-started-tab.arrow-right-icon--3" />
+								}
+								data-flx="user.getting-started-tab.getting-started-tab.button.open-settings--4"
 							>
 								<Trans>Check my setup</Trans>
 							</Button>
 							{!actualCompletion.media ? (
-								<Button small variant="ghost" onClick={() => updateDeviceState({mediaChecked: true})}>
+								<Button
+									small
+									variant="ghost"
+									onClick={() => updateDeviceState({mediaChecked: true})}
+									data-flx="user.getting-started-tab.getting-started-tab.button.update-device-state"
+								>
 									<Trans>I checked it</Trans>
 								</Button>
 							) : null}
@@ -414,24 +551,39 @@ const GettingStartedTab: React.FC = observer(() => {
 
 					{config.steps.community ? (
 						<StepRow
-							icon={<UsersThreeIcon size={ICON_SIZE} weight="duotone" />}
+							icon={
+								<UsersThreeIcon
+									size={ICON_SIZE}
+									weight="duotone"
+									data-flx="user.getting-started-tab.getting-started-tab.users-three-icon--2"
+								/>
+							}
 							title={primaryGuild ? <Trans>Meet {primaryGuild.name}</Trans> : <Trans>Join the community</Trans>}
 							description={
 								<Trans>Read the welcome information and community rules, then find the important channels.</Trans>
 							}
 							status={getStepStatus('community')}
+							data-flx="user.getting-started-tab.getting-started-tab.step-row--5"
 						>
 							<Button
 								small
 								variant="secondary"
 								disabled={!primaryGuild}
 								onClick={() => openCommunityChannel(config.rules_channel_id ?? config.introduction_channel_id)}
-								rightIcon={<ArrowRightIcon />}
+								rightIcon={
+									<ArrowRightIcon data-flx="user.getting-started-tab.getting-started-tab.arrow-right-icon--4" />
+								}
+								data-flx="user.getting-started-tab.getting-started-tab.button.open-community-channel"
 							>
 								<Trans>Open community</Trans>
 							</Button>
 							{!acknowledgedSteps.has('community') ? (
-								<Button small variant="ghost" onClick={() => void acknowledgeStep('community')}>
+								<Button
+									small
+									variant="ghost"
+									onClick={() => void acknowledgeStep('community')}
+									data-flx="user.getting-started-tab.getting-started-tab.button--5"
+								>
 									{primaryGuild ? <Trans>I’ve reviewed it</Trans> : <Trans>Do later</Trans>}
 								</Button>
 							) : null}
@@ -440,23 +592,36 @@ const GettingStartedTab: React.FC = observer(() => {
 				</div>
 			</SettingsSection>
 
-			<div className={styles.footer}>
-				<div className={styles.footerCopy}>
-					<strong>{allComplete ? <Trans>You’re ready</Trans> : <Trans>Finish at your own pace</Trans>}</strong>
-					<span>
+			<div className={styles.footer} data-flx="user.getting-started-tab.getting-started-tab.footer">
+				<div className={styles.footerCopy} data-flx="user.getting-started-tab.getting-started-tab.footer-copy">
+					<strong data-flx="user.getting-started-tab.getting-started-tab.strong--2">
+						{allComplete ? <Trans>You’re ready</Trans> : <Trans>Finish at your own pace</Trans>}
+					</strong>
+					<span data-flx="user.getting-started-tab.getting-started-tab.span--2">
 						<Trans>You can reopen Getting Started from Settings at any time.</Trans>
 					</span>
 					{saveError ? (
-						<span className={styles.error} role="alert">
+						<span className={styles.error} role="alert" data-flx="user.getting-started-tab.getting-started-tab.error">
 							{saveError}
 						</span>
 					) : null}
 				</div>
-				<div className={styles.footerActions}>
-					<Button variant="ghost" disabled={saving} onClick={() => void handleDismiss()}>
+				<div className={styles.footerActions} data-flx="user.getting-started-tab.getting-started-tab.footer-actions">
+					<Button
+						variant="ghost"
+						disabled={saving}
+						onClick={() => void handleDismiss()}
+						data-flx="user.getting-started-tab.getting-started-tab.button--6"
+					>
 						<Trans>Not now</Trans>
 					</Button>
-					<Button variant="primary" disabled={!allComplete} submitting={saving} onClick={() => void handleFinish()}>
+					<Button
+						variant="primary"
+						disabled={!allComplete}
+						submitting={saving}
+						onClick={() => void handleFinish()}
+						data-flx="user.getting-started-tab.getting-started-tab.button--7"
+					>
 						<Trans>Finish setup</Trans>
 					</Button>
 				</div>

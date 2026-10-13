@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {upsertOne} from '@app/api/database/CassandraQueryExecution';
 import type {UserID} from '@app/api/BrandedTypes';
-import {BatchBuilder} from '@app/api/database/CassandraQueryExecution';
+import {BatchBuilder, upsertOne} from '@app/api/database/CassandraQueryExecution';
 import type {UserRow} from '@app/api/database/types/UserTypes';
 import {
 	UserByEmail,

@@ -106,8 +106,8 @@ import {
 	setQuitting,
 	showWindow,
 } from '@electron/main/Window';
-import {startWindowsStartupMaintenance} from '@electron/main/WindowsStartupMaintenance';
 import {removeLegacySquirrelUninstallEntry} from '@electron/main/WindowsLegacyUninstallEntry';
+import {startWindowsStartupMaintenance} from '@electron/main/WindowsStartupMaintenance';
 import {
 	DESKTOP_CAPABILITY_MANIFEST_CHANNEL,
 	type DesktopCapabilityManifest,

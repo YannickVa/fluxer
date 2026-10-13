@@ -19,16 +19,15 @@ import {EmailType} from '@fluxer/schema/src/primitives/UserValidators';
 import {z} from 'zod';
 import type {ApiContext} from '../../ApiContext';
 import {createUserID} from '../../BrandedTypes';
+import {isBlockedEmailDomain} from '../../infrastructure/activity/SharedLists';
 import type {InstanceConfigRepository} from '../../instance/InstanceConfigRepository';
-
 import {assertMigrationClaimEligible} from '../../user/MigrationAccountEligibility';
 import {checkChangeRateLimit, generateChangeVerificationCode} from '../../user/services/UserChangeChallengeUtils';
+import {extractEmailDomain} from '../../utils/EmailDomainUtils';
 import {lookupGeoip} from '../../utils/IpUtils';
 import * as AuthPassword from '../AuthPassword';
 import {validateDateOfBirth} from '../AuthUtility';
 import {assertEmailNotBlocklisted} from '../EmailBlocklist';
-import {isBlockedEmailDomain} from '../../infrastructure/activity/SharedLists';
-import {extractEmailDomain} from '../../utils/EmailDomainUtils';
 import {
 	hashMigrationClaimToken,
 	type MigrationClaimContext,

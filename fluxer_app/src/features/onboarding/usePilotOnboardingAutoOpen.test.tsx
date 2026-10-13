@@ -42,7 +42,7 @@ test('opens after late settings/config hydration and scopes the session to its i
 	const container = document.createElement('div');
 	const root = createRoot(container);
 	try {
-		await act(async () => root.render(<Probe />));
+		await act(async () => root.render(<Probe data-flx="onboarding.use-pilot-onboarding-auto-open-test.probe" />));
 		expect(onOpen).not.toHaveBeenCalled();
 		await act(async () =>
 			runInAction(() => {

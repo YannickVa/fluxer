@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {normalizeInstanceMemberConfig} from '@fluxer/instance_bootstrap/src/MemberConfig';
 import type {GifProvider} from '@app/features/app/state/GifProviderConfig';
 import {AccountIdentityModes, TagStyles} from '@fluxer/constants/src/AccountIdentityConstants';
 import {LIMIT_KEYS, type LimitKey} from '@fluxer/constants/src/LimitConfigMetadata';
@@ -14,6 +13,7 @@ import {
 	parseInstanceDomainMigration,
 } from '@fluxer/instance_bootstrap/src/Discovery';
 import {InstanceEndpointKind, normalizeInstanceEndpoint} from '@fluxer/instance_bootstrap/src/EndpointNormalization';
+import {normalizeInstanceMemberConfig} from '@fluxer/instance_bootstrap/src/MemberConfig';
 import {CanonicalNetworkProtocol} from '@fluxer/instance_bootstrap/src/NetworkOrigin';
 import {
 	AGE_POLICY_ACTIONS,

@@ -11,8 +11,8 @@ import layout from '@app/features/app/components/layout/AuthLayout.module.css';
 import MigrationClaimPage from '@app/features/auth/components/pages/MigrationClaimPage';
 import {AuthCardContainer} from '@app/features/auth/flow/AuthCardContainer';
 import {AuthLayoutContext} from '@app/features/auth/state/AuthLayoutContext';
+import {AppI18nProvider} from '@app/features/i18n/components/AppI18nProvider';
 import {i18n} from '@lingui/core';
-import {I18nProvider} from '@lingui/react';
 import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 
@@ -28,7 +28,7 @@ const presentation = {
 };
 createRoot(document.getElementById('root')!).render(
 	<StrictMode>
-		<I18nProvider i18n={i18n}>
+		<AppI18nProvider i18n={i18n}>
 			<AuthLayoutContext.Provider value={presentation}>
 				<main className={layout.container}>
 					<div className={layout.leftSplit}>
@@ -38,6 +38,6 @@ createRoot(document.getElementById('root')!).render(
 					</div>
 				</main>
 			</AuthLayoutContext.Provider>
-		</I18nProvider>
+		</AppI18nProvider>
 	</StrictMode>,
 );

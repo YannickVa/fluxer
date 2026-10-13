@@ -124,19 +124,16 @@ describe('Guarded migration claim HTTP endpoints', () => {
 		expect((await post(paths[0]!, {token: issued.token, confirm: true})).status).toBe(200);
 	});
 
-	it.each([
-		'instance_fingerprint',
-		'migration_run_id',
-		'source_guild_id',
-		'state',
-		'verified_at',
-	] as const)('refuses a mismatched or invalid database readiness field %s', async (field) => {
-		await enable();
-		const value =
-			field === 'state' ? 'preparing' : field === 'verified_at' ? new Date(Date.now() + 60_000) : 'mismatched';
-		await upsertOne(MigrationClaimReadiness.patchByPk({scope: 'active'}, {[field]: Db.set(value)} as never));
-		expect((await post(paths[0]!, {token: `mc1.${'A'.repeat(43)}`, confirm: true})).status).toBe(503);
-	});
+	it.each(['instance_fingerprint', 'migration_run_id', 'source_guild_id', 'state', 'verified_at'] as const)(
+		'refuses a mismatched or invalid database readiness field %s',
+		async (field) => {
+			await enable();
+			const value =
+				field === 'state' ? 'preparing' : field === 'verified_at' ? new Date(Date.now() + 60_000) : 'mismatched';
+			await upsertOne(MigrationClaimReadiness.patchByPk({scope: 'active'}, {[field]: Db.set(value)} as never));
+			expect((await post(paths[0]!, {token: `mc1.${'A'.repeat(43)}`, confirm: true})).status).toBe(503);
+		},
+	);
 
 	it('recomputes the effective storage fingerprint instead of trusting a configured digest', async () => {
 		await enable();

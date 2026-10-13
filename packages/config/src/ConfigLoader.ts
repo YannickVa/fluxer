@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import {createECDH} from 'node:crypto';
-import {isMigrationRunId} from '@fluxer/config/src/MigrationTargetFingerprint';
 import {isConfigObject} from '@fluxer/config/src/config_loader/ConfigObject';
 import {buildNamedFluxerEnvOverrides, readEnvValue} from '@fluxer/config/src/config_loader/EnvironmentOverrides';
 import {
@@ -19,6 +18,7 @@ import {
 	STORE_PRODUCT_SLOT_NAMES,
 	TAG_STYLE_NAMES,
 } from '@fluxer/config/src/MasterConfig';
+import {isMigrationRunId} from '@fluxer/config/src/MigrationTargetFingerprint';
 
 let cachedConfig: MasterConfig | null = null;
 

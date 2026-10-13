@@ -188,6 +188,7 @@ export default defineConfig({
 						{label: 'Overview', link: '/http-api/'},
 						'http-api/instance',
 						'http-api/authentication',
+						'http-api/migration-claims',
 						'http-api/gateway',
 						'http-api/oauth2',
 						'http-api/applications',
@@ -303,6 +304,7 @@ export default defineConfig({
 					items: [
 						{label: 'Overview', link: '/admin-api/'},
 						'admin-api/api-keys',
+						'admin-api/migration-claims',
 						'admin-api/users',
 						'admin-api/guilds',
 						'admin-api/threads',

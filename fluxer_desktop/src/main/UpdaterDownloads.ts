@@ -23,7 +23,9 @@ export type UpdaterDownloadOption = {
 };
 
 export const UPDATE_BASE_URL = getUpdateBaseUrl();
-export const DOWNLOAD_PAGE_URL = normalizeHttpsOverride(process.env.PUBLIC_DESKTOP_DOWNLOAD_URL, 'PUBLIC_DESKTOP_DOWNLOAD_URL') ?? DOWNLOAD_PAGE_URLS[BUILD_CHANNEL];
+export const DOWNLOAD_PAGE_URL =
+	normalizeHttpsOverride(process.env.PUBLIC_DESKTOP_DOWNLOAD_URL, 'PUBLIC_DESKTOP_DOWNLOAD_URL') ??
+	DOWNLOAD_PAGE_URLS[BUILD_CHANNEL];
 
 export type ManualLatestFile = {url: string; sha256: string | null};
 

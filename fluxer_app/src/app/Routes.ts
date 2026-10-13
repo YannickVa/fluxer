@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {MIGRATION_CLAIM_PATH} from '@app/features/auth/flow/MigrationClaimLink';
 import RuntimeConfig from '@app/features/app/state/RuntimeConfig';
+import {MIGRATION_CLAIM_PATH} from '@app/features/auth/flow/MigrationClaimLink';
 import {marketingUrl} from '@app/features/messaging/utils/MessagingUrlUtils';
 
 function hostedMarketingUrl(path: string): string | null {

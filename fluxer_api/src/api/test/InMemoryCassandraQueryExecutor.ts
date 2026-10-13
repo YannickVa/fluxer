@@ -5,10 +5,10 @@ import type {CassandraQueryExecutorForTesting} from '@app/api/database/Cassandra
 import type {CassandraParams, KvQueryCondition, KvQueryMeta, PreparedQuery} from '@app/api/database/CassandraTypes';
 import {isConditionalQuery} from '@app/api/database/CassandraTypes';
 import {
+	conditionalValuesEqual,
 	matchesWhere,
 	normalizeCql,
 	rowComparator,
-	conditionalValuesEqual,
 } from '@app/api/database/PostgresKvQueryExecutor';
 
 type Row = Record<string, unknown>;

@@ -12,50 +12,56 @@ const sourcePath = fileURLToPath(new URL('./DesktopConfig.ts', import.meta.url))
 const temporaryDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fluxer-desktop-config-'));
 const compiledPath = path.join(temporaryDir, 'DesktopConfig.mjs');
 
-await build({
-	stdin: {
-		contents: fs.readFileSync(sourcePath, 'utf8'),
-		loader: 'ts',
-		resolveDir: path.dirname(sourcePath),
-		sourcefile: 'DesktopConfig.ts',
-	},
-	outfile: compiledPath,
-	bundle: true,
-	format: 'esm',
-	platform: 'node',
-	target: 'node24',
-	plugins: [
-		{
-			name: 'desktop-config-test-stubs',
-			setup(esbuild) {
-				esbuild.onResolve({filter: /^@electron\/common\/BuildChannel$/}, () => ({
-					path: 'build-channel',
-					namespace: 'test-stub',
-				}));
-				esbuild.onResolve({filter: /^@electron\/common\/Constants$/}, () => ({
-					path: 'constants',
-					namespace: 'test-stub',
-				}));
-				esbuild.onResolve({filter: /^electron-log$/}, () => ({path: 'electron-log', namespace: 'test-stub'}));
-				esbuild.onLoad({filter: /.*/, namespace: 'test-stub'}, ({path: stubPath}) => {
-					if (stubPath === 'build-channel') {
-						return {contents: "export const BUILD_CHANNEL = 'canary';", loader: 'js'};
-					}
-					if (stubPath === 'constants') {
-						return {
-							contents:
-								"export const CHANNEL_APP_URLS = {stable: 'https://web.fluxer.app', canary: 'https://web.canary.fluxer.app', development: 'http://localhost:5173'}; export const CANARY_MIGRATED_APP_ORIGIN = 'https://canary.fluxer.com'; export const STABLE_MIGRATED_APP_ORIGIN = 'https://fluxer.com';",
-							loader: 'js',
-						};
-					}
-					return {contents: 'export default {debug() {}, error() {}, info() {}, warn() {}};', loader: 'js'};
-				});
-			},
+async function compileConfig(defaultEndpoint, outfile) {
+	await build({
+		stdin: {
+			contents: fs.readFileSync(sourcePath, 'utf8'),
+			loader: 'ts',
+			resolveDir: path.dirname(sourcePath),
+			sourcefile: 'DesktopConfig.ts',
 		},
-	],
-});
+		outfile,
+		define: {'process.env.PUBLIC_DESKTOP_INSTANCE_ENDPOINT': JSON.stringify(defaultEndpoint)},
+		bundle: true,
+		format: 'esm',
+		platform: 'node',
+		target: 'node24',
+		plugins: [
+			{
+				name: 'desktop-config-test-stubs',
+				setup(esbuild) {
+					esbuild.onResolve({filter: /^@electron\/common\/BuildChannel$/}, () => ({
+						path: 'build-channel',
+						namespace: 'test-stub',
+					}));
+					esbuild.onResolve({filter: /^@electron\/common\/Constants$/}, () => ({
+						path: 'constants',
+						namespace: 'test-stub',
+					}));
+					esbuild.onResolve({filter: /^electron-log$/}, () => ({path: 'electron-log', namespace: 'test-stub'}));
+					esbuild.onLoad({filter: /.*/, namespace: 'test-stub'}, ({path: stubPath}) => {
+						if (stubPath === 'build-channel') {
+							return {contents: "export const BUILD_CHANNEL = 'canary';", loader: 'js'};
+						}
+						if (stubPath === 'constants') {
+							return {
+								contents:
+									"export const CHANNEL_APP_URLS = {stable: 'https://web.fluxer.app', canary: 'https://web.canary.fluxer.app', development: 'http://localhost:5173'}; export const CANARY_MIGRATED_APP_ORIGIN = 'https://canary.fluxer.com'; export const STABLE_MIGRATED_APP_ORIGIN = 'https://fluxer.com';",
+								loader: 'js',
+							};
+						}
+						return {contents: 'export default {debug() {}, error() {}, info() {}, warn() {}};', loader: 'js'};
+					});
+				},
+			},
+		],
+	});
 
-const desktopConfig = await import(pathToFileURL(compiledPath).href);
+	return import(pathToFileURL(outfile).href);
+}
+
+const desktopConfig = await compileConfig('', compiledPath);
+const bundledConfig = await compileConfig('https://bundled.example/api', path.join(temporaryDir, 'BundledConfig.mjs'));
 
 test.after(() => fs.rmSync(temporaryDir, {recursive: true, force: true}));
 
@@ -115,4 +121,20 @@ test('keeps a LAN staging instance distinct from official origin migration', () 
 	assert.equal(desktopConfig.getLegacyAppOrigin(), 'http://192.0.2.10:8443');
 	desktopConfig.loadDesktopConfig(fs.mkdtempSync(path.join(temporaryDir, 'fresh-')));
 	assert.equal(desktopConfig.getInitialInstanceEndpoint(), null);
+});
+
+test('fresh profiles use the compiled default and saved endpoints take precedence', () => {
+	const profileDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fluxer-desktop-bundled-'));
+	try {
+		bundledConfig.loadDesktopConfig(profileDir);
+		assert.equal(bundledConfig.getInitialInstanceEndpoint(), 'https://bundled.example/api');
+		fs.writeFileSync(
+			path.join(profileDir, 'settings.json'),
+			JSON.stringify({migration_instance_endpoint: 'https://chosen.example/api'}),
+		);
+		bundledConfig.loadDesktopConfig(profileDir);
+		assert.equal(bundledConfig.getInitialInstanceEndpoint(), 'https://chosen.example/api');
+	} finally {
+		fs.rmSync(profileDir, {recursive: true, force: true});
+	}
 });

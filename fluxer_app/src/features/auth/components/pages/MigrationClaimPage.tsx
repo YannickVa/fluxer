@@ -2,11 +2,10 @@
 
 import {Routes} from '@app/app/Routes';
 import type {RuntimeConfigSnapshot} from '@app/features/app/state/InstanceSnapshotStore';
-import {AuthRuntimeTargetGate} from '@app/features/auth/flow/AuthRuntimeTargetGate';
-import {AuthCardVariant} from '@app/features/auth/state/AuthLayoutContext';
 import styles from '@app/features/auth/components/pages/ResetPasswordPage.module.css';
 import FormField from '@app/features/auth/flow/AuthFormField';
 import {AuthRouterLink} from '@app/features/auth/flow/AuthRouterLink';
+import {AuthRuntimeTargetGate} from '@app/features/auth/flow/AuthRuntimeTargetGate';
 import {DateOfBirthField} from '@app/features/auth/flow/DateOfBirthField';
 import {takeMigrationClaimLink} from '@app/features/auth/flow/MigrationClaimBootstrap';
 import {MigrationClaimClient, type MigrationClaimField} from '@app/features/auth/flow/MigrationClaimClient';
@@ -17,6 +16,7 @@ import {
 } from '@app/features/auth/flow/RegistrationLegalConsent';
 import {useAuthPresentation} from '@app/features/auth/flow/useAuthPresentation';
 import Authentication from '@app/features/auth/state/Authentication';
+import {AuthCardVariant} from '@app/features/auth/state/AuthLayoutContext';
 import SessionManager from '@app/features/platform/state/AuthSession';
 import {Button} from '@app/features/ui/button/Button';
 import {useFluxerDocumentTitle} from '@app/features/window/hooks/useFluxerDocumentTitle';
@@ -232,7 +232,10 @@ const MigrationClaimPageContent = observer(function MigrationClaimPageContent({
 					</Trans>
 				</p>
 			) : !view ? (
-				<p className={styles.statusMessage}>
+				<p
+					className={styles.statusMessage}
+					data-flx="auth.migration-claim-page.migration-claim-page-content.status-message"
+				>
 					<Trans>Checking your current session…</Trans>
 				</p>
 			) : (
@@ -243,8 +246,11 @@ const MigrationClaimPageContent = observer(function MigrationClaimPageContent({
 						</div>
 					)}
 					{view.stage === 'confirm' && (
-						<div className={styles.form}>
-							<p className={styles.description}>
+						<div className={styles.form} data-flx="auth.migration-claim-page.migration-claim-page-content.form">
+							<p
+								className={styles.description}
+								data-flx="auth.migration-claim-page.migration-claim-page-content.description"
+							>
 								<Trans>
 									This private Discord link proves ownership of your migrated account. Confirm only if the link was sent
 									to you. You will verify an email and choose a password next. This does not sign you in automatically.
@@ -255,6 +261,7 @@ const MigrationClaimPageContent = observer(function MigrationClaimPageContent({
 								disabled={view.busy}
 								submitting={view.busy}
 								onClick={() => void run((claim) => claim.confirm())}
+								data-flx="auth.migration-claim-page.migration-claim-page-content.button"
 							>
 								<Trans>Confirm ownership</Trans>
 							</Button>
@@ -268,8 +275,12 @@ const MigrationClaimPageContent = observer(function MigrationClaimPageContent({
 								value={view.username ?? ''}
 								readOnly
 								onChange={() => {}}
+								data-flx="auth.migration-claim-page.migration-claim-page-content.form-field"
 							/>
-							<p className={styles.statusMessage}>
+							<p
+								className={styles.statusMessage}
+								data-flx="auth.migration-claim-page.migration-claim-page-content.status-message--2"
+							>
 								<Trans>
 									Your Discord identity is bound to this account. Claim expires at {deadline}, in your local time.
 									Nothing is saved when you leave this page.
@@ -287,9 +298,16 @@ const MigrationClaimPageContent = observer(function MigrationClaimPageContent({
 								disabled={view.busy}
 								onChange={(value) => update('email', value)}
 								error={fieldError('email')}
+								data-flx="auth.migration-claim-page.migration-claim-page-content.form-field.update.email"
 							/>
 							{view.stage === 'email' ? (
-								<Button type="submit" fitContainer disabled={view.busy || resendSeconds > 0} submitting={view.busy}>
+								<Button
+									type="submit"
+									fitContainer
+									disabled={view.busy || resendSeconds > 0}
+									submitting={view.busy}
+									data-flx="auth.migration-claim-page.migration-claim-page-content.button.submit"
+								>
 									<Trans>Send verification code</Trans>
 								</Button>
 							) : (
@@ -305,6 +323,7 @@ const MigrationClaimPageContent = observer(function MigrationClaimPageContent({
 										disabled={view.busy}
 										onChange={(value) => update('code', value)}
 										error={fieldError('code')}
+										data-flx="auth.migration-claim-page.migration-claim-page-content.form-field.update"
 									/>
 									<FormField
 										id={`${id}-password`}
@@ -318,6 +337,7 @@ const MigrationClaimPageContent = observer(function MigrationClaimPageContent({
 										disabled={view.busy}
 										onChange={(value) => update('password', value)}
 										error={fieldError('password')}
+										data-flx="auth.migration-claim-page.migration-claim-page-content.form-field.update.password"
 									/>
 									<FormField
 										id={`${id}-confirmation`}
@@ -330,6 +350,7 @@ const MigrationClaimPageContent = observer(function MigrationClaimPageContent({
 										disabled={view.busy}
 										onChange={(value) => update('confirmation', value)}
 										error={mismatch ? i18n._(msg`Passwords do not match.`) : undefined}
+										data-flx="auth.migration-claim-page.migration-claim-page-content.form-field.update.password--2"
 									/>
 									{view.dateOfBirthRequired && (
 										<DateOfBirthField
@@ -340,15 +361,21 @@ const MigrationClaimPageContent = observer(function MigrationClaimPageContent({
 											onMonthChange={(value) => update('month', value)}
 											onDayChange={(value) => update('day', value)}
 											error={fieldError('date_of_birth')}
+											data-flx="auth.migration-claim-page.migration-claim-page-content.date-of-birth-field"
 										/>
 									)}
 									<RegistrationLegalConsent
 										checked={form.consent}
 										config={legal}
 										onChange={(value) => update('consent', value)}
+										data-flx="auth.migration-claim-page.migration-claim-page-content.registration-legal-consent.update"
 									/>
 									{fieldError('consent') && (
-										<p role="alert" className={styles.formError}>
+										<p
+											role="alert"
+											className={styles.formError}
+											data-flx="auth.migration-claim-page.migration-claim-page-content.form-error"
+										>
 											{fieldError('consent')}
 										</p>
 									)}
@@ -357,6 +384,7 @@ const MigrationClaimPageContent = observer(function MigrationClaimPageContent({
 										fitContainer
 										disabled={view.busy || (!!legal.requirement && !form.consent)}
 										submitting={view.busy}
+										data-flx="auth.migration-claim-page.migration-claim-page-content.button.submit--2"
 									>
 										<Trans>Finish claiming</Trans>
 									</Button>
@@ -365,6 +393,7 @@ const MigrationClaimPageContent = observer(function MigrationClaimPageContent({
 										variant="secondary"
 										disabled={view.busy || resendSeconds > 0}
 										onClick={sendEmail}
+										data-flx="auth.migration-claim-page.migration-claim-page-content.button.send-email"
 									>
 										<Trans>Resend email code</Trans>
 									</Button>
@@ -377,20 +406,27 @@ const MigrationClaimPageContent = observer(function MigrationClaimPageContent({
 											setForm((current) => ({...current, code: '', password: '', confirmation: ''}));
 											setView(flow.current?.view ?? null);
 										}}
+										data-flx="auth.migration-claim-page.migration-claim-page-content.button.change-email"
 									>
 										<Trans>Use another email</Trans>
 									</Button>
 								</>
 							)}
 							{resendSeconds > 0 && (
-								<p className={styles.statusMessage}>
+								<p
+									className={styles.statusMessage}
+									data-flx="auth.migration-claim-page.migration-claim-page-content.status-message--3"
+								>
 									<Trans>You can request another email in {resendSeconds} seconds.</Trans>
 								</p>
 							)}
 						</form>
 					)}
 					{view.stage === 'finished' && (
-						<p className={styles.description}>
+						<p
+							className={styles.description}
+							data-flx="auth.migration-claim-page.migration-claim-page-content.description--2"
+						>
 							<Trans>
 								Your email is verified and your password is set. Sign in normally to open your migrated account. Your
 								usual account security checks still apply.
@@ -399,8 +435,12 @@ const MigrationClaimPageContent = observer(function MigrationClaimPageContent({
 					)}
 				</>
 			)}
-			<div className={styles.footer}>
-				<AuthRouterLink to={authenticated ? Routes.ME : Routes.LOGIN} className={styles.link}>
+			<div className={styles.footer} data-flx="auth.migration-claim-page.migration-claim-page-content.footer">
+				<AuthRouterLink
+					to={authenticated ? Routes.ME : Routes.LOGIN}
+					className={styles.link}
+					data-flx="auth.migration-claim-page.migration-claim-page-content.link"
+				>
 					{authenticated ? <Trans>Back to your current account</Trans> : <Trans>Go to sign-in</Trans>}
 				</AuthRouterLink>
 			</div>
@@ -409,13 +449,20 @@ const MigrationClaimPageContent = observer(function MigrationClaimPageContent({
 });
 
 const MigrationClaimPage = observer(function MigrationClaimPage() {
-	if (Authentication.isAuthenticated) return <MigrationClaimPageContent runtimeSnapshot={null} />;
+	if (Authentication.isAuthenticated)
+		return (
+			<MigrationClaimPageContent
+				runtimeSnapshot={null}
+				data-flx="auth.migration-claim-page.migration-claim-page-content"
+			/>
+		);
 	return (
-		<AuthRuntimeTargetGate>
+		<AuthRuntimeTargetGate data-flx="auth.migration-claim-page.auth-runtime-target-gate">
 			{(runtimeSnapshot) => (
 				<MigrationClaimPageContent
 					key={`${runtimeSnapshot.apiEndpoint}:${runtimeSnapshot.apiCodeVersion}`}
 					runtimeSnapshot={runtimeSnapshot}
+					data-flx="auth.migration-claim-page.migration-claim-page-content--2"
 				/>
 			)}
 		</AuthRuntimeTargetGate>

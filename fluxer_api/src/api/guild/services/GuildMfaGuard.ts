@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import type {UserID} from '@app/api/BrandedTypes';
 import {ELEVATED_MFA_PERMISSIONS} from '@app/api/guild/services/GuildMfaEnforcement';
+import type {UserRepository} from '@app/api/user/repositories/UserRepository';
 import {GuildMFALevel} from '@fluxer/constants/src/GuildConstants';
 import {MfaNotEnabledError} from '@fluxer/errors/src/domains/auth/MfaNotEnabledError';
 import type {GuildResponse} from '@fluxer/schema/src/domains/guild/GuildResponseSchemas';
-import type {UserID} from '@app/api/BrandedTypes';
-import type {UserRepository} from '@app/api/user/repositories/UserRepository';
 
 export async function hasRequiredGuildMfa(params: {
 	guildData: GuildResponse;

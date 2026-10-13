@@ -260,9 +260,7 @@ async function dismissPilotOnboardingIfVisible(page, timeoutMs) {
 	}
 
 	await dismissButton.click();
-	await page
-		.locator('[data-flx="user.user-settings-modal.modal-root"]')
-		.waitFor({state: 'hidden', timeout: timeoutMs});
+	await page.locator('[data-flx="user.user-settings-modal.modal-root"]').waitFor({state: 'hidden', timeout: timeoutMs});
 	return true;
 }
 

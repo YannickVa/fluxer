@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {enforceGuildMfa, getGuildMfaFilteredPermissions, hasRequiredGuildMfa} from '../GuildMfaGuard';
-import {Permissions} from '@fluxer/constants/src/ChannelConstants';
 import type {GuildID, RoleID, UserID} from '@app/api/BrandedTypes';
 import type {IGatewayService} from '@app/api/infrastructure/IGatewayService';
 import type {UserRepository} from '@app/api/user/repositories/UserRepository';
+import {Permissions} from '@fluxer/constants/src/ChannelConstants';
 import {MissingAccessError} from '@fluxer/errors/src/domains/core/MissingAccessError';
 import {MissingPermissionsError} from '@fluxer/errors/src/domains/core/MissingPermissionsError';
 import type {GuildResponse} from '@fluxer/schema/src/domains/guild/GuildResponseSchemas';
+import {enforceGuildMfa, getGuildMfaFilteredPermissions, hasRequiredGuildMfa} from '../GuildMfaGuard';
 
 interface GuildAuth {
 	guildData: GuildResponse;

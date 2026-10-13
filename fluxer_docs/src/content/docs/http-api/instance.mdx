@@ -412,6 +412,50 @@ Branding, setup state, legal documents, and registration fields a client reads b
 | setup | [public setup state](#public-setup-state-object) object | Initial configuration state |
 | legal | [public legal configuration](#public-legal-configuration-object) object | Legal and policy document URLs |
 | registration | [public registration fields](#public-registration-fields-object) object | Registration field collection policy |
+| onboarding | [public onboarding](#public-onboarding-object) object | Configurable member introduction |
+| support | [public support](#public-support-object) object | Operator and community support destinations |
+
+## Public onboarding object
+
+### Structure
+
+| Field | Type | Description |
+| --- | --- | --- |
+| enabled | boolean | Whether member onboarding is enabled |
+| version | integer | Positive rollout version |
+| enabled_at | ?ISO8601 timestamp | Current rollout activation time, or null |
+| show_for_existing_users | boolean | Whether the rollout may open for existing accounts |
+| welcome_message | ?string | Instance welcome text, or null |
+| operator_name | ?string | Public operator name, or null |
+| availability_message | ?string | Operator availability text, or null |
+| primary_guild_id | ?snowflake | Primary community, or null |
+| rules_channel_id | ?snowflake | Rules destination, or null |
+| introduction_channel_id | ?snowflake | Introduction destination, or null |
+| mfa_policy | string | `optional`, `recommended`, or `required` |
+| steps | [onboarding steps](#onboarding-steps-object) object | Enabled onboarding sections |
+
+## Onboarding steps object
+
+### Structure
+
+| Field | Type | Description |
+| --- | --- | --- |
+| profile | boolean | Show profile setup |
+| security | boolean | Show security setup |
+| notifications | boolean | Show notification preferences |
+| media | boolean | Show media setup |
+| community | boolean | Show community introduction |
+
+## Public support object
+
+### Structure
+
+| Field | Type | Description |
+| --- | --- | --- |
+| status_url | ?string | Instance status page, or null |
+| support_user_id | ?snowflake | Operator for private support messages, or null |
+| service_updates_<br />channel_id | ?snowflake | Maintenance and known issues destination, or null |
+| feedback_channel_id | ?snowflake | Pilot feedback destination, or null |
 
 ## Public branding object
 

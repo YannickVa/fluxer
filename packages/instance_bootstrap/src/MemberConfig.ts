@@ -32,13 +32,18 @@ export function normalizeInstanceMemberConfig(value: {onboarding?: unknown; supp
 	support: InstanceSupport;
 } {
 	const onboarding = OnboardingPatch.safeParse(value.onboarding ?? {});
-	const support = InstanceAppPublicSchema.shape.support.partial().refine((settings) => {
-		if (!settings.status_url) return true;
-		try {
-			const url = new URL(settings.status_url);
-			return ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password;
-		} catch { return false; }
-	}).safeParse(value.support ?? {});
+	const support = InstanceAppPublicSchema.shape.support
+		.partial()
+		.refine((settings) => {
+			if (!settings.status_url) return true;
+			try {
+				const url = new URL(settings.status_url);
+				return ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password;
+			} catch {
+				return false;
+			}
+		})
+		.safeParse(value.support ?? {});
 	// Discovery must remain usable when a newer server publishes an unknown setting.
 	const onboardingData = onboarding.success ? onboarding.data : {};
 	const supportData = support.success ? support.data : {};

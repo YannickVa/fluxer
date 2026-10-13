@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import type {MigratedAccountClaimData} from '@app/api/user/repositories/IUserAccountRepository';
 import type {ChannelID, GuildID, MessageID, UserID} from '@app/api/BrandedTypes';
 import type {
 	AuthSessionRow,
@@ -50,6 +49,7 @@ import {MfaBackupCodeRepository} from '@app/api/user/repositories/auth/MfaBackup
 import {TokenRepository} from '@app/api/user/repositories/auth/TokenRepository';
 import {WebAuthnRepository} from '@app/api/user/repositories/auth/WebAuthnRepository';
 import {GiftCodeRepository} from '@app/api/user/repositories/GiftCodeRepository';
+import type {MigratedAccountClaimData} from '@app/api/user/repositories/IUserAccountRepository';
 import {PaymentRepository} from '@app/api/user/repositories/PaymentRepository';
 import {PushSubscriptionRepository} from '@app/api/user/repositories/PushSubscriptionRepository';
 import {RecentMentionRepository} from '@app/api/user/repositories/RecentMentionRepository';

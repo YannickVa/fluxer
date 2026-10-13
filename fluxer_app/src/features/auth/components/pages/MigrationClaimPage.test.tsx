@@ -31,7 +31,11 @@ vi.mock('@app/features/platform/state/AuthSession', () => ({
 		initialize: state.initialize,
 	},
 }));
-vi.mock('@app/features/auth/flow/AuthRuntimeTargetGate', () => ({AuthRuntimeTargetGate: ({children}: {children: (snapshot: unknown) => ReactNode}) => <>{children({apiEndpoint: 'https://synthetic.example.invalid/api', apiCodeVersion: 1})}</>}));
+vi.mock('@app/features/auth/flow/AuthRuntimeTargetGate', () => ({
+	AuthRuntimeTargetGate: ({children}: {children: (snapshot: unknown) => ReactNode}) => (
+		<>{children({apiEndpoint: 'https://synthetic.example.invalid/api', apiCodeVersion: 1})}</>
+	),
+}));
 vi.mock('@app/features/auth/flow/MigrationClaimBootstrap', () => ({takeMigrationClaimLink: state.take}));
 vi.mock('@app/features/window/hooks/useFluxerDocumentTitle', () => ({useFluxerDocumentTitle: () => {}}));
 vi.mock('@app/features/auth/flow/useAuthPresentation', () => ({useAuthPresentation: () => {}}));
@@ -41,7 +45,11 @@ vi.mock('@lingui/react/macro', () => ({
 	useLingui: () => ({i18n: {_: (message: string) => message}}),
 }));
 vi.mock('@app/features/auth/flow/AuthRouterLink', () => ({
-	AuthRouterLink: ({to, children}: {to: string; children: ReactNode}) => <a href={to}>{children}</a>,
+	AuthRouterLink: ({to, children}: {to: string; children: ReactNode}) => (
+		<a href={to} data-flx="auth.migration-claim-page-test.auth-router-link.a">
+			{children}
+		</a>
+	),
 }));
 vi.mock('@app/features/ui/button/Button', () => ({
 	Button: ({
@@ -55,7 +63,11 @@ vi.mock('@app/features/ui/button/Button', () => ({
 		fitContainer?: boolean;
 		submitting?: boolean;
 		variant?: string;
-	}) => <button {...props}>{children}</button>,
+	}) => (
+		<button data-flx="auth.migration-claim-page-test.button.button" {...props}>
+			{children}
+		</button>
+	),
 }));
 vi.mock('@app/features/auth/flow/AuthFormField', () => ({
 	default: ({
@@ -68,14 +80,24 @@ vi.mock('@app/features/auth/flow/AuthFormField', () => ({
 		error?: string;
 		onChange: (value: string) => void;
 	}) => (
-		<label>
+		<label data-flx="auth.migration-claim-page-test.default.label">
 			{label}
-			<input {...props} onChange={(event) => onChange(event.target.value)} />
-			{error && <span role="alert">{error}</span>}
+			<input
+				data-flx="auth.migration-claim-page-test.default.input.change"
+				{...props}
+				onChange={(event) => onChange(event.target.value)}
+			/>
+			{error && (
+				<span role="alert" data-flx="auth.migration-claim-page-test.default.alert">
+					{error}
+				</span>
+			)}
 		</label>
 	),
 }));
-vi.mock('@app/features/auth/flow/DateOfBirthField', () => ({DateOfBirthField: () => <p>Date of birth</p>}));
+vi.mock('@app/features/auth/flow/DateOfBirthField', () => ({
+	DateOfBirthField: () => <p data-flx="auth.migration-claim-page-test.date-of-birth-field.p">Date of birth</p>,
+}));
 vi.mock('@app/features/auth/flow/RegistrationLegalConsent', () => ({
 	getRegistrationLegalConsentConfig: () => ({requirement: null}),
 	RegistrationLegalConsent: () => null,
@@ -109,10 +131,10 @@ async function mount(strict = false) {
 		root.render(
 			strict ? (
 				<StrictMode>
-					<MigrationClaimPage />
+					<MigrationClaimPage data-flx="auth.migration-claim-page-test.mount.migration-claim-page" />
 				</StrictMode>
 			) : (
-				<MigrationClaimPage />
+				<MigrationClaimPage data-flx="auth.migration-claim-page-test.mount.migration-claim-page--2" />
 			),
 		),
 	);

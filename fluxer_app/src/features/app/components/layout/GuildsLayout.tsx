@@ -161,7 +161,14 @@ const GUILD_ROW_STYLE_WITH_GAP: React.CSSProperties = Object.freeze({
 	paddingBottom: 'var(--guild-list-item-gap)',
 });
 const openPilotOnboarding = () =>
-	ModalCommands.push(ModalCommands.modal(() => <UserSettingsModal initialTab="getting_started" />));
+	ModalCommands.push(
+		ModalCommands.modal(() => (
+			<UserSettingsModal
+				initialTab="getting_started"
+				data-flx="app.guilds-layout.open-pilot-onboarding.user-settings-modal"
+			/>
+		)),
+	);
 
 interface GuildsLayoutSidebarStyle extends React.CSSProperties {
 	'--layout-sidebar-width': string;

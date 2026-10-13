@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {createUserID} from '@app/api/BrandedTypes';
-import {getInstanceConfigRepository, getUserRepository} from '@app/api/middleware/ServiceSingletons';
 import {createAuthHarness, createUniqueEmail, createUniqueUsername} from '@app/api/auth/tests/AuthTestUtils';
+import {createUserID} from '@app/api/BrandedTypes';
 import {applySharedListUpdate, resetSharedListsForTests} from '@app/api/infrastructure/activity/SharedLists';
+import {getInstanceConfigRepository, getUserRepository} from '@app/api/middleware/ServiceSingletons';
 import type {ApiTestHarness} from '@app/api/test/ApiTestHarness';
 import {createBuilderWithoutAuth} from '@app/api/test/TestRequestBuilder';
 import {afterAll, beforeAll, beforeEach, describe, expect, it} from 'vitest';
@@ -82,25 +82,23 @@ describe('Registration validation', () => {
 		const dateOfBirthError = json.errors?.find((e) => e.path === 'date_of_birth');
 		expect(dateOfBirthError?.code).toBe('MUST_BE_MINIMUM_AGE');
 	});
-	it.each([
-		'2000-02-30',
-		'2001-02-29',
-		'1900-02-29',
-		'2000-04-31',
-	])('rejects impossible birth date %s through the actual registration endpoint', async (dateOfBirth) => {
-		const json = await createBuilderWithoutAuth<ValidationErrorResponse>(harness)
-			.post('/auth/register')
-			.body({
-				email: createUniqueEmail(),
-				username: createUniqueUsername(),
-				password: 'a-strong-password',
-				date_of_birth: dateOfBirth,
-				consent: true,
-			})
-			.expect(400, 'INVALID_FORM_BODY')
-			.execute();
-		expect(json.errors?.find((error) => error.path === 'date_of_birth')?.code).toBe('INVALID_DATE_OF_BIRTH_FORMAT');
-	});
+	it.each(['2000-02-30', '2001-02-29', '1900-02-29', '2000-04-31'])(
+		'rejects impossible birth date %s through the actual registration endpoint',
+		async (dateOfBirth) => {
+			const json = await createBuilderWithoutAuth<ValidationErrorResponse>(harness)
+				.post('/auth/register')
+				.body({
+					email: createUniqueEmail(),
+					username: createUniqueUsername(),
+					password: 'a-strong-password',
+					date_of_birth: dateOfBirth,
+					consent: true,
+				})
+				.expect(400, 'INVALID_FORM_BODY')
+				.execute();
+			expect(json.errors?.find((error) => error.path === 'date_of_birth')?.code).toBe('INVALID_DATE_OF_BIRTH_FORMAT');
+		},
+	);
 	it('preserves the instance option not to collect a birth date during ordinary registration', async () => {
 		await getInstanceConfigRepository().setAppPublicConfig({registration: {collect_date_of_birth: false}});
 		const result = await createBuilderWithoutAuth<{user_id: string; token: string}>(harness)
@@ -116,5 +114,4 @@ describe('Registration validation', () => {
 		expect(result.token).toBeTruthy();
 		expect(user.dateOfBirth).toBeNull();
 	});
-
 });

@@ -19,7 +19,11 @@ import LocalPresence from '@app/features/presence/state/LocalPresence';
 import {runInAction} from 'mobx';
 import {afterEach, beforeEach, describe, expect, test, vi} from 'vitest';
 
-const mocks = vi.hoisted(() => ({token: 'token-primary' as string | null, clientPropertiesFailure: false}));
+const mocks = vi.hoisted(() => ({
+	token: 'token-primary' as string | null,
+	clientPropertiesFailure: false,
+	memberConnectionResumed: vi.fn(),
+}));
 
 vi.mock('@app/features/channel/state/ChannelFrecency', () => ({default: {handleLogout: vi.fn()}}));
 
@@ -133,6 +137,12 @@ vi.mock('@app/features/expressions/state/FavoriteMemes', () => ({default: {reset
 
 vi.mock('@app/features/member/state/MemberSearch', () => ({default: {handleLogout: vi.fn()}}));
 
+// Recovery notifies the member cache through a lazy import. Keep that downstream
+// store isolated just like the other stores in this gateway unit suite.
+vi.mock('@app/features/member/state/GuildMembers', () => ({
+	default: {handleConnectionResumed: mocks.memberConnectionResumed},
+}));
+
 vi.mock('@app/features/moderation/state/ReportFlows', () => ({default: {reset: vi.fn()}}));
 
 vi.mock('@app/features/messaging/state/MessagingMessages', () => ({
@@ -227,6 +237,7 @@ beforeEach(() => {
 	FakeWebSocket.instances = [];
 	mocks.token = 'token-primary';
 	mocks.clientPropertiesFailure = false;
+	mocks.memberConnectionResumed.mockClear();
 	vi.stubGlobal('WebSocket', FakeWebSocket);
 	Reflect.deleteProperty(globalThis as unknown as Record<string, unknown>, ROUTER_GLOBAL_KEY);
 });
@@ -491,6 +502,7 @@ describe('foreground recovery after the capped budget', () => {
 
 		expect(GatewaySessions.foregroundConnection.isReady).toBe(true);
 		expect(liveSocketCount()).toBe(1);
+		expect(mocks.memberConnectionResumed).toHaveBeenCalledTimes(1);
 	});
 
 	test('a gateway outage with no online event is retried on a slow interval', async () => {

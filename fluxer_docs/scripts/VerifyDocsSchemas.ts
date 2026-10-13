@@ -352,6 +352,7 @@ function typeAgrees(docType: string, specTypes: ReadonlySet<string>): boolean {
 
 function fieldNameText(cell: string): string {
 	return cell
+		.replace(/<br\s*\/?>/giu, '')
 		.replace(/<sup>.*?<\/sup>/gu, '')
 		.replace(/\*\*/gu, '')
 		.replace(/`/gu, '')

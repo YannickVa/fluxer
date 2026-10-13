@@ -6,9 +6,9 @@ use crate::{
         types::{
             AppBrandingConfigUpdateRequest, AppLegalConfigUpdateRequest,
             AppOnboardingConfigUpdateRequest, AppOnboardingMfaPolicy,
-            AppOnboardingStepsConfigUpdateRequest, AppSupportConfigUpdateRequest,
-            AppPublicConfigUpdateRequest, AppRegistrationConfigUpdateRequest,
-            AppSetupConfigUpdateRequest, CAPTCHA_COST_RANGE, CAPTCHA_MAX_COUNTER_RANGE,
+            AppOnboardingStepsConfigUpdateRequest, AppPublicConfigUpdateRequest,
+            AppRegistrationConfigUpdateRequest, AppSetupConfigUpdateRequest,
+            AppSupportConfigUpdateRequest, CAPTCHA_COST_RANGE, CAPTCHA_MAX_COUNTER_RANGE,
             CaptchaConfigUpdateRequest, CreateRegistrationUrlRequest,
             DomainMigrationConfigUpdateRequest, EXPERIMENT_MAX_ROLLOUT_COUNTRY_CODES,
             EXPERIMENT_MAX_TARGETED_USERS, ExperimentDeliveryConfigUpdateRequest,
@@ -837,9 +837,7 @@ fn build_app_registration_update(form: &MultiValueForm) -> InstanceConfigUpdateR
             onboarding: None,
             support: None,
         }),
-        policy: None,
-        integrations: None,
-        media: None,
+        ..Default::default()
     }
 }
 
@@ -882,9 +880,7 @@ fn build_app_onboarding_update(form: &MultiValueForm) -> InstanceConfigUpdateReq
             }),
             support: None,
         }),
-        policy: None,
-        integrations: None,
-        media: None,
+        ..Default::default()
     }
 }
 
@@ -1554,6 +1550,21 @@ mod tests {
         assert_eq!(steps.notifications, Some(true));
         assert_eq!(steps.media, Some(false));
         assert_eq!(steps.community, Some(false));
+    }
+
+    #[test]
+    fn app_form_updates_do_not_overwrite_unrelated_instance_configuration() {
+        let form =
+            MultiValueForm::parse(b"app_collect_date_of_birth=true&app_onboarding_enabled=true");
+        for request in [
+            build_app_registration_update(&form),
+            build_app_onboarding_update(&form),
+        ] {
+            let payload = serde_json::to_value(request).expect("serializable update");
+            let fields = payload.as_object().expect("update object");
+            assert_eq!(fields.len(), 1);
+            assert!(fields.contains_key("app_public"));
+        }
     }
 
     #[test]
