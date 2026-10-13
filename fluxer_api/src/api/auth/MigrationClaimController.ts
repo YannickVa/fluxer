@@ -33,15 +33,16 @@ import {getInstanceConfigRepository} from '../middleware/ServiceSingletons';
 import {SudoModeMiddleware} from '../middleware/SudoModeMiddleware';
 import type {User} from '../models/User';
 import {RateLimitConfigs} from '../RateLimitConfig';
-import {getAccountPolicyEvaluator} from '../risk/AccountPolicyService';
+import {getRegionalMinimumAge} from '@fluxer/constants/src/RegionalMinimumAge';
 import type {HonoApp, HonoEnv} from '../types/HonoEnv';
-import {getEffectiveSuspiciousFlags} from '../user/UserHelpers';
+import {LEGACY_SUSPICIOUS_DISABLED_FLAG} from '../user/MigrationAccountEligibility';
 import {Validator} from '../Validator';
 import {MigrationClaimCompletionService} from './services/MigrationClaimCompletionService';
 import {MigrationClaimOperatorService} from './services/MigrationClaimOperatorService';
 import {requireMigrationClaimContext, requireMigrationClaimRevocationContext} from './services/MigrationClaimPolicy';
 import {MigrationClaimTicketService} from './services/MigrationClaimTicketService';
-import {requireSudoMode, userHasMfa} from './services/SudoVerificationService';
+import {requireSudoMode} from './services/SudoVerificationService';
+import {userHasMfa} from './services/SudoMethods';
 
 const claimLogger = createLogger('migration_claim');
 
@@ -97,7 +98,7 @@ const approvedRun = createMiddleware<HonoEnv>(async (ctx, next) => {
 			api,
 			{
 				instance: getInstanceConfigRepository(),
-				accountPolicy: getAccountPolicyEvaluator(),
+				accountPolicy: {getMinimumAgeForRegion: (countryCode) => getRegionalMinimumAge(countryCode)},
 				authorize,
 			},
 			context,
@@ -123,11 +124,16 @@ async function operatorService(
 			user.isBot ||
 			user.isSystem ||
 			(user.flags &
-				(UserFlags.DELETED | UserFlags.SELF_DELETED | UserFlags.DISABLED | UserFlags.DISABLED_SUSPICIOUS_ACTIVITY)) !==
+				(UserFlags.DELETED |
+					UserFlags.SELF_DELETED |
+					UserFlags.DISABLED |
+					LEGACY_SUSPICIOUS_DISABLED_FLAG |
+					UserFlags.SPAMMER |
+					UserFlags.ACCOUNT_LIMITED)) !==
 				0n ||
 			user.pendingDeletionAt !== null ||
 			(user.tempBannedUntil !== null && user.tempBannedUntil.getTime() > Date.now()) ||
-			getEffectiveSuspiciousFlags(user) !== 0 ||
+			user.migrationLegacySecurity.suspiciousActivityFlags !== 0 ||
 			(!user.acls.has(AdminACLs.WILDCARD) &&
 				(!user.acls.has(AdminACLs.AUTHENTICATE) || !user.acls.has(AdminACLs.MIGRATION_CLAIM_MANAGE)))
 		)

@@ -1,13 +1,18 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {mapStripePaymentMethodToRow} from '@app/api/billing/mappers/StripeToBillingMapper';
+import {
+	buildPatchFromRow,
+	executeBillingVersionedUpdate,
+	isExistingNewer,
+	rowsEquivalent,
+} from '@app/api/billing/repositories/BillingRepoHelpers';
+import {fetchMany, fetchOne, upsertOne} from '@app/api/database/CassandraQueryExecution';
+import {Db} from '@app/api/database/CassandraTypes';
+import type {BillingPaymentMethodRow} from '@app/api/database/types/BillingTypes';
+import {BILLING_PAYMENT_METHOD_COLUMNS} from '@app/api/database/types/BillingTypes';
+import {BillingPaymentMethods, BillingPaymentMethodsByCustomer} from '@app/api/Tables';
 import type Stripe from 'stripe';
-import {fetchMany, fetchOne, upsertOne} from '../../database/CassandraQueryExecution';
-import {Db} from '../../database/CassandraTypes';
-import type {BillingPaymentMethodRow} from '../../database/types/BillingTypes';
-import {BILLING_PAYMENT_METHOD_COLUMNS} from '../../database/types/BillingTypes';
-import {BillingPaymentMethods, BillingPaymentMethodsByCustomer} from '../../Tables';
-import {mapStripePaymentMethodToRow} from '../mappers/StripeToBillingMapper';
-import {buildPatchFromRow, executeBillingVersionedUpdate, isExistingNewer, rowsEquivalent} from './BillingRepoHelpers';
 
 const FETCH_BY_ID = BillingPaymentMethods.selectCql({
 	where: BillingPaymentMethods.where.eq('provider_id'),
@@ -33,11 +38,6 @@ export class BillingPaymentMethodRepository {
 		const ids = refs.map((r) => r.provider_id);
 		const rows = await fetchMany<BillingPaymentMethodRow>(FETCH_BY_PROVIDER_IDS, {provider_ids: ids});
 		return rows.filter((row) => row.customer_id === customerId);
-	}
-
-	async findDefaultForCustomer(customerId: string): Promise<BillingPaymentMethodRow | null> {
-		const list = await this.listByCustomer(customerId);
-		return list.find((r) => r.is_default === true) ?? null;
 	}
 
 	async upsertFromStripe(

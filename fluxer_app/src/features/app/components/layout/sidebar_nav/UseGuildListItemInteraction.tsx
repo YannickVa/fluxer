@@ -6,6 +6,7 @@ import {useContextMenuHoverState} from '@app/features/app/hooks/useContextMenuHo
 import {useHover} from '@app/features/app/hooks/useHover';
 import type {Guild} from '@app/features/guild/models/Guild';
 import {isKeyboardActivationKey} from '@app/features/input/utils/KeyboardUtils';
+import {useRecoveringBackgroundImageURL} from '@app/features/messaging/hooks/useImageRecovery';
 import * as ImageCacheUtils from '@app/features/messaging/utils/ImageCacheUtils';
 import * as NavigationCommands from '@app/features/navigation/commands/NavigationCommands';
 import {GuildContextMenu} from '@app/features/ui/action_menu/GuildContextMenu';
@@ -48,18 +49,11 @@ function resolveDisplayedGuildIconURL(query: DisplayedGuildIconURLQuery): string
 	return query.iconURL;
 }
 
-function resolveGuildIconBackgroundImage(iconURL: string, displayedIconURL: string): string | null {
-	if (iconURL.length === 0) {
+function resolveGuildIconBackgroundImage(paintableIconURL: string | null, displayedIconURL: string): string | null {
+	if (paintableIconURL == null) {
 		return null;
 	}
 	return `url(${displayedIconURL})`;
-}
-
-function resolveInitiallyLoadedImageURL(imageURL: string): string | null {
-	if (ImageCacheUtils.hasImage(imageURL)) {
-		return imageURL;
-	}
-	return null;
 }
 
 export function useGuildListItemInteraction({
@@ -79,16 +73,16 @@ export function useGuildListItemInteraction({
 	});
 	const iconURL = AvatarSourceUtils.getGuildIconURL(guild, false);
 	const hoverIconURL = AvatarSourceUtils.getGuildIconURL(guild, true);
-	const [loadedAnimatedURL, setLoadedAnimatedURL] = useState<string | null>(() =>
-		resolveInitiallyLoadedImageURL(hoverIconURL),
-	);
+	const isAnimatableIcon = hoverIconURL !== iconURL;
+	const [loadedAnimatedURL, setLoadedAnimatedURL] = useState<string | null>(null);
 	const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
-	useEffect(() => ImageCacheUtils.pinImage(iconURL), [iconURL]);
+	const paintableIconURL = useRecoveringBackgroundImageURL(iconURL);
 	useEffect(() => {
+		if (!isAnimatableIcon) return;
 		if (!isHovering && !contextMenuOpen) return;
 		if (loadedAnimatedURL === hoverIconURL) return;
 		return ImageCacheUtils.loadImage(hoverIconURL, () => setLoadedAnimatedURL(hoverIconURL));
-	}, [contextMenuOpen, hoverIconURL, isHovering, loadedAnimatedURL]);
+	}, [contextMenuOpen, hoverIconURL, isAnimatableIcon, isHovering, loadedAnimatedURL]);
 	const handleSelect = useCallback(() => {
 		markDirectSelection(DirectSelectionSurface.GUILD_RAIL);
 		preloadChannelNow();
@@ -126,9 +120,9 @@ export function useGuildListItemInteraction({
 		if (!isSortingList && isMobileExperience) setBottomSheetOpen(true);
 	}, [isMobileExperience, isSortingList]);
 	const handleCloseBottomSheet = useCallback(() => setBottomSheetOpen(false), []);
-	const shouldPlayAnimated = (isHovering || contextMenuOpen) && loadedAnimatedURL === hoverIconURL;
+	const shouldPlayAnimated = isAnimatableIcon && (isHovering || contextMenuOpen) && loadedAnimatedURL === hoverIconURL;
 	const displayedIconURL = resolveDisplayedGuildIconURL({hoverIconURL, iconURL, shouldPlayAnimated});
-	const backgroundImage = resolveGuildIconBackgroundImage(iconURL, displayedIconURL);
+	const backgroundImage = resolveGuildIconBackgroundImage(paintableIconURL, displayedIconURL);
 	return {
 		hoverRef,
 		isHovering,

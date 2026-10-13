@@ -13,7 +13,8 @@ import {
 } from '@app/features/emoji/state/UsageFrecency';
 import type {GuildSticker} from '@app/features/expressions/models/GuildSticker';
 import {Logger} from '@app/features/platform/utils/AppLogger';
-import {ComponentDispatch} from '@app/features/platform/utils/ComponentBus';
+import {ComponentBus} from '@app/features/platform/utils/ComponentBus';
+import {initializeStore} from '@app/features/platform/utils/StoreInitialization';
 import {makeSyncedField} from '@app/features/user/state/SyncedField';
 import {StickerPickerStateSchema} from '@fluxer/schema/src/gen/fluxer/user/preferences/v1/pickers_pb';
 import {makeAutoObservable} from 'mobx';
@@ -34,7 +35,7 @@ class StickerPicker {
 
 	constructor() {
 		makeAutoObservable(this, {}, {autoBind: true});
-		void this.initPersistence();
+		initializeStore(this, () => this.initPersistence());
 	}
 
 	private async initPersistence(): Promise<void> {
@@ -82,7 +83,7 @@ class StickerPicker {
 		} else {
 			this.favoriteStickers.push(stickerKey);
 		}
-		ComponentDispatch.dispatch('STICKER_PICKER_RERENDER');
+		ComponentBus.dispatch('STICKER_PICKER_RERENDER');
 		logger.debug(`Toggled favorite sticker: ${stickerKey}`);
 	}
 
@@ -95,7 +96,7 @@ class StickerPicker {
 		} else {
 			this.collapsedCategories.push(category);
 		}
-		ComponentDispatch.dispatch('STICKER_PICKER_RERENDER');
+		ComponentBus.dispatch('STICKER_PICKER_RERENDER');
 		logger.debug(`Toggled category: ${category}`);
 	}
 

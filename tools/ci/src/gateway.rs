@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 use crate::common::{CommandSpec, command_succeeds, output_text, run_command};
-use anyhow::{Context, Result, anyhow, bail, ensure};
+use anyhow::{Context, Result, anyhow, ensure};
 use clap::{Args, ValueEnum};
 use std::env;
-use std::ffi::OsString;
+use std::ffi::{OsStr, OsString};
 use std::fs;
 use std::path::{Path, PathBuf};
 
 const GATEWAY_NIF_CRATES: &[&str] = &["push_markdown_plaintext_nif", "guild_member_list_oset_nif"];
+const GNU_LD_FATAL_WARNINGS: &str = "-Wl,--fatal-warnings";
 
 #[derive(Debug, Args, Clone)]
 pub struct BuildGatewayNifsArgs {
@@ -36,7 +37,6 @@ pub(crate) enum GatewayStep {
     Eqwalizer,
     Typecheck,
     Eunit,
-    Bench,
     AllChecks,
     Clean,
 }
@@ -111,7 +111,6 @@ pub(crate) fn run_gateway_step(
         GatewayStep::Eqwalizer => run_eqwalizer(gateway_dir, eqwalizer_profile),
         GatewayStep::Typecheck => run_eqwalizer(gateway_dir, eqwalizer_profile),
         GatewayStep::Eunit => run_rebar(gateway_dir, ["as", "test", "eunit"]),
-        GatewayStep::Bench => run_rebar(gateway_dir, ["eunit", "--module=guild_member_list_bench"]),
         GatewayStep::AllChecks => {
             run_gateway_check_step("Step 1/5: Format check (erlfmt)", || {
                 run_gateway_step(gateway_dir, GatewayStep::FmtCheck, eqwalizer_profile)
@@ -168,13 +167,7 @@ fn build_gateway_nifs(gateway_dir: &Path) -> Result<()> {
             "Expected NIF artifact was not produced: {}",
             build.artifact_path.display()
         );
-        fs::copy(&build.artifact_path, &build.output_path).with_context(|| {
-            format!(
-                "Failed to copy {} to {}",
-                build.artifact_path.display(),
-                build.output_path.display()
-            )
-        })?;
+        install_gateway_nif(&build.artifact_path, &build.output_path)?;
         println!(
             "Installed gateway NIF {} -> {}",
             build.crate_name,
@@ -182,6 +175,38 @@ fn build_gateway_nifs(gateway_dir: &Path) -> Result<()> {
         );
     }
 
+    Ok(())
+}
+
+fn install_gateway_nif(artifact_path: &Path, output_path: &Path) -> Result<()> {
+    let output_dir = output_path.parent().ok_or_else(|| {
+        anyhow!(
+            "Gateway NIF output path has no parent: {}",
+            output_path.display()
+        )
+    })?;
+    let staged_artifact = tempfile::NamedTempFile::new_in(output_dir).with_context(|| {
+        format!(
+            "Failed to create staged gateway NIF beside {}",
+            output_path.display()
+        )
+    })?;
+    fs::copy(artifact_path, staged_artifact.path()).with_context(|| {
+        format!(
+            "Failed to stage gateway NIF {} for {}",
+            artifact_path.display(),
+            output_path.display()
+        )
+    })?;
+    staged_artifact
+        .persist(output_path)
+        .map_err(|error| error.error)
+        .with_context(|| {
+            format!(
+                "Failed to atomically install gateway NIF {}",
+                output_path.display()
+            )
+        })?;
     Ok(())
 }
 
@@ -207,22 +232,12 @@ fn run_gateway_fmt_check(gateway_dir: &Path) -> Result<()> {
         "rebar3 is required for gateway formatting"
     );
     let output = crate::common::capture(rebar_command(gateway_dir, ["fmt", "--check"]))?;
-    if output.status == 0 {
-        return Ok(());
-    }
-
-    let combined = format!(
-        "{}{}",
-        String::from_utf8_lossy(&output.stdout),
-        String::from_utf8_lossy(&output.stderr)
+    ensure!(
+        output.status == 0,
+        "gateway formatting failed with exit code {}",
+        output.status
     );
-    if combined.contains("Command fmt not found")
-        || combined.to_ascii_lowercase().contains("not found")
-    {
-        println!("rebar3 fmt plugin is not configured; skipping gateway formatting check.");
-        return Ok(());
-    }
-    bail!("gateway formatting failed with exit code {}", output.status)
+    Ok(())
 }
 
 fn run_eqwalizer(gateway_dir: &Path, profile: &str) -> Result<()> {
@@ -292,7 +307,27 @@ fn rebar_command(
     if should_skip_plugins {
         spec = spec.env("REBAR_SKIP_PROJECT_PLUGINS", "1");
     }
+    let current_ldflags = env::var_os("LDFLAGS");
+    if let Some(ldflags) = zstd_probe_ldflags(
+        env::consts::OS,
+        env::consts::ARCH,
+        current_ldflags.as_deref(),
+    ) {
+        spec = spec.env("LDFLAGS", ldflags);
+    }
     spec
+}
+
+fn zstd_probe_ldflags(os: &str, arch: &str, current: Option<&OsStr>) -> Option<OsString> {
+    if os != "linux" || arch != "aarch64" {
+        return None;
+    }
+    let mut ldflags = current.unwrap_or_default().to_os_string();
+    if !ldflags.is_empty() {
+        ldflags.push(" ");
+    }
+    ldflags.push(GNU_LD_FATAL_WARNINGS);
+    Some(ldflags)
 }
 
 fn should_skip_rebar_project_plugins(args: &[OsString]) -> bool {
@@ -400,30 +435,6 @@ mod tests {
     }
 
     #[test]
-    fn gateway_nif_build_plan_matches_legacy_artifact_layout() {
-        let gateway_dir = Path::new("/repo/fluxer_gateway");
-        let builds = gateway_nif_builds(gateway_dir, NifBuildProfile::Release, "lib", "so");
-
-        assert_eq!(builds.len(), 2);
-        assert_eq!(
-            builds[0],
-            GatewayNifBuild {
-                crate_name: "push_markdown_plaintext_nif".to_string(),
-                native_dir: PathBuf::from(
-                    "/repo/fluxer_gateway/native/push_markdown_plaintext_nif"
-                ),
-                cargo_args: vec![OsString::from("build"), OsString::from("--release")],
-                artifact_path: PathBuf::from(
-                    "/repo/fluxer_gateway/native/push_markdown_plaintext_nif/target/release/libpush_markdown_plaintext_nif.so"
-                ),
-                output_path: PathBuf::from(
-                    "/repo/fluxer_gateway/priv/push_markdown_plaintext_nif.so"
-                ),
-            }
-        );
-    }
-
-    #[test]
     fn debug_build_plan_omits_release_arg_and_uses_debug_target_dir() {
         let build = gateway_nif_build(
             Path::new("/repo/fluxer_gateway"),
@@ -492,5 +503,19 @@ mod tests {
                 .iter()
                 .any(|(key, _)| key == &OsString::from("REBAR_SKIP_PROJECT_PLUGINS"))
         );
+    }
+
+    #[test]
+    fn zstd_probe_linker_warnings_are_fatal_only_on_aarch64_linux() {
+        assert_eq!(
+            zstd_probe_ldflags("linux", "aarch64", None),
+            Some(OsString::from(GNU_LD_FATAL_WARNINGS))
+        );
+        assert_eq!(
+            zstd_probe_ldflags("linux", "aarch64", Some(OsStr::new("-Wl,--as-needed"))),
+            Some(OsString::from("-Wl,--as-needed -Wl,--fatal-warnings"))
+        );
+        assert_eq!(zstd_probe_ldflags("linux", "x86_64", None), None);
+        assert_eq!(zstd_probe_ldflags("macos", "aarch64", None), None);
     }
 }

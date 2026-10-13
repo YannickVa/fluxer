@@ -2,6 +2,7 @@
 
 import {SettingsSection} from '@app/features/app/components/dialogs/shared/SettingsSection';
 import {SettingsTabContainer} from '@app/features/app/components/dialogs/shared/SettingsTabLayout';
+import SessionManager from '@app/features/platform/state/AuthSession';
 import Config from '@app/features/app/config/Config';
 import RuntimeConfig from '@app/features/app/state/RuntimeConfig';
 import Updater from '@app/features/app/state/Updater';
@@ -14,7 +15,7 @@ import {focusChannelTextareaAfterNavigation} from '@app/features/messaging/utils
 import * as NavigationCommands from '@app/features/navigation/commands/NavigationCommands';
 import MediaPermission from '@app/features/permissions/system/state/MediaPermission';
 import {type ClientInfo, getClientInfo} from '@app/features/platform/utils/ClientInfo';
-import {ComponentDispatch} from '@app/features/platform/utils/ComponentBus';
+import {ComponentBus} from '@app/features/platform/utils/ComponentBus';
 import {downloadTextFile} from '@app/features/platform/utils/DownloadFile';
 import {
 	formatSupportDeviceSummary,
@@ -421,7 +422,7 @@ const SupportCenterTab: React.FC = observer(() => {
 	const overallPresentation = getStatusPresentation(overallStatus);
 
 	const openSettings = useCallback((tab: string, section?: string) => {
-		ComponentDispatch.dispatch('USER_SETTINGS_TAB_SELECT', {tab, section});
+		ComponentBus.dispatch('USER_SETTINGS_TAB_SELECT', {tab, section});
 	}, []);
 
 	const createDiagnostics = useCallback((): SupportDiagnosticsSnapshot => {
@@ -474,13 +475,13 @@ const SupportCenterTab: React.FC = observer(() => {
 				latencyMs: MediaEngineFacade.connected ? MediaEngineFacade.currentLatency : null,
 			},
 			update: {
-				state: Updater.state,
+				state: Updater.isChecking ? 'checking' : Updater.desktopUpdateInProgress ? 'updating' : Updater.hasUpdate ? 'available' : 'idle',
 				currentVersion: Updater.currentVersion ?? Config.PUBLIC_BUILD_VERSION ?? null,
 				availableVersion: Updater.displayVersion,
 				channel: Updater.channel ?? Config.PUBLIC_RELEASE_CHANNEL,
 				lastCheckedAt: Updater.lastCheckedAt ? new Date(Updater.lastCheckedAt).toISOString() : null,
 				updateAvailable: Updater.hasUpdate,
-				downloadReady: Updater.nativeUpdateReady,
+				downloadReady: Updater.isUpdateReady,
 				unsupportedReason: Updater.nativeUnsupported?.reason ?? null,
 			},
 		});
@@ -573,11 +574,13 @@ const SupportCenterTab: React.FC = observer(() => {
 	const openPrivateSupport = useCallback(
 		async (errorLocation: DestinationErrorLocation, draft?: string) => {
 			if (!supportUserId) return;
+			const owner = SessionManager.currentAccountKey;
 			setDestinationError(null);
 			try {
 				const channelId = await PrivateChannelCommands.ensureDMChannel(supportUserId);
+				if (SessionManager.currentAccountKey !== owner) return;
 				if (draft) {
-					DraftCommands.createDraft(channelId, appendSupportProblemReportToDraft(Drafts.getDraft(channelId), draft));
+					DraftCommands.createDraft(owner, channelId, appendSupportProblemReportToDraft(Drafts.getDraft(channelId), draft));
 				}
 				ModalCommands.pop();
 				NavigationCommands.selectChannel(ME, channelId);
@@ -603,6 +606,7 @@ const SupportCenterTab: React.FC = observer(() => {
 		if (!report || !feedbackChannel?.guildId) return;
 		setDestinationError(null);
 		DraftCommands.createDraft(
+			SessionManager.currentAccountKey,
 			feedbackChannel.id,
 			appendSupportProblemReportToDraft(Drafts.getDraft(feedbackChannel.id), report),
 		);

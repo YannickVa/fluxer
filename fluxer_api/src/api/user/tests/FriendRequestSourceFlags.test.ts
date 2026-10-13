@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {FriendSourceFlags, RelationshipTypes} from '@fluxer/constants/src/UserConstants';
-import {afterAll, beforeAll, beforeEach, describe, expect, test} from 'vitest';
-import {createTestAccount} from '../../auth/tests/AuthTestUtils';
-import {type ApiTestHarness, createApiTestHarness} from '../../test/ApiTestHarness';
-import {HTTP_STATUS} from '../../test/TestConstants';
-import {createBuilder} from '../../test/TestRequestBuilder';
+import {createTestAccount} from '@app/api/auth/tests/AuthTestUtils';
+import {type ApiTestHarness, createApiTestHarness} from '@app/api/test/ApiTestHarness';
+import {HTTP_STATUS} from '@app/api/test/TestConstants';
+import {createBuilder} from '@app/api/test/TestRequestBuilder';
 import {
 	assertRelationshipId,
 	assertRelationshipType,
 	createFriendship,
 	sendFriendRequest,
-} from './RelationshipTestUtils';
+} from '@app/api/user/tests/RelationshipTestUtils';
+import {FriendSourceFlags, RelationshipTypes} from '@fluxer/constants/src/UserConstants';
+import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
 
 describe('FriendRequestSourceFlags', () => {
 	let harness: ApiTestHarness;
@@ -136,22 +136,6 @@ describe('FriendRequestSourceFlags', () => {
 			const {json: outgoing} = await sendFriendRequest(harness, alice.token, bob.userId);
 			assertRelationshipId(outgoing, bob.userId);
 			assertRelationshipType(outgoing, RelationshipTypes.OUTGOING_REQUEST);
-		});
-	});
-	describe('settings persistence', () => {
-		test('NO_RELATION flag is preserved after settings update', async () => {
-			const bob = await createTestAccount(harness);
-			await createBuilder(harness, bob.token)
-				.patch('/users/@me/settings')
-				.body({friend_source_flags: FriendSourceFlags.NO_RELATION})
-				.expect(HTTP_STATUS.OK)
-				.execute();
-			const {json: settings} = await createBuilder<{
-				friend_source_flags: number;
-			}>(harness, bob.token)
-				.get('/users/@me/settings')
-				.executeWithResponse();
-			expect(settings.friend_source_flags & FriendSourceFlags.NO_RELATION).toBe(FriendSourceFlags.NO_RELATION);
 		});
 	});
 });

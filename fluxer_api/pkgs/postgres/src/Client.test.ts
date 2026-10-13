@@ -20,10 +20,16 @@ async function withFakePool(
 ) {
 	const original = pg.Pool;
 	const clients: Array<ReturnType<typeof fakeClient>> = [];
-	pg.Pool = class {
+	pg.Pool = class extends EventEmitter {
 		async connect() {
 			const client = fakeClient(options);
 			clients.push(client);
+			const release = client.release.bind(client);
+			client.release = (discard?: boolean) => {
+				release(discard);
+				this.emit('release', null, client);
+			};
+			this.emit('acquire', client);
 			return client;
 		}
 		async query() {
@@ -164,5 +170,42 @@ test('loss during acquisition refuses the callback even if a successful reply ar
 		);
 		assert.deepEqual(clients[1].releases, [true]);
 		assert.equal(clients[1].listenerCount('error'), 0);
+	});
+});
+
+test('shutdown aborts an active advisory operation, drains its cleanup and refuses a new one', async () => {
+	await withFakePool({}, async () => {
+		let finish!: () => void;
+		let entered!: () => void;
+		const started = new Promise<void>((resolve) => {
+			entered = resolve;
+		});
+		const gate = new Promise<void>((resolve) => {
+			finish = resolve;
+		});
+		const client = getDefaultPostgresClient();
+		let activeSignal!: AbortSignal;
+		const operation = client.withAdvisoryLock(1n, async (signal) => {
+			activeSignal = signal;
+			entered();
+			await gate;
+			return 42;
+		});
+		await started;
+		let drained = false;
+		const closing = shutdownPostgres().then(() => {
+			drained = true;
+		});
+		await new Promise<void>((resolve) => activeSignal.addEventListener('abort', () => resolve(), {once: true}));
+		assert.equal(drained, false);
+		assert.equal(activeSignal.aborted, true);
+		await assert.rejects(
+			client.withAdvisoryLock(2n, async () => assert.fail('New operation ran')),
+			/shutting down/,
+		);
+		finish();
+		await assert.rejects(operation, /shutting down/);
+		await closing;
+		assert.equal(drained, true);
 	});
 });

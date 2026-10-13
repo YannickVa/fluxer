@@ -72,7 +72,9 @@ const applyTabIndices = (focusable: Array<HTMLElement>, activeIndex: number): vo
 	for (let i = 0; i < focusable.length; i++) {
 		const element = focusable[i];
 		const desired = i === clamped ? '0' : '-1';
-		element.setAttribute(ROVING_MANAGED_ATTR, '');
+		if (!element.hasAttribute(ROVING_MANAGED_ATTR)) {
+			element.setAttribute(ROVING_MANAGED_ATTR, '');
+		}
 		if (element.getAttribute('tabindex') !== desired) {
 			element.setAttribute('tabindex', desired);
 		}
@@ -246,7 +248,7 @@ export const useRovingFocusList = <T extends HTMLElement>(options: UseRovingFocu
 	}, [node, enabled, getCachedFocusableElements]);
 	useEffect(() => {
 		if (!node || !restoreFocusOnWindowFocus || !enabled) return;
-		const handleWindowFocus = () => {
+		const handleWindowFocused = () => {
 			const {focusableSelector: selector, manageTabIndex: manage} = latestOptionsRef.current;
 			const focusable = manage
 				? getCachedFocusableElements(node, selector, true)
@@ -263,9 +265,9 @@ export const useRovingFocusList = <T extends HTMLElement>(options: UseRovingFocu
 				target.focus();
 			}
 		};
-		window.addEventListener('focus', handleWindowFocus);
+		window.addEventListener('focus', handleWindowFocused);
 		return () => {
-			window.removeEventListener('focus', handleWindowFocus);
+			window.removeEventListener('focus', handleWindowFocused);
 		};
 	}, [node, restoreFocusOnWindowFocus, enabled, getCachedFocusableElements]);
 	useEffect(() => {

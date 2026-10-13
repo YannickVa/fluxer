@@ -31,9 +31,10 @@ vi.mock('@app/features/platform/state/AuthSession', () => ({
 		initialize: state.initialize,
 	},
 }));
+vi.mock('@app/features/auth/flow/AuthRuntimeTargetGate', () => ({AuthRuntimeTargetGate: ({children}: {children: (snapshot: unknown) => ReactNode}) => <>{children({apiEndpoint: 'https://synthetic.example.invalid/api', apiCodeVersion: 1})}</>}));
 vi.mock('@app/features/auth/flow/MigrationClaimBootstrap', () => ({takeMigrationClaimLink: state.take}));
 vi.mock('@app/features/window/hooks/useFluxerDocumentTitle', () => ({useFluxerDocumentTitle: () => {}}));
-vi.mock('@app/features/auth/flow/useAuthCardPresentation', () => ({useAuthCardPresentation: () => {}}));
+vi.mock('@app/features/auth/flow/useAuthPresentation', () => ({useAuthPresentation: () => {}}));
 vi.mock('@lingui/core/macro', () => ({msg: (strings: TemplateStringsArray) => strings.join('')}));
 vi.mock('@lingui/react/macro', () => ({
 	Trans: ({children}: {children: ReactNode}) => <>{children}</>,

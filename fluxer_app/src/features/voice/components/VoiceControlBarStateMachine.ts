@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {assign, getInitialSnapshot, setup, transition} from 'xstate';
+import {assign, initialTransition, setup, transition} from 'xstate';
 
 export type VoiceControlBarMuteLabel =
 	| 'moderatorDeafened'
@@ -28,7 +28,7 @@ export interface VoiceControlBarSignals {
 	screenShareDisabled: boolean;
 }
 
-export interface VoiceControlButtonState<Label extends string> {
+interface VoiceControlButtonState<Label extends string> {
 	disabled: boolean;
 	pressed: boolean;
 	label: Label;
@@ -95,7 +95,7 @@ function selectScreenShareLabel(signals: VoiceControlBarSignals): VoiceControlBa
 	return signals.isScreenShareEnabled ? 'end' : 'start';
 }
 
-export function selectVoiceControlBarState(signals: VoiceControlBarSignals): VoiceControlBarState {
+function selectVoiceControlBarState(signals: VoiceControlBarSignals): VoiceControlBarState {
 	const isMicLocked = signals.isGuildMuted || signals.isGuildDeafened || signals.isPermissionMuted;
 	const isMuteToggleLocked = isMicLocked || signals.isPushToTalkEffective;
 	return {
@@ -125,7 +125,7 @@ export function selectVoiceControlBarState(signals: VoiceControlBarSignals): Voi
 	};
 }
 
-export const voiceControlBarStateMachine = setup({
+const voiceControlBarStateMachine = setup({
 	types: {} as {
 		context: VoiceControlBarContext;
 		events: VoiceControlBarEvent;
@@ -152,7 +152,7 @@ export const voiceControlBarStateMachine = setup({
 });
 
 export function transitionVoiceControlBarState(signals: VoiceControlBarSignals): VoiceControlBarState {
-	const [snapshot] = transition(voiceControlBarStateMachine, getInitialSnapshot(voiceControlBarStateMachine), {
+	const [snapshot] = transition(voiceControlBarStateMachine, initialTransition(voiceControlBarStateMachine)[0], {
 		type: 'controls.evaluate',
 		signals,
 	});

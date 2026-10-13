@@ -153,17 +153,3 @@ export class GatewayCompression {
 		this.zstdStreamDecoder = null;
 	}
 }
-
-export function getPreferredCompression(): CompressionType {
-	return 'zstd-stream';
-}
-
-export function isCompressionSupported(type: CompressionType): boolean {
-	switch (type) {
-		case 'none':
-		case 'zstd-stream':
-			return true;
-		default:
-			return false;
-	}
-}

@@ -19,14 +19,6 @@ const transformedSource = esbuild.transformSync(source, {
 	target: 'node20',
 }).code;
 
-const WGC_DISABLED_FEATURES = [
-	'AllowWgcScreenCapturer',
-	'AllowWgcWindowCapturer',
-	'AllowWgcScreenZeroHz',
-	'AllowWgcWindowZeroHz',
-	'WebRtcWgcRequireBorder',
-];
-
 function loadChromiumRuntime(platform = 'win32') {
 	const appendedSwitches = [];
 	const app = {
@@ -65,25 +57,18 @@ function loadChromiumRuntime(platform = 'win32') {
 	return {appendedSwitches, module: module.exports};
 }
 
-describe('ChromiumRuntime Windows capture policy', () => {
-	test('adds all known WebRTC WGC capturer features to the Windows disable set', () => {
-		const {module} = loadChromiumRuntime('win32');
-		const features = new Set(['ExistingFeature']);
+describe('ChromiumRuntime configured switch allowlist', () => {
+	test('rejects settings-supplied switches that would disable or shrink the HTTP cache', () => {
+		const {appendedSwitches, module} = loadChromiumRuntime('win32');
 
-		module.addWindowsWebRtcWgcDisabledFeatures(features);
+		module.appendConfiguredChromiumSwitches([
+			'disable-http-cache',
+			'disk-cache-size',
+			'disk-cache-dir',
+			'disable-gpu-shader-disk-cache',
+			'disable_metal',
+		]);
 
-		for (const feature of WGC_DISABLED_FEATURES) {
-			assert.equal(features.has(feature), true);
-		}
-		assert.equal(features.has('ExistingFeature'), true);
-	});
-
-	test('does not add WGC feature switches on non-Windows platforms', () => {
-		const {module} = loadChromiumRuntime('linux');
-		const features = new Set(['ExistingFeature']);
-
-		module.addWindowsWebRtcWgcDisabledFeatures(features);
-
-		assert.deepEqual([...features], ['ExistingFeature']);
+		assert.deepEqual(appendedSwitches, [{name: 'disable_metal', value: undefined}]);
 	});
 });

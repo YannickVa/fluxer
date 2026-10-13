@@ -1,5 +1,20 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import type {ApiContext} from '@app/api/ApiContext';
+import {mapUserToAdminResponse} from '@app/api/admin/models/UserTypes';
+import type {AdminAuditService} from '@app/api/admin/services/AdminAuditService';
+import type {AdminUserUpdatePropagator} from '@app/api/admin/services/AdminUserUpdatePropagator';
+import {createUserID, type UserID} from '@app/api/BrandedTypes';
+import type {GuildRepository} from '@app/api/guild/repositories/GuildRepository';
+import {GuildMemberSearchIndexService} from '@app/api/guild/services/member/GuildMemberSearchIndexService';
+import type {IDiscriminatorService} from '@app/api/infrastructure/DiscriminatorService';
+import type {EntityAssetService, PreparedAssetUpload} from '@app/api/infrastructure/EntityAssetService';
+import {Logger} from '@app/api/Logger';
+import {getInstanceConfigRepository} from '@app/api/middleware/ServiceSingletons';
+import type {User} from '@app/api/models/User';
+import {enqueueStripeCustomerEmailSync} from '@app/api/stripe/StripeCustomer';
+import {assertNoDiscriminatorChange, reserveUsername, type UsernameReservation} from '@app/api/user/UniqueUsernames';
+import {USERNAME_MODE_DISCRIMINATOR} from '@app/api/user/UserTag';
 import {ValidationErrorCodes} from '@fluxer/constants/src/ValidationErrorCodes';
 import {AccessDeniedError} from '@fluxer/errors/src/domains/core/AccessDeniedError';
 import {InputValidationError} from '@fluxer/errors/src/domains/core/InputValidationError';
@@ -15,18 +30,6 @@ import type {
 	VerifyUserEmailRequest,
 } from '@fluxer/schema/src/domains/admin/AdminUserSchemas';
 import {types} from 'cassandra-driver';
-import type {ApiContext} from '../../ApiContext';
-import {EMAIL_CLEARABLE_SUSPICIOUS_ACTIVITY_FLAGS} from '../../auth/AuthEmail';
-import {createUserID, type UserID} from '../../BrandedTypes';
-import type {IGuildRepositoryAggregate} from '../../guild/repositories/IGuildRepositoryAggregate';
-import {GuildMemberSearchIndexService} from '../../guild/services/member/GuildMemberSearchIndexService';
-import type {IDiscriminatorService} from '../../infrastructure/DiscriminatorService';
-import type {EntityAssetService, PreparedAssetUpload} from '../../infrastructure/EntityAssetService';
-import {Logger} from '../../Logger';
-import type {User} from '../../models/User';
-import {mapUserToAdminResponse} from '../models/UserTypes';
-import type {AdminAuditService} from './AdminAuditService';
-import type {AdminUserUpdatePropagator} from './AdminUserUpdatePropagator';
 
 interface AdminUserProfileServiceDeps {
 	apiContext: ApiContext;
@@ -34,7 +37,7 @@ interface AdminUserProfileServiceDeps {
 	entityAssetService: EntityAssetService;
 	auditService: AdminAuditService;
 	updatePropagator: AdminUserUpdatePropagator;
-	guildRepository: IGuildRepositoryAggregate;
+	guildRepository: GuildRepository;
 }
 
 export class AdminUserProfileService {
@@ -90,14 +93,8 @@ export class AdminUserProfileService {
 				updates['global_name'] = null;
 			}
 		}
-		let updatedUser: User;
-		try {
-			updatedUser = await userRepository.patchUpsert(userId, updates, user.toRow());
-		} catch (error) {
-			await Promise.all(preparedAssets.map((p) => entityAssetService.rollbackAssetUpload(p)));
-			throw error;
-		}
-		await Promise.all(preparedAssets.map((p) => entityAssetService.commitAssetChange({prepared: p})));
+		const updatedUser = await userRepository.patchUpsert(userId, updates, user.toRow());
+		await entityAssetService.commitAssetChanges(preparedAssets);
 		await updatePropagator.propagateUserUpdate({userId, oldUser: user, updatedUser: updatedUser});
 		await auditService.createAuditLog({
 			adminUserId,
@@ -194,21 +191,11 @@ export class AdminUserProfileService {
 		if (!user) {
 			throw new UnknownUserError();
 		}
-		const updates: {
-			email_verified: boolean;
-			email_bounced: boolean;
-			suspicious_activity_flags?: number;
-		} = {
-			email_verified: true,
-			email_bounced: false,
-		};
-		if (user.suspiciousActivityFlags !== null && user.suspiciousActivityFlags !== 0) {
-			const newFlags = user.suspiciousActivityFlags & ~EMAIL_CLEARABLE_SUSPICIOUS_ACTIVITY_FLAGS;
-			if (newFlags !== user.suspiciousActivityFlags) {
-				updates.suspicious_activity_flags = newFlags;
-			}
-		}
-		const updatedUser = await userRepository.patchUpsert(userId, updates, user.toRow());
+		const updatedUser = await userRepository.patchUpsert(
+			userId,
+			{email_verified: true, email_bounced: false},
+			user.toRow(),
+		);
 		await updatePropagator.propagateUserUpdate({userId, oldUser: user, updatedUser: updatedUser});
 		await auditService.createAuditLog({
 			adminUserId,
@@ -240,22 +227,37 @@ export class AdminUserProfileService {
 		if (!user) {
 			throw new UnknownUserError();
 		}
-		const discriminatorResult = await discriminatorService.generateDiscriminator({
-			username: data.username,
-			requestedDiscriminator: data.discriminator,
-			user,
-		});
-		if (!discriminatorResult.available || discriminatorResult.discriminator === -1) {
-			throw new TagAlreadyTakenError();
+		const uniqueUsernames = !user.isBot && (await getInstanceConfigRepository().usesUniqueUsernames());
+		if (uniqueUsernames) {
+			assertNoDiscriminatorChange(data.discriminator, user.discriminator);
 		}
-		const updatedUser = await userRepository.patchUpsert(
-			userId,
-			{
-				username: data.username,
-				discriminator: discriminatorResult.discriminator,
-			},
-			user.toRow(),
-		);
+		const reservation: UsernameReservation | null = uniqueUsernames
+			? await reserveUsername({users: userRepository, cache: cacheService}, data.username, userId)
+			: null;
+		let updatedUser: User;
+		let discriminatorResult: {discriminator: number; available: boolean};
+		try {
+			discriminatorResult = uniqueUsernames
+				? {discriminator: USERNAME_MODE_DISCRIMINATOR, available: true}
+				: await discriminatorService.generateDiscriminator({
+						username: data.username,
+						requestedDiscriminator: data.discriminator,
+						user,
+					});
+			if (!discriminatorResult.available || discriminatorResult.discriminator === -1) {
+				throw new TagAlreadyTakenError();
+			}
+			updatedUser = await userRepository.patchUpsert(
+				userId,
+				{
+					username: data.username,
+					discriminator: discriminatorResult.discriminator,
+				},
+				user.toRow(),
+			);
+		} finally {
+			await reservation?.release();
+		}
 		await updatePropagator.propagateUserUpdate({userId, oldUser: user, updatedUser: updatedUser});
 		await contactChangeLogService.recordDiff({
 			oldUser: user,
@@ -291,6 +293,7 @@ export class AdminUserProfileService {
 			users: userRepository,
 			cache: cacheService,
 			contactChangeLog: contactChangeLogService,
+			worker: workerService,
 		} = this.deps.apiContext.services;
 		const {auditService, updatePropagator} = this.deps;
 		const userId = createUserID(data.user_id);
@@ -313,6 +316,7 @@ export class AdminUserProfileService {
 			reason: 'admin_action',
 			actorUserId: adminUserId,
 		});
+		await enqueueStripeCustomerEmailSync(workerService, user, updatedUser);
 		await auditService.createAuditLog({
 			adminUserId,
 			targetType: 'user',
@@ -334,21 +338,7 @@ export class AdminUserProfileService {
 			const {users: userRepository} = this.deps.apiContext.services;
 			const {guildRepository} = this.deps;
 			const guildIds = await userRepository.getUserGuildIds(updatedUser.id);
-			if (guildIds.length === 0) return;
-			const guilds = await guildRepository.listGuilds(guildIds);
-			const indexedGuilds = guilds.filter((guild) => guild.membersIndexedAt != null);
-			if (indexedGuilds.length === 0) return;
-			const members = await Promise.all(
-				indexedGuilds.map((guild) => guildRepository.getMember(guild.id, updatedUser.id)),
-			);
-			for (let i = 0; i < members.length; i++) {
-				const member = members[i];
-				if (member) {
-					const guild = indexedGuilds[i]!;
-					const includeDefault = guild.membersIndexedAt != null;
-					void this.searchIndexService.updateMember(member, updatedUser, {includeDefault});
-				}
-			}
+			await this.searchIndexService.updateUserMembers(updatedUser, guildIds, guildRepository);
 		} catch (error) {
 			Logger.error(
 				{userId: updatedUser.id.toString(), error},

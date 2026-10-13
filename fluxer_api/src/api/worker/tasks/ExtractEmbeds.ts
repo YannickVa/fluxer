@@ -1,28 +1,34 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import type {ChannelID, GuildID, MessageID} from '@app/api/BrandedTypes';
+import {createChannelID, createGuildID, createMessageID, createUserID} from '@app/api/BrandedTypes';
+import type {ChannelRepository} from '@app/api/channel/ChannelRepository';
+import {
+	enqueueCrosspostSourceRemoval,
+	enqueueCrosspostSync,
+	isCrosspostedMessage,
+} from '@app/api/channel/services/message/CrosspostPropagation';
+import {buildBroadcastMessageData} from '@app/api/channel/services/message/MessageGatewayDispatch';
+import {decrementThreadMessageCount} from '@app/api/channel/services/message/MessageHelpers';
+import type {MessageEmbed, MessageEmbedChild} from '@app/api/database/types/MessageTypes';
+import type {ModerationContext} from '@app/api/infrastructure/ContentModerationService';
+import {contentModerationService} from '@app/api/infrastructure/ContentModerationService';
+import type {EmbedService} from '@app/api/infrastructure/EmbedService';
+import type {IGatewayService} from '@app/api/infrastructure/IGatewayService';
+import type {MediaProxyNsfwMode} from '@app/api/infrastructure/IMediaService';
+import {Logger} from '@app/api/Logger';
+import type {Channel} from '@app/api/models/Channel';
+import {Message} from '@app/api/models/Message';
+import {deleteMessageSearchDocuments} from '@app/api/search/MessageSearchIndexCleanup';
+import * as UnfurlerUtils from '@app/api/utils/UnfurlerUtils';
+import {ChannelEventDispatcher} from '@app/api/worker/services/ChannelEventDispatcher';
+import {getWorkerDependencies} from '@app/api/worker/WorkerContext';
 import {MessageFlags} from '@fluxer/constants/src/ChannelConstants';
 import {MAX_EMBEDS_PER_MESSAGE} from '@fluxer/constants/src/LimitConstants';
 import {ContentBlockedError} from '@fluxer/errors/src/domains/content/ContentBlockedError';
 import type {ICacheService} from '@pkgs/cache/src/ICacheService';
 import type {WorkerTaskHandler} from '@pkgs/worker/src/contracts/WorkerTask';
 import {z} from 'zod';
-import type {ChannelID, GuildID, MessageID} from '../../BrandedTypes';
-import {createChannelID, createGuildID, createMessageID, createUserID} from '../../BrandedTypes';
-import type {ChannelRepository} from '../../channel/ChannelRepository';
-import {buildBroadcastMessageData} from '../../channel/services/message/MessageGatewayDispatch';
-import type {MessageEmbed, MessageEmbedChild} from '../../database/types/MessageTypes';
-import type {ModerationContext} from '../../infrastructure/ContentModerationService';
-import {contentModerationService} from '../../infrastructure/ContentModerationService';
-import type {EmbedService} from '../../infrastructure/EmbedService';
-import type {IGatewayService} from '../../infrastructure/IGatewayService';
-import type {MediaProxyNsfwMode} from '../../infrastructure/IMediaService';
-import {Logger} from '../../Logger';
-import type {Channel} from '../../models/Channel';
-import {Message} from '../../models/Message';
-import {deleteMessageSearchDocuments} from '../../search/MessageSearchIndexCleanup';
-import * as UnfurlerUtils from '../../utils/UnfurlerUtils';
-import {ChannelEventDispatcher} from '../services/ChannelEventDispatcher';
-import {getWorkerDependencies} from '../WorkerContext';
 
 const PayloadSchema = z.object({
 	channelId: z.string(),
@@ -197,7 +203,7 @@ async function readMessageForExpectedContent(
 ): Promise<Message | null> {
 	let lastMessage: Message | null = null;
 	for (let attempt = 0; attempt < MESSAGE_READ_RETRY_ATTEMPTS; attempt++) {
-		const message = await channelRepository.getMessage(channelId, messageId);
+		const message = await channelRepository.messages.getMessage(channelId, messageId);
 		if (message && messageMatchesExpectedContent(message, expectedContentHash)) {
 			return message;
 		}
@@ -325,11 +331,11 @@ async function scanEmbedsForBannedContent(
 			continue;
 		}
 		for (const embed of embeds) {
-			const imageUrls = [embed.thumbnail?.url, embed.image?.url, embed.video?.url, embed.audio?.url].filter(
+			const embedUrls = [embed.url, embed.thumbnail?.url, embed.image?.url, embed.video?.url, embed.audio?.url].filter(
 				(u): u is string => u != null,
 			);
-			for (const imageUrl of imageUrls) {
-				contentModerationService.scanUrl(imageUrl, ctx);
+			for (const embedUrl of embedUrls) {
+				contentModerationService.scanUrl(embedUrl, ctx);
 			}
 			const children = embed.children ?? [];
 			for (const child of children) {
@@ -377,7 +383,7 @@ async function updateMessageEmbeds(
 		...freshMessage.toRow(),
 		embeds: nextEmbeds.length > 0 ? nextEmbeds : null,
 	});
-	await channelRepository.updateEmbeds(messageWithEmbeds);
+	await channelRepository.messages.updateEmbeds(messageWithEmbeds);
 	return messageWithEmbeds;
 }
 
@@ -428,11 +434,11 @@ const extractEmbeds: WorkerTaskHandler = async (payload, helpers) => {
 		messageId,
 		validated.expectedContentHash,
 	);
-	if (!message || !message.content) {
+	if (!message?.content) {
 		Logger.info({messageId: messageId.toString()}, 'Skipping extractEmbeds: message not found or no content');
 		return;
 	}
-	const channel = await channelRepository.findUnique(channelId);
+	const channel = await channelRepository.channelData.findUnique(channelId);
 	if (!channel) {
 		Logger.info({channelId: channelId.toString()}, 'Skipping extractEmbeds: channel not found');
 		return;
@@ -457,8 +463,9 @@ const extractEmbeds: WorkerTaskHandler = async (payload, helpers) => {
 			return;
 		}
 		const orderedEmbeds = buildOrderedEmbeds(urls, unfurledEmbedsByUrl);
+		let propagated: Message | null = null;
 		const handled = await withMessageWriteLock(cacheService, channelId, messageId, async () => {
-			const latestExpectedMessage = await channelRepository.getMessage(channelId, messageId);
+			const latestExpectedMessage = await channelRepository.messages.getMessage(channelId, messageId);
 			if (!latestExpectedMessage) {
 				Logger.debug({messageId: messageId.toString()}, 'Message no longer exists, skipping embed update');
 				return false;
@@ -487,15 +494,20 @@ const extractEmbeds: WorkerTaskHandler = async (payload, helpers) => {
 						},
 						'Content moderation blocked embed unfurl, deleting parent message',
 					);
-					await channelRepository.deleteMessage(
+					await channelRepository.messages.deleteMessage(
 						channelId,
 						messageId,
 						latestExpectedMessage.authorId || createUserID(0n),
 						latestExpectedMessage.pinnedTimestamp || undefined,
 					);
+					await decrementThreadMessageCount(channelRepository, channel, [messageId]);
 					await deleteMessageSearchDocuments([messageId], {context: {source: 'blocked_embed_unfurl'}});
 					const eventDispatcher = new ChannelEventDispatcher({gatewayService});
 					await eventDispatcher.dispatchMessageDelete(channel, messageId);
+					await enqueueCrosspostSourceRemoval(getWorkerDependencies().workerService, {
+						messages: [latestExpectedMessage],
+						mode: 'purge',
+					});
 					return true;
 				}
 				Logger.error(
@@ -506,6 +518,9 @@ const extractEmbeds: WorkerTaskHandler = async (payload, helpers) => {
 			const latestMessage = await updateMessageEmbeds(channelRepository, latestExpectedMessage, orderedEmbeds);
 			if (!latestMessage) {
 				return false;
+			}
+			if (latestMessage !== latestExpectedMessage) {
+				propagated = latestMessage;
 			}
 			if (!(latestMessage.flags & MessageFlags.SUPPRESS_EMBEDS)) {
 				await dispatchEmbedUpdate({
@@ -519,6 +534,9 @@ const extractEmbeds: WorkerTaskHandler = async (payload, helpers) => {
 			}
 			return true;
 		});
+		if (propagated && isCrosspostedMessage(propagated)) {
+			await enqueueCrosspostSync(getWorkerDependencies().workerService, {channelId, messageId, mode: 'update'});
+		}
 		if (!handled) {
 			return;
 		}

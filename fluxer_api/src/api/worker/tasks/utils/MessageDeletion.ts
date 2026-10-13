@@ -1,19 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {type ChannelID, createChannelID, type MessageID} from '../../../BrandedTypes';
-import type {IChannelRepository} from '../../../channel/IChannelRepository';
-import type {IGatewayService} from '../../../infrastructure/IGatewayService';
-
-export function chunkArray<T>(items: Array<T>, chunkSize: number): Array<Array<T>> {
-	const chunks: Array<Array<T>> = [];
-	for (let i = 0; i < items.length; i += chunkSize) {
-		chunks.push(items.slice(i, i + chunkSize));
-	}
-	return chunks;
-}
+import {type ChannelID, createChannelID, type MessageID} from '@app/api/BrandedTypes';
+import type {ChannelRepository} from '@app/api/channel/ChannelRepository';
+import {withThreadContext} from '@app/api/channel/services/ChannelGatewayDispatch';
+import {decrementThreadMessageCount} from '@app/api/channel/services/message/MessageHelpers';
+import type {IGatewayService} from '@app/api/infrastructure/IGatewayService';
 
 interface BulkDeleteDispatcherDeps {
-	channelRepository: IChannelRepository;
+	channelRepository: ChannelRepository;
 	gatewayService: IGatewayService;
 	batchSize: number;
 }
@@ -36,17 +30,18 @@ export function createBulkDeleteDispatcher({channelRepository, gatewayService, b
 				continue;
 			}
 			const channelId = createChannelID(BigInt(channelIdStr));
-			const channel = await channelRepository.findUnique(channelId);
+			const channel = await channelRepository.channelData.findUnique(channelId);
 			if (channel) {
+				await decrementThreadMessageCount(channelRepository, channel, messageIdsBatch);
 				const payloadIds = messageIdsBatch.map((id) => id.toString());
 				if (channel.guildId) {
 					await gatewayService.dispatchGuild({
 						guildId: channel.guildId,
 						event: 'MESSAGE_DELETE_BULK',
-						data: {
+						data: withThreadContext(channel, {
 							channel_id: channelIdStr,
 							ids: payloadIds,
-						},
+						}),
 					});
 				} else {
 					for (const recipientId of channel.recipientIds) {

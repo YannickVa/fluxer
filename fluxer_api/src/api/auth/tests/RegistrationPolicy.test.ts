@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {createAuthHarness, createUniqueEmail, createUniqueUsername} from '@app/api/auth/tests/AuthTestUtils';
+import {getInstanceConfigRepository} from '@app/api/middleware/ServiceSingletons';
+import type {ApiTestHarness} from '@app/api/test/ApiTestHarness';
+import {createBuilderWithoutAuth} from '@app/api/test/TestRequestBuilder';
 import {APIErrorCodes} from '@fluxer/constants/src/ApiErrorCodes';
 import {afterAll, beforeAll, beforeEach, describe, expect, it} from 'vitest';
-import {getInstanceConfigRepository} from '../../middleware/ServiceSingletons';
-import type {ApiTestHarness} from '../../test/ApiTestHarness';
-import {createBuilderWithoutAuth} from '../../test/TestRequestBuilder';
-import {createAuthHarness, createUniqueEmail, createUniqueUsername} from './AuthTestUtils';
 
 interface PendingRegistrationResponse {
 	registration_pending_approval: true;
@@ -84,6 +84,7 @@ describe('Auth registration policy', () => {
 			.execute();
 		expect(registration.registration_pending_approval).toBe(true);
 		expect(registration.user_id.length).toBeGreaterThan(0);
+		expect(Object.keys(registration).sort()).toEqual(['registration_pending_approval', 'user_id']);
 		await createBuilderWithoutAuth(harness)
 			.post('/auth/login')
 			.body({email: body.email, password: body.password})

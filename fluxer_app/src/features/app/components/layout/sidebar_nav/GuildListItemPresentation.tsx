@@ -14,6 +14,7 @@ import Guilds from '@app/features/guild/state/Guilds';
 import {
 	type GuildInitialsLength,
 	getGuildIconDisplayInitials,
+	getGuildInitialsFitStyle,
 	getInitialsFromName,
 	getInitialsLength,
 	truncateInitials,
@@ -57,11 +58,11 @@ function resolveGuildListItemMotion(useReducedMotion: boolean): GuildListItemMot
 	return STANDARD_GUILD_LIST_ITEM_MOTION;
 }
 
-function resolveInitialsLength(rawInitials: string): GuildInitialsLength | null {
-	if (rawInitials.length === 0) {
+function resolveInitialsLength(displayInitials: string): GuildInitialsLength | null {
+	if (displayInitials.length === 0) {
 		return null;
 	}
-	return getInitialsLength(rawInitials);
+	return getInitialsLength(displayInitials);
 }
 
 function resolveDraggingCursor(dragAndDrop: GuildListItemDragAndDrop | null): 'grabbing' | null {
@@ -303,8 +304,8 @@ export const GuildListItemPresentation = forwardRef<
 	forwardedRef,
 ) {
 	const rootRef = useMergeRefs([surfaceRef, forwardedRef]);
-	const rawInitials = getInitialsFromName(guild.name);
-	const initialsLength = resolveInitialsLength(rawInitials);
+	const displayInitials = getGuildIconDisplayInitials(getInitialsFromName(guild.name));
+	const initialsLength = resolveInitialsLength(displayInitials);
 	const dropIndicator = resolveDropIndicator(dragAndDrop);
 	const motion = resolveGuildListItemMotion(Accessibility.useReducedMotion);
 	const draggingCursor = resolveDraggingCursor(dragAndDrop);
@@ -313,6 +314,7 @@ export const GuildListItemPresentation = forwardRef<
 		[backgroundImage, draggingCursor],
 	);
 	const guildIconTarget = useMemo(() => ({borderRadius: iconBorderRadius}), [iconBorderRadius]);
+	const hasPaintedIcon = backgroundImage != null;
 	return (
 		<LongPressable
 			{...domProps}
@@ -332,6 +334,7 @@ export const GuildListItemPresentation = forwardRef<
 			role="button"
 			tabIndex={0}
 			data-guild-list-focus-item="true"
+			data-guild-id={guild.id}
 			onLongPress={onLongPress}
 			disabled={false}
 			data-flx="app.sidebar-nav.guild-list-item-presentation.guild-list-item.click"
@@ -363,7 +366,7 @@ export const GuildListItemPresentation = forwardRef<
 					tabIndex={-1}
 					className={clsx(
 						styles.guildIcon,
-						guild.icon == null && styles.guildIconNoImage,
+						!hasPaintedIcon && styles.guildIconNoImage,
 						isSelected && styles.guildIconSelected,
 					)}
 					to={guildIconTarget}
@@ -373,12 +376,13 @@ export const GuildListItemPresentation = forwardRef<
 					style={guildIconStyle}
 					data-flx="app.sidebar-nav.guild-list-item-presentation.guild-icon"
 				>
-					{guild.icon == null && (
+					{!hasPaintedIcon && (
 						<span
 							className={styles.guildIconInitials}
+							style={getGuildInitialsFitStyle(displayInitials)}
 							data-flx="app.sidebar-nav.guild-list-item-presentation.guild-icon-initials"
 						>
-							{getGuildIconDisplayInitials(rawInitials)}
+							{displayInitials}
 						</span>
 					)}
 				</GuildListItemIcon>

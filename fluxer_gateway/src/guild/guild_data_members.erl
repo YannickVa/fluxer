@@ -56,10 +56,15 @@ has_member(#{user_id := UserId}, State) ->
 -spec list_guild_members(map(), guild_state()) -> {reply, map(), guild_state()}.
 list_guild_members(#{limit := Limit, offset := Offset}, State) ->
     Data = guild_data_index:ensure_data_map(State),
-    AllMembers = guild_data_index:member_list(Data),
-    TotalCount = length(AllMembers),
-    PaginatedMembers = paginate_members(AllMembers, Limit, Offset),
-    {reply, #{members => PaginatedMembers, total => TotalCount}, State}.
+    MemberMap = guild_data_index:member_map(Data),
+    SortedIds = guild_data_index_members:sorted_member_ids(Data, MemberMap),
+    PageIds = paginate_members(SortedIds, Limit, Offset),
+    PaginatedMembers = lookup_members(PageIds, MemberMap),
+    {reply, #{members => PaginatedMembers, total => map_size(MemberMap)}, State}.
+
+-spec lookup_members([term()], map()) -> [guild_member()].
+lookup_members(UserIds, MemberMap) ->
+    [Member || UserId <- UserIds, {ok, Member} <- [maps:find(UserId, MemberMap)]].
 
 -spec search_guild_members(map(), guild_state()) -> {reply, map(), guild_state()}.
 search_guild_members(#{query := Query, limit := Limit}, State) when
@@ -113,23 +118,22 @@ collect_query_match(Member, NormalizedQuery, Remaining, Acc, NextIterator) ->
 find_member_by_user_id(UserId, State) ->
     guild_permissions:find_member_by_user_id(UserId, State).
 
--spec paginate_members([guild_member()], non_neg_integer(), non_neg_integer()) ->
-    [guild_member()].
-paginate_members(Members, Limit, Offset) ->
-    take_page(drop_members(Members, Offset), Limit, []).
+-spec paginate_members([term()], non_neg_integer(), non_neg_integer()) -> [term()].
+paginate_members(Items, Limit, Offset) ->
+    take_page(drop_items(Items, Offset), Limit, []).
 
--spec drop_members([guild_member()], non_neg_integer()) -> [guild_member()].
-drop_members(Members, 0) ->
-    Members;
-drop_members([], _Offset) ->
+-spec drop_items([term()], non_neg_integer()) -> [term()].
+drop_items(Items, 0) ->
+    Items;
+drop_items([], _Offset) ->
     [];
-drop_members([_ | Rest], Offset) ->
-    drop_members(Rest, Offset - 1).
+drop_items([_ | Rest], Offset) ->
+    drop_items(Rest, Offset - 1).
 
--spec take_page([guild_member()], non_neg_integer(), [guild_member()]) -> [guild_member()].
+-spec take_page([term()], non_neg_integer(), [term()]) -> [term()].
 take_page(_Remaining, 0, Acc) ->
     lists:reverse(Acc);
 take_page([], _Limit, Acc) ->
     lists:reverse(Acc);
-take_page([Member | Rest], Limit, Acc) ->
-    take_page(Rest, Limit - 1, [Member | Acc]).
+take_page([Item | Rest], Limit, Acc) ->
+    take_page(Rest, Limit - 1, [Item | Acc]).

@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import type {GuildID, UserID} from '../../BrandedTypes';
-import {deleteOneOrMany, fetchMany, fetchOne} from '../../database/CassandraQueryExecution';
-import {buildPatchFromData, executeVersionedUpdate} from '../../database/CassandraVersionedUpdate';
-import type {ExactRow} from '../../database/types/DatabaseRowTypes';
-import type {UserGuildSettingsRow, UserSettingsRow} from '../../database/types/UserTypes';
-import {USER_GUILD_SETTINGS_COLUMNS, USER_SETTINGS_COLUMNS} from '../../database/types/UserTypes';
-import {Logger} from '../../Logger';
-import {UserGuildSettings} from '../../models/UserGuildSettings';
-import {UserSettings} from '../../models/UserSettings';
-import {UserGuildSettings as UserGuildSettingsTable, UserSettings as UserSettingsTable} from '../../Tables';
-import type {IUserSettingsRepository} from './IUserSettingsRepository';
+import type {GuildID, UserID} from '@app/api/BrandedTypes';
+import {deleteOneOrMany, fetchMany, fetchOne} from '@app/api/database/CassandraQueryExecution';
+import {buildPatchFromData, executeVersionedUpdate} from '@app/api/database/CassandraVersionedUpdate';
+import type {ExactRow} from '@app/api/database/types/DatabaseRowTypes';
+import type {UserGuildSettingsRow, UserSettingsRow} from '@app/api/database/types/UserTypes';
+import {USER_GUILD_SETTINGS_COLUMNS, USER_SETTINGS_COLUMNS} from '@app/api/database/types/UserTypes';
+import {Logger} from '@app/api/Logger';
+import {UserGuildSettings} from '@app/api/models/UserGuildSettings';
+import {UserSettings} from '@app/api/models/UserSettings';
+import {UserGuildSettings as UserGuildSettingsTable, UserSettings as UserSettingsTable} from '@app/api/Tables';
 
 const FETCH_USER_SETTINGS_CQL = UserSettingsTable.selectCql({
 	where: UserSettingsTable.where.eq('user_id'),
@@ -24,7 +23,7 @@ const FETCH_ALL_USER_GUILD_SETTINGS_CQL = UserGuildSettingsTable.selectCql({
 	where: UserGuildSettingsTable.where.eq('user_id'),
 });
 
-export class UserSettingsRepository implements IUserSettingsRepository {
+export class UserSettingsRepository {
 	async deleteAllUserGuildSettings(userId: UserID): Promise<void> {
 		await deleteOneOrMany(
 			UserGuildSettingsTable.deleteCql({

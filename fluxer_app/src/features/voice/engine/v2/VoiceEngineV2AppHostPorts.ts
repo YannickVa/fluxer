@@ -1,5 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {
+	VoiceEngineV2AppCapabilitiesAdapter,
+	type VoiceEngineV2NativeCapabilitiesBinding,
+} from '@app/features/voice/engine/v2/VoiceEngineV2AppCapabilitiesAdapter';
+import type {VoiceEngineV2AppLifecycleAdapter} from '@app/features/voice/engine/v2/VoiceEngineV2AppLifecycleAdapter';
+import type {VoiceEngineV2AppLiveKitExecutionAdapter} from '@app/features/voice/engine/v2/VoiceEngineV2AppLiveKitExecutionAdapter';
+import {createVoiceEngineV2AppSystemPermissionAdapter} from '@app/features/voice/engine/v2/VoiceEngineV2AppSystemPermissionAdapter';
 import type {
 	CapabilitiesPort,
 	DevicePort,
@@ -18,24 +25,17 @@ import type {
 	VoiceEngineV2HostPorts,
 	VoiceStateIngestionPort,
 } from '@fluxer/voice_engine_v2';
-import {
-	VoiceEngineV2AppCapabilitiesAdapter,
-	type VoiceEngineV2NativeCapabilitiesBinding,
-} from './VoiceEngineV2AppCapabilitiesAdapter';
-import type {VoiceEngineV2AppLifecycleAdapter} from './VoiceEngineV2AppLifecycleAdapter';
-import type {VoiceEngineV2AppLiveKitExecutionAdapter} from './VoiceEngineV2AppLiveKitExecutionAdapter';
-import {createVoiceEngineV2AppSystemPermissionAdapter} from './VoiceEngineV2AppSystemPermissionAdapter';
 
-export type VoiceEngineV2AppGatewayVoiceStateAdapter = GatewayPort;
-export type VoiceEngineV2AppVoiceStateIngestionAdapter = VoiceStateIngestionPort;
-export type VoiceEngineV2AppLiveKitMediaExecutionAdapter = LiveKitMediaPort;
-export type VoiceEngineV2AppParticipantProjectionIngestionAdapter = ParticipantProjectionIngestionPort;
-export type VoiceEngineV2AppSubscriptionExecutionAdapter = SubscriptionPort;
-export type VoiceEngineV2AppStatsPollingAdapter = StatsPort;
-export type VoiceEngineV2AppPermissionPortAdapter = PermissionPort;
-export type VoiceEngineV2AppDiagnosticsExecutionAdapter = DiagnosticsPort;
-export type VoiceEngineV2AppDevicesExecutionAdapter = DevicePort;
-export type VoiceEngineV2AppTimerAdapter = TimerPort;
+type VoiceEngineV2AppGatewayVoiceStateAdapter = GatewayPort;
+type VoiceEngineV2AppVoiceStateIngestionAdapter = VoiceStateIngestionPort;
+type VoiceEngineV2AppLiveKitMediaExecutionAdapter = LiveKitMediaPort;
+type VoiceEngineV2AppParticipantProjectionIngestionAdapter = ParticipantProjectionIngestionPort;
+type VoiceEngineV2AppSubscriptionExecutionAdapter = SubscriptionPort;
+type VoiceEngineV2AppStatsPollingAdapter = StatsPort;
+type VoiceEngineV2AppPermissionPortAdapter = PermissionPort;
+type VoiceEngineV2AppDiagnosticsExecutionAdapter = DiagnosticsPort;
+type VoiceEngineV2AppDevicesExecutionAdapter = DevicePort;
+type VoiceEngineV2AppTimerAdapter = TimerPort;
 
 export interface VoiceEngineV2AppHostPortAdapters {
 	gateway?: VoiceEngineV2AppGatewayVoiceStateAdapter;

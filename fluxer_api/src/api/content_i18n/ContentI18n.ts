@@ -1,11 +1,16 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {CONTENT_I18N_LOCALE_MESSAGES} from '@app/api/content_i18n/ContentI18nLocales';
+import {
+	CONTENT_I18N_MESSAGES,
+	type ContentI18nCatalog,
+	type ContentI18nKey,
+} from '@app/api/content_i18n/ContentI18nMessages';
 import {identityLocale} from '@fluxer/i18n/src/normalization/IdentityLocale';
+import {compileMessage} from '@fluxer/i18n/src/runtime/CompileMessage';
 import {createStaticI18n} from '@fluxer/i18n/src/runtime/CreateStaticI18n';
 import type {MessageArgsForTemplate} from '@fluxer/i18n/src/runtime/MessageCatalogTypes';
 import {validateMessageTemplateVariables} from '@fluxer/i18n/src/runtime/MessageCatalogTypes';
-import {CONTENT_I18N_LOCALE_MESSAGES} from './ContentI18nLocales';
-import {CONTENT_I18N_MESSAGES, type ContentI18nCatalog, type ContentI18nKey} from './ContentI18nMessages';
 
 const DEFAULT_LOCALE = 'en-US';
 
@@ -26,7 +31,7 @@ const contentI18n = createStaticI18n<ContentI18nKey, string, ContentI18nRuntimeV
 		validateVariables: (_key, template, variables) => validateMessageTemplateVariables(template, variables),
 	},
 	(template, variables, mf) => {
-		return String(mf.compile(template)(variables));
+		return String(compileMessage(mf, template)(variables));
 	},
 );
 

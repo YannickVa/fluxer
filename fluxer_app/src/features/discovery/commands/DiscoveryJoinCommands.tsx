@@ -4,9 +4,10 @@ import i18n from '@app/app/I18n';
 import {GenericErrorModal} from '@app/features/app/components/alerts/GenericErrorModal';
 import * as DiscoveryCommands from '@app/features/discovery/commands/DiscoveryCommands';
 import * as NavigationCommands from '@app/features/navigation/commands/NavigationCommands';
-import {failureCode} from '@app/features/platform/utils/ResponseInspection';
+import {failureCode, failureMessage} from '@app/features/platform/utils/ResponseInspection';
 import * as ModalCommands from '@app/features/ui/commands/ModalCommands';
 import {modal} from '@app/features/ui/commands/ModalCommands';
+import {blockIfAccountLimited, showAccountLimitedModal} from '@app/features/user/utils/AccountLimitUtils';
 import {APIErrorCodes} from '@fluxer/constants/src/ApiErrorCodes';
 import {msg} from '@lingui/core/macro';
 
@@ -100,16 +101,29 @@ function resolveJoinGuildErrorContent(code: string | undefined): {title: string;
 }
 
 function showJoinGuildErrorModal(error: unknown): void {
-	const {title, message} = resolveJoinGuildErrorContent(failureCode(error));
+	const code = failureCode(error);
+	if (code === APIErrorCodes.ACCOUNT_LIMITED) {
+		showAccountLimitedModal(failureMessage(error));
+		return;
+	}
+	const {title, message} = resolveJoinGuildErrorContent(code);
 	ModalCommands.push(
 		modal(() => <GenericErrorModal title={title} message={message} data-flx="discovery.join.generic-error-modal" />),
 	);
 }
 
-export async function joinDiscoveryGuild(guildId: string): Promise<boolean> {
+export async function joinDiscoveryGuild(
+	guildId: string,
+	target?: {channelId: string; messageId?: string},
+): Promise<boolean> {
+	if (blockIfAccountLimited()) return false;
 	try {
 		await DiscoveryCommands.joinGuild(guildId);
-		NavigationCommands.selectGuild(guildId);
+		if (target) {
+			NavigationCommands.selectChannel(guildId, target.channelId, target.messageId);
+		} else {
+			NavigationCommands.selectGuild(guildId);
+		}
 		return true;
 	} catch (error) {
 		showJoinGuildErrorModal(error);

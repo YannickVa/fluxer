@@ -103,6 +103,9 @@ do_identify(
     GwTimings,
     State
 ) ->
+    ok = channel_threads_config:note_identify(
+        session_manager_shard_drain:thread_channels_capable(#{flags => Flags}), Properties
+    ),
     SessionId = utils:generate_session_id(),
     IdentifyData = build_identify_data(
         Token,
@@ -151,7 +154,7 @@ maybe_put(Key, Value, Map) ->
     {ok, binary(), map(), term(), [binary()], non_neg_integer(), integer() | undefined,
         gateway_sharding:shard() | undefined}
     | {error, atom()}.
-validate_identify_data(Data) ->
+validate_identify_data(Data) when is_map(Data) ->
     try
         Token = maps:get(<<"token">>, Data),
         Properties = maps:get(<<"properties">>, Data),
@@ -163,7 +166,9 @@ validate_identify_data(Data) ->
         )
     catch
         error:{badkey, _} -> {error, missing_required_field}
-    end.
+    end;
+validate_identify_data(_Data) ->
+    {error, invalid_data}.
 
 -spec validate_properties(binary(), term(), term(), term(), term(), map()) ->
     {ok, binary(), map(), term(), [binary()], non_neg_integer(), integer() | undefined,
@@ -348,12 +353,6 @@ session_start_error_action(_) ->
     unknown.
 
 -spec log_session_start_error(term(), state()) -> ws_result().
-log_session_start_error({retries_exhausted, Reason}, State) ->
-    logger:error(
-        "Session start failed after retries: last_error=~p peer_ip=~ts",
-        [Reason, maps:get(peer_ip, State, <<"unknown">>)]
-    ),
-    gateway_handler_encode:close_with_reason(unknown_error, <<"Session start failed">>, State);
 log_session_start_error(Reason, State) ->
     logger:error(
         "Session start failed: reason=~p peer_ip=~ts",
@@ -487,14 +486,6 @@ handle_session_start_capacity_holds_without_reconnect_test() ->
 
 handle_session_start_rate_limit_holds_without_close_test() ->
     {ok, _State} = handle_session_start_result({error, rate_limited}, identify_test_state()).
-
-start_session_with_drain_guard_holds_pending_identify_test() ->
-    {ok, State} = start_session_with_drain_guard(
-        true, #{token => <<"t">>}, self(), identify_test_state()
-    ),
-    {PendingRequest, PendingPid} = maps:get(pending_identify, State),
-    ?assertEqual(#{token => <<"t">>}, PendingRequest),
-    ?assert(is_pid(PendingPid)).
 
 identify_test_state() ->
     #{

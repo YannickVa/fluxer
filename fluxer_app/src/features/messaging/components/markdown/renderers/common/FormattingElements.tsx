@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import {isKeyboardActivationKey} from '@app/features/input/utils/KeyboardUtils';
-import {MarkdownContext, type RendererProps} from '@app/features/messaging/components/markdown/renderers/RendererTypes';
+import {
+	isRestrictedInlineContext,
+	type MarkdownRenderOptions,
+	type RendererProps,
+} from '@app/features/messaging/components/markdown/renderers/RendererTypes';
 import {NodeType} from '@app/features/messaging/utils/markdown/parser/Enums';
 import type {FormattingNode, Node} from '@app/features/messaging/utils/markdown/parser/Nodes';
 import {normalizeUrl, useSpoilerState} from '@app/features/messaging/utils/SpoilerUtils';
@@ -49,6 +53,8 @@ export function StrikethroughRenderer({node, id, renderChildren}: RendererProps<
 	);
 }
 
+const HIDDEN_SPOILER_OPTION_OVERRIDES: Partial<MarkdownRenderOptions> = {disableEmojiInteractions: true};
+
 interface SpoilerNode extends FormattingNode {
 	type: 'Spoiler';
 	isBlock: boolean;
@@ -89,55 +95,44 @@ export const SpoilerRenderer = observer(function SpoilerRenderer({
 		},
 		[handleClick],
 	);
-	const isBlock = node.isBlock && options.context !== MarkdownContext.RESTRICTED_INLINE_REPLY;
+	const isBlock = node.isBlock && !isRestrictedInlineContext(options.context);
 	const wrapperClass = isBlock ? markupStyles.blockSpoilerWrapper : markupStyles.spoilerWrapper;
 	const spoilerClass = isBlock ? markupStyles.blockSpoiler : markupStyles.spoiler;
 	const shouldReveal = !hidden || autoRevealed;
+	const revealTriggerProps = shouldReveal
+		? {}
+		: {
+				onClick: handleClick,
+				onKeyDown: handleKeyDown,
+				role: 'button',
+				'aria-label': i18n._(CLICK_TO_REVEAL_SPOILER_DESCRIPTOR),
+			};
 	return (
 		<span
 			key={id}
 			className={wrapperClass}
 			data-flx="messaging.markdown.renderers.common.formatting-elements.spoiler-renderer.span"
 		>
-			{shouldReveal ? (
+			<FocusRing
+				offset={-2}
+				data-flx="messaging.markdown.renderers.common.formatting-elements.spoiler-renderer.focus-ring"
+			>
 				<span
 					className={spoilerClass}
 					data-revealed={shouldReveal}
-					data-flx="messaging.markdown.renderers.common.formatting-elements.spoiler-renderer.span--2"
+					tabIndex={shouldReveal ? -1 : 0}
+					{...revealTriggerProps}
+					data-flx="messaging.markdown.renderers.common.formatting-elements.spoiler-renderer.button.click"
 				>
 					<span
 						className={markupStyles.spoilerContent}
 						aria-hidden={!shouldReveal}
 						data-flx="messaging.markdown.renderers.common.formatting-elements.spoiler-renderer.span--3"
 					>
-						{renderChildren(node.children)}
+						{renderChildren(node.children, shouldReveal ? undefined : HIDDEN_SPOILER_OPTION_OVERRIDES)}
 					</span>
 				</span>
-			) : (
-				<FocusRing
-					offset={-2}
-					data-flx="messaging.markdown.renderers.common.formatting-elements.spoiler-renderer.focus-ring"
-				>
-					<span
-						className={spoilerClass}
-						data-revealed={shouldReveal}
-						onClick={handleClick}
-						onKeyDown={handleKeyDown}
-						role="button"
-						tabIndex={0}
-						aria-label={i18n._(CLICK_TO_REVEAL_SPOILER_DESCRIPTOR)}
-						data-flx="messaging.markdown.renderers.common.formatting-elements.spoiler-renderer.button.click"
-					>
-						<span
-							className={markupStyles.spoilerContent}
-							aria-hidden
-							data-flx="messaging.markdown.renderers.common.formatting-elements.spoiler-renderer.span--4"
-						>
-							{renderChildren(node.children)}
-						</span>
-					</span>
-				</FocusRing>
-			)}
+			</FocusRing>
 		</span>
 	);
 });

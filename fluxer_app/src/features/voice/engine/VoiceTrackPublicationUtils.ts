@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {
+	asVoiceTrackSource,
+	type VoiceTrackSource,
+	VoiceTrackSource as VoiceTrackSourceValue,
+} from '@app/features/voice/engine/VoiceTrackSource';
 import type {LocalParticipant, LocalTrack, LocalTrackPublication} from 'livekit-client';
-import {asVoiceTrackSource, type VoiceTrackSource, VoiceTrackSource as VoiceTrackSourceValue} from './VoiceTrackSource';
 
 interface LocalParticipantWithAudioPublications extends Pick<LocalParticipant, 'audioTrackPublications'> {}
 interface LocalParticipantWithTrackPublications extends Pick<LocalParticipant, 'trackPublications'> {}
@@ -20,13 +24,11 @@ export interface LocalMediaPublicationCapResult {
 	}>;
 }
 
-export function isMicrophoneSourcePublication(
-	publication: Pick<LocalTrackPublication, 'source'> | null | undefined,
-): boolean {
+function isMicrophoneSourcePublication(publication: Pick<LocalTrackPublication, 'source'> | null | undefined): boolean {
 	return asVoiceTrackSource(publication?.source) === VoiceTrackSourceValue.Microphone;
 }
 
-export function isControllableMicrophonePublication(
+function isControllableMicrophonePublication(
 	publication: Pick<LocalTrackPublication, 'source'> | null | undefined,
 ): boolean {
 	if (!publication) {
@@ -49,7 +51,7 @@ export function getPrimaryLocalMicrophonePublication(
 	return getLocalMicrophonePublications(participant)[0] ?? null;
 }
 
-export function getLocalTrackPublicationsBySource(
+function getLocalTrackPublicationsBySource(
 	participant: LocalParticipantWithTrackPublications,
 	source: VoiceTrackSource,
 ): Array<LocalTrackPublication> {
@@ -82,7 +84,7 @@ export function getLocalScreenSharePublications(
 	return [...getLocalScreenShareVideoPublications(participant), ...getLocalScreenShareAudioPublications(participant)];
 }
 
-export function getLocalPublicationTrack(publication: LocalTrackPublication): LocalTrack | null {
+function getLocalPublicationTrack(publication: LocalTrackPublication): LocalTrack | null {
 	return (publication.track ?? publication.videoTrack ?? publication.audioTrack ?? null) as LocalTrack | null;
 }
 

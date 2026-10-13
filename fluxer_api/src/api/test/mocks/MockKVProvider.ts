@@ -18,7 +18,6 @@ class MockKVSubscription implements IKVSubscription {
 	connectCalled = false;
 	subscribedChannels: Array<string> = [];
 	quitCalled = false;
-	removeAllListenersCalled = false;
 
 	constructor(options: MockKVSubscriptionOptions = {}) {
 		this.options = options;
@@ -68,18 +67,6 @@ class MockKVSubscription implements IKVSubscription {
 		this.quitCalled = true;
 	}
 
-	removeAllListeners(event?: 'message' | 'error'): void {
-		this.removeAllListenersCalled = true;
-		if (event === 'message') {
-			this.messageCallbacks = [];
-		} else if (event === 'error') {
-			this.errorCallbacks = [];
-		} else {
-			this.messageCallbacks = [];
-			this.errorCallbacks = [];
-		}
-	}
-
 	simulateMessage(channel: string, message: string): void {
 		for (const callback of this.messageCallbacks) {
 			callback(channel, message);
@@ -98,7 +85,6 @@ class MockKVSubscription implements IKVSubscription {
 		this.connectCalled = false;
 		this.subscribedChannels = [];
 		this.quitCalled = false;
-		this.removeAllListenersCalled = false;
 	}
 }
 
@@ -111,6 +97,7 @@ export class MockKVProvider implements IKVProvider {
 		key: string;
 		values: Array<string>;
 	}> = [];
+	clustered = true;
 	private subscription: MockKVSubscription;
 	private readonly stringStore = new Map<string, string>();
 	private readonly setStore = new Map<string, Set<string>>();
@@ -146,19 +133,16 @@ export class MockKVProvider implements IKVProvider {
 	readonly llenSpy = vi.fn();
 	readonly hsetSpy = vi.fn();
 	readonly hdelSpy = vi.fn();
-	readonly hgetSpy = vi.fn();
 	readonly hgetallSpy = vi.fn();
 	readonly publishSpy = vi.fn();
 	readonly acquireLockSpy = vi.fn();
 	readonly releaseLockSpy = vi.fn();
-	readonly renewSnowflakeNodeSpy = vi.fn();
 	readonly checkLeakyBucketLimitSpy = vi.fn();
-	readonly tryConsumeTokensSpy = vi.fn();
 	readonly scheduleBulkDeletionSpy = vi.fn();
+	readonly claimBulkDeletionSpy = vi.fn();
 	readonly removeBulkDeletionSpy = vi.fn();
 	readonly scanSpy = vi.fn();
 	readonly dequeuePurgeBatchSpy = vi.fn();
-	readonly healthSpy = vi.fn();
 	readonly evalScriptSpy = vi.fn();
 
 	constructor(options: MockKVProviderOptions = {}) {
@@ -484,6 +468,26 @@ export class MockKVProvider implements IKVProvider {
 		return this.listStore.get(key)?.length ?? 0;
 	}
 
+	async lrange(key: string, start: number, stop: number): Promise<Array<string>> {
+		this.evictIfExpired(key);
+		const list = this.listStore.get(key) ?? [];
+		const from = start < 0 ? Math.max(list.length + start, 0) : start;
+		const to = stop < 0 ? list.length + stop : Math.min(stop, list.length - 1);
+		return from > to ? [] : list.slice(from, to + 1);
+	}
+
+	async ltrim(key: string, start: number, stop: number): Promise<void> {
+		this.evictIfExpired(key);
+		const list = this.listStore.get(key);
+		if (!list) return;
+		const kept = await this.lrange(key, start, stop);
+		if (kept.length === 0) {
+			this.listStore.delete(key);
+			return;
+		}
+		list.splice(0, list.length, ...kept);
+	}
+
 	async hset(key: string, field: string, value: string): Promise<number> {
 		this.hsetSpy(key, field, value);
 		this.evictIfExpired(key);
@@ -508,12 +512,6 @@ export class MockKVProvider implements IKVProvider {
 			}
 		}
 		return removed;
-	}
-
-	async hget(key: string, field: string): Promise<string | null> {
-		this.hgetSpy(key, field);
-		this.evictIfExpired(key);
-		return this.hashStore.get(key)?.get(field) ?? null;
 	}
 
 	async hgetall(key: string): Promise<Record<string, string>> {
@@ -569,17 +567,6 @@ export class MockKVProvider implements IKVProvider {
 		return true;
 	}
 
-	async renewSnowflakeNode(key: string, instanceId: string, ttlSeconds: number): Promise<boolean> {
-		this.renewSnowflakeNodeSpy(key, instanceId, ttlSeconds);
-		this.evictIfExpired(key);
-		const currentValue = this.stringStore.get(key);
-		if (currentValue !== instanceId) {
-			return false;
-		}
-		this.expiries.set(key, Date.now() + ttlSeconds * 1000);
-		return true;
-	}
-
 	async checkLeakyBucketLimit(key: string, limit: number, windowMs: number, cost: number): Promise<KVRateLimitResult> {
 		this.checkLeakyBucketLimitSpy(key, limit, windowMs, cost);
 		this.evictIfExpired(key);
@@ -615,50 +602,6 @@ export class MockKVProvider implements IKVProvider {
 		return createRateLimitResult(true, capacity, remaining, nowMs, resetAfterMs, 0);
 	}
 
-	async tryConsumeTokens(
-		key: string,
-		requested: number,
-		maxTokens: number,
-		refillRate: number,
-		refillIntervalMs: number,
-	): Promise<number> {
-		this.tryConsumeTokensSpy(key, requested, maxTokens, refillRate, refillIntervalMs);
-		this.evictIfExpired(key);
-		const now = Date.now();
-		let tokens = maxTokens;
-		let lastRefill = now;
-		const rawState = this.stringStore.get(key);
-		if (rawState !== undefined) {
-			try {
-				const parsed = JSON.parse(rawState) as {
-					tokens?: number;
-					lastRefill?: number;
-				};
-				tokens = parsed.tokens ?? maxTokens;
-				lastRefill = parsed.lastRefill ?? now;
-			} catch {}
-		}
-		const elapsed = now - lastRefill;
-		if (elapsed >= refillIntervalMs) {
-			const intervals = Math.floor(elapsed / refillIntervalMs);
-			const refilled = intervals * refillRate;
-			tokens = Math.min(maxTokens, tokens + refilled);
-			lastRefill = now;
-		}
-		let consumed = 0;
-		if (tokens >= requested) {
-			consumed = requested;
-			tokens -= requested;
-		} else if (tokens > 0) {
-			consumed = tokens;
-			tokens = 0;
-		}
-		this.ensureType(key, 'string');
-		this.stringStore.set(key, JSON.stringify({tokens, lastRefill}));
-		this.expiries.set(key, now + 3600 * 1000);
-		return consumed;
-	}
-
 	async scheduleBulkDeletion(queueKey: string, secondaryKey: string, score: number, value: string): Promise<void> {
 		this.scheduleBulkDeletionSpy(queueKey, secondaryKey, score, value);
 		await this.zadd(queueKey, score, value);
@@ -667,9 +610,24 @@ export class MockKVProvider implements IKVProvider {
 		this.expiries.delete(secondaryKey);
 	}
 
-	async removeBulkDeletion(queueKey: string, secondaryKey: string): Promise<boolean> {
-		this.removeBulkDeletionSpy(queueKey, secondaryKey);
+	async claimBulkDeletion(queueKey: string, member: string, maxScore: number, leaseScore: number): Promise<boolean> {
+		this.claimBulkDeletionSpy(queueKey, member, maxScore, leaseScore);
+		this.evictIfExpired(queueKey);
+		const score = this.zsetStore.get(queueKey)?.get(member);
+		if (score === undefined || score > maxScore) {
+			return false;
+		}
+		await this.zadd(queueKey, leaseScore, member);
+		return true;
+	}
+
+	async removeBulkDeletion(queueKey: string, secondaryKey: string, member = ''): Promise<boolean> {
+		this.removeBulkDeletionSpy(queueKey, secondaryKey, member);
 		this.evictIfExpired(secondaryKey);
+		if (member !== '' && (await this.zrem(queueKey, member)) === 1) {
+			this.deleteKey(secondaryKey);
+			return true;
+		}
 		const value = this.stringStore.get(secondaryKey);
 		if (value === undefined) {
 			return false;
@@ -687,7 +645,7 @@ export class MockKVProvider implements IKVProvider {
 		refillRate: number,
 		refillIntervalMs: number,
 	): Promise<{
-		urls: Array<string>;
+		entries: Array<string>;
 		tokensConsumed: number;
 	}> {
 		this.dequeuePurgeBatchSpy(queueKey, bucketKey, maxItems, maxTokens, refillRate, refillIntervalMs);
@@ -717,13 +675,13 @@ export class MockKVProvider implements IKVProvider {
 		if (toPop <= 0) {
 			this.stringStore.set(bucketKey, JSON.stringify({tokens, lastRefill}));
 			this.expiries.set(bucketKey, now + 3600 * 1000);
-			return {urls: [], tokensConsumed: 0};
+			return {entries: [], tokensConsumed: 0};
 		}
-		const urls = await this.spop(queueKey, toPop);
-		tokens -= urls.length;
+		const entries = await this.spop(queueKey, toPop);
+		tokens -= entries.length;
 		this.stringStore.set(bucketKey, JSON.stringify({tokens, lastRefill}));
 		this.expiries.set(bucketKey, now + 3600 * 1000);
-		return {urls, tokensConsumed: urls.length};
+		return {entries, tokensConsumed: entries.length};
 	}
 
 	async evalScript(
@@ -766,9 +724,8 @@ export class MockKVProvider implements IKVProvider {
 		return this.createPipeline();
 	}
 
-	async health(): Promise<boolean> {
-		this.healthSpy();
-		return true;
+	isClustered(): boolean {
+		return this.clustered;
 	}
 
 	getSubscription(): MockKVSubscription {
@@ -1100,19 +1057,16 @@ export class MockKVProvider implements IKVProvider {
 		this.llenSpy.mockClear();
 		this.hsetSpy.mockClear();
 		this.hdelSpy.mockClear();
-		this.hgetSpy.mockClear();
 		this.hgetallSpy.mockClear();
 		this.publishSpy.mockClear();
 		this.acquireLockSpy.mockClear();
 		this.releaseLockSpy.mockClear();
-		this.renewSnowflakeNodeSpy.mockClear();
 		this.checkLeakyBucketLimitSpy.mockClear();
-		this.tryConsumeTokensSpy.mockClear();
 		this.scheduleBulkDeletionSpy.mockClear();
+		this.claimBulkDeletionSpy.mockClear();
 		this.removeBulkDeletionSpy.mockClear();
 		this.scanSpy.mockClear();
 		this.dequeuePurgeBatchSpy.mockClear();
-		this.healthSpy.mockClear();
 		this.evalScriptSpy.mockClear();
 	}
 }

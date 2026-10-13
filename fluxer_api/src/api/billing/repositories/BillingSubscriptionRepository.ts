@@ -1,16 +1,21 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {fetchMany, fetchOne, upsertOne} from '../../database/CassandraQueryExecution';
-import type {BillingSubscriptionRow} from '../../database/types/BillingTypes';
-import {BILLING_SUBSCRIPTION_COLUMNS} from '../../database/types/BillingTypes';
-import {BillingSubscriptions, BillingSubscriptionsByCustomer, BillingSubscriptionsByUser} from '../../Tables';
 import {
 	type MapStripeSubscriptionHints,
 	mapStripeSubscriptionToRow,
 	normalizeBillingSubscriptionRow,
 	type StripeSubscriptionPayload,
-} from '../mappers/StripeToBillingMapper';
-import {buildPatchFromRow, executeBillingVersionedUpdate, isExistingNewer, rowsEquivalent} from './BillingRepoHelpers';
+} from '@app/api/billing/mappers/StripeToBillingMapper';
+import {
+	buildPatchFromRow,
+	executeBillingVersionedUpdate,
+	isExistingNewer,
+	rowsEquivalent,
+} from '@app/api/billing/repositories/BillingRepoHelpers';
+import {fetchMany, fetchOne, upsertOne} from '@app/api/database/CassandraQueryExecution';
+import type {BillingSubscriptionRow} from '@app/api/database/types/BillingTypes';
+import {BILLING_SUBSCRIPTION_COLUMNS} from '@app/api/database/types/BillingTypes';
+import {BillingSubscriptions, BillingSubscriptionsByCustomer, BillingSubscriptionsByUser} from '@app/api/Tables';
 
 const FETCH_BY_ID = BillingSubscriptions.selectCql({
 	where: BillingSubscriptions.where.eq('provider_id'),
@@ -25,11 +30,6 @@ const FETCH_BY_USER = BillingSubscriptionsByUser.selectCql({
 const FETCH_BY_PROVIDER_IDS = BillingSubscriptions.selectCql({
 	where: BillingSubscriptions.where.in('provider_id', 'provider_ids'),
 });
-const ACTIVE_SUBSCRIPTION_STATUSES = new Set<BillingSubscriptionRow['status']>(['active', 'trialing']);
-
-function getSubscriptionEndMs(row: BillingSubscriptionRow): number {
-	return row.current_period_end?.getTime() ?? 0;
-}
 
 export class BillingSubscriptionRepository {
 	async findById(providerId: string): Promise<BillingSubscriptionRow | null> {
@@ -55,15 +55,6 @@ export class BillingSubscriptionRepository {
 		const ids = refs.map((r) => r.provider_id);
 		const rows = await fetchMany<BillingSubscriptionRow>(FETCH_BY_PROVIDER_IDS, {provider_ids: ids});
 		return rows.map(normalizeBillingSubscriptionRow);
-	}
-
-	async findActiveForUser(userId: bigint): Promise<BillingSubscriptionRow | null> {
-		const subs = await this.listByUser(userId);
-		return (
-			subs
-				.filter((subscription) => ACTIVE_SUBSCRIPTION_STATUSES.has(subscription.status))
-				.sort((left, right) => getSubscriptionEndMs(right) - getSubscriptionEndMs(left))[0] ?? null
-		);
 	}
 
 	async upsertFromStripe(

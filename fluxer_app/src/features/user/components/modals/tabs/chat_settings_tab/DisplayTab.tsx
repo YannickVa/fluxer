@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import {SettingsTabSection} from '@app/features/app/components/dialogs/shared/SettingsTabLayout';
-import {PRODUCT_NAME} from '@app/features/app/config/I18nDisplayConstants';
+import RuntimeConfig from '@app/features/app/state/RuntimeConfig';
 import {REACTIONS_DESCRIPTOR} from '@app/features/i18n/utils/CommonMessageDescriptors';
 import {formatPermissionLabel} from '@app/features/permissions/utils/PermissionUtils';
 import {Switch} from '@app/features/ui/components/form/FormSwitch';
@@ -49,7 +49,7 @@ const MEDIA_DISPLAY_DESCRIPTOR = msg({
 	comment: 'Short label in the display tab. Keep it concise.',
 });
 const WHEN_POSTED_AS_LINKS_TO_CHAT_DESCRIPTOR = msg({
-	message: 'When posted as links to chat',
+	message: 'When posted as links in chat',
 	comment: 'Label in the display tab.',
 });
 const WHEN_UPLOADED_DIRECTLY_TO_DESCRIPTOR = msg({
@@ -113,7 +113,7 @@ export const DisplayTabContent: React.FC = observer(() => {
 							data-flx="user.chat-settings-tab.display-tab.display-tab-content.switch-group-item.update"
 						/>
 						<SwitchGroupItem
-							label={i18n._(WHEN_UPLOADED_DIRECTLY_TO_DESCRIPTOR, {productName: PRODUCT_NAME})}
+							label={i18n._(WHEN_UPLOADED_DIRECTLY_TO_DESCRIPTOR, {productName: RuntimeConfig.productName})}
 							value={userSettings.inlineAttachmentMedia}
 							onChange={(value) => UserSettingsCommands.update({inlineAttachmentMedia: value})}
 							data-flx="user.chat-settings-tab.display-tab.display-tab-content.switch-group-item.update--2"

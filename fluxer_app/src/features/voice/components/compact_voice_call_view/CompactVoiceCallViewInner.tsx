@@ -27,6 +27,7 @@ import {
 } from '@app/features/voice/components/compact_voice_call_view/shared';
 import {useCompactVoiceCallResize} from '@app/features/voice/components/compact_voice_call_view/useCompactVoiceCallResize';
 import {useConnectionLabel} from '@app/features/voice/components/compact_voice_call_view/useConnectionLabel';
+import {FocusedStreamVolumeControl} from '@app/features/voice/components/FocusedStreamVolumeControl';
 import {PoppedOutOverlay} from '@app/features/voice/components/popout/PoppedOutOverlay';
 import {
 	selectPoppedOutOverlayTransition,
@@ -215,16 +216,14 @@ export const CompactVoiceCallViewInner: React.FC<CompactVoiceCallViewProps> = ob
 			return BoldIcon;
 		}, [isVoiceCallAppFullscreen]);
 		const handlePopOutCall = useCallback(() => {
-			void (async () => {
-				if (isVoiceCallAppFullscreen) {
-					await exitVoiceCallAppFullscreen();
-				}
-				PopoutWindowManager.openCallPopout({
-					channelId: channel.id,
-					guildId: channel.guildId ?? null,
-					title: channel.name ?? i18n._(VOICE_CALL_TITLE_DESCRIPTOR),
-				});
-			})();
+			const didOpen = PopoutWindowManager.openCallPopout({
+				channelId: channel.id,
+				guildId: channel.guildId ?? null,
+				title: channel.name ?? i18n._(VOICE_CALL_TITLE_DESCRIPTOR),
+			});
+			if (didOpen && isVoiceCallAppFullscreen) {
+				void exitVoiceCallAppFullscreen();
+			}
 		}, [channel.guildId, channel.id, channel.name, exitVoiceCallAppFullscreen, i18n, isVoiceCallAppFullscreen]);
 		useEffect(() => {
 			if (fullscreenRequestNonce == null) return;
@@ -525,6 +524,14 @@ export const CompactVoiceCallViewInner: React.FC<CompactVoiceCallViewProps> = ob
 					fullscreenLabel={fullscreenButtonLabel}
 					fullscreenIcon={FullscreenButtonIcon}
 					onToggleFullscreen={handleToggleVoiceCallAppFullscreen}
+					volumeControl={
+						<FocusedStreamVolumeControl
+							track={layoutMode === 'focus' ? focusMainTrack : null}
+							guildId={channel.guildId}
+							channelId={channel.id}
+							data-flx="voice.compact-voice-call-view.compact-voice-call-view-inner.focused-stream-volume-control"
+						/>
+					}
 					data-flx="voice.compact-voice-call-view.compact-voice-call-view-inner.voice-call-corner-controls"
 				/>
 				{shouldRenderPoppedOutOverlay(poppedOutTransition.snapshot) && (

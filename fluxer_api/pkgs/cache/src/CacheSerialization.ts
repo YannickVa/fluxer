@@ -1,18 +1,20 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import type {CacheLogger} from '@pkgs/cache/src/CacheProviderTypes';
+import type {CacheLookupResult} from '@pkgs/cache/src/ICacheService';
+
+export function parseCachedValue<T>(value: string, logger?: CacheLogger): CacheLookupResult<T> {
+	try {
+		return {hit: true, value: JSON.parse(value)};
+	} catch {
+		logger?.error({valueLength: value.length}, '[CacheProvider] JSON parse error');
+		return {hit: false};
+	}
+}
 
 export function safeJsonParse<T>(value: string, logger?: CacheLogger): T | null {
-	try {
-		return JSON.parse(value);
-	} catch {
-		if (logger) {
-			// Auth/session cache entries can contain credentials. Native JSON errors may
-			// include the offending text too, so omit both payload and parser message.
-			logger.error({valueLength: value.length}, '[CacheProvider] Invalid JSON entry; contents omitted');
-		}
-		return null;
-	}
+	const parsed = parseCachedValue<T>(value, logger);
+	return parsed.hit ? parsed.value : null;
 }
 
 export function serializeValue<T>(value: T): string {

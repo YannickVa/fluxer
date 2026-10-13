@@ -7,18 +7,10 @@
 }
 
 .toggleContainer {
-	margin-bottom: 0.5rem;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	gap: 0.75rem;
-}
-
-.notice {
-	text-align: center;
-	font-size: 0.875rem;
-	line-height: 1.25rem;
-	color: var(--text-primary-muted);
 }
 
 .footerContainer {

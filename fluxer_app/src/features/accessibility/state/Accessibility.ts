@@ -13,32 +13,38 @@ import {
 	readStoredSessionUserId,
 } from '@app/features/platform/state/auth_session/AuthSessionStorage';
 import AppStorage from '@app/features/platform/state/PersistentStorage';
+import {
+	readRawStorageItem,
+	writeRawStorageItem,
+	ZOOM_PREBOOT_MIRROR_STORAGE_KEY,
+} from '@app/features/platform/state/PrebootMirror';
+import {initializeStore} from '@app/features/platform/utils/StoreInitialization';
 import MobileLayout from '@app/features/ui/state/MobileLayout';
 import {applyAppZoomToDocument} from '@app/features/ui/utils/AppZoomUtils';
 import {makeSyncedField} from '@app/features/user/state/SyncedField';
-import {decodeSyncedPreferencesLenient} from '@app/features/user/state/SyncedPreferencesEngine';
 import {StickerAnimationOptions} from '@fluxer/constants/src/UserConstants';
+import {decodeSyncedPreferencesLenient} from '@fluxer/schema/src/domains/user/SyncedPreferencesCodec';
 import {
 	AccessibilitySettingsSchema,
 	ChannelTypingIndicatorMode as ProtoChannelTypingIndicatorMode,
 	DmMessagePreviewMode as ProtoDmMessagePreviewMode,
 	HdrDisplayMode as ProtoHdrDisplayMode,
-	MediaDimensionSize as ProtoMediaDimensionSize,
 } from '@fluxer/schema/src/gen/fluxer/user/preferences/v1/accessibility_pb';
 import {makeAutoObservable, reaction, runInAction} from 'mobx';
 
 export const ZOOM_LEVEL_MIN = 0.5;
 export const ZOOM_LEVEL_MAX = 2.0;
-export const ZOOM_KEYBOARD_STEP_PCT = 10;
+const ZOOM_KEYBOARD_STEP_PCT = 10;
 export const ZOOM_LEVEL_MARKERS = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0] as const;
-export const ACCESSIBILITY_STORE_STORAGE_KEY = 'Accessibility';
-export const ACCESSIBILITY_ZOOM_STORAGE_KEY = 'Accessibility:zoomLevel';
-export const ACCESSIBILITY_CUSTOM_THEME_STORAGE_KEY = 'Accessibility:customThemeCss';
-export const ACCESSIBILITY_MOTION_STORAGE_KEY = 'Accessibility:motion';
-export const ACCESSIBILITY_SHOW_NEKO_STORAGE_KEY = 'Accessibility:showNeko';
-export const ACCESSIBILITY_KEEP_NEKO_STILL_STORAGE_KEY = 'Accessibility:keepNekoStill';
+const ACCESSIBILITY_STORE_STORAGE_KEY = 'Accessibility';
+const ACCESSIBILITY_ZOOM_STORAGE_KEY = 'Accessibility:zoomLevel';
+const ACCESSIBILITY_CUSTOM_THEME_STORAGE_KEY = 'Accessibility:customThemeCss';
+const ACCESSIBILITY_CUSTOM_THEME_SYNC_STORAGE_KEY = 'Accessibility:customThemeCssSyncAcrossDevices';
+const ACCESSIBILITY_MOTION_STORAGE_KEY = 'Accessibility:motion';
+const ACCESSIBILITY_SHOW_NEKO_STORAGE_KEY = 'Accessibility:showNeko';
+const ACCESSIBILITY_KEEP_NEKO_STILL_STORAGE_KEY = 'Accessibility:keepNekoStill';
 const ACCESSIBILITY_PIN_NEKO_TO_TEXTAREA_STORAGE_KEY = 'Accessibility:pinNekoToTextarea';
-export const ACCESSIBILITY_VIDEO_SEEK_PREVIEW_THUMBNAILS_STORAGE_KEY = 'Accessibility:videoSeekPreviewThumbnails';
+const ACCESSIBILITY_VIDEO_SEEK_PREVIEW_THUMBNAILS_STORAGE_KEY = 'Accessibility:videoSeekPreviewThumbnails';
 const SYNCED_PREFERENCES_LOCAL_STORAGE_KEY = 'UserSettings:syncedPreferencesLocal';
 const getShowNekoStorageKey = (userId: string): string => `${ACCESSIBILITY_SHOW_NEKO_STORAGE_KEY}:${userId}`;
 const getKeepNekoStillStorageKey = (userId: string): string => `${ACCESSIBILITY_KEEP_NEKO_STILL_STORAGE_KEY}:${userId}`;
@@ -70,7 +76,7 @@ interface StartupSettingsStorage {
 	getItem(key: string): string | null;
 }
 
-export interface LocalMotionSettings {
+interface LocalMotionSettings {
 	syncReducedMotionWithSystem: boolean;
 	reducedMotionOverride: boolean | null;
 	enableSmoothScrolling: boolean;
@@ -92,14 +98,37 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
-export function clampZoomLevel(level: number): number {
+const FONT_SIZE_MIN = 8;
+const FONT_SIZE_MAX = 48;
+const DEFAULT_FONT_SIZE_PX = 16;
+const MESSAGE_GROUP_SPACING_MIN = 0;
+const MESSAGE_GROUP_SPACING_MAX = 64;
+const MESSAGE_GUTTER_MIN = 0;
+const MESSAGE_GUTTER_MAX = 200;
+
+function clampFontSize(size: number): number {
+	if (!Number.isFinite(size)) return DEFAULT_FONT_SIZE_PX;
+	return Math.max(FONT_SIZE_MIN, Math.min(FONT_SIZE_MAX, size));
+}
+
+function clampMessageGroupSpacing(spacing: number, fallback: number): number {
+	if (!Number.isFinite(spacing)) return fallback;
+	return Math.max(MESSAGE_GROUP_SPACING_MIN, Math.min(MESSAGE_GROUP_SPACING_MAX, spacing));
+}
+
+function clampMessageGutter(gutter: number): number {
+	if (!Number.isFinite(gutter)) return DEFAULT_MESSAGE_GUTTER_PX;
+	return Math.max(MESSAGE_GUTTER_MIN, Math.min(MESSAGE_GUTTER_MAX, gutter));
+}
+
+function clampZoomLevel(level: number): number {
 	if (!Number.isFinite(level)) return 1;
 	const pct = Math.round(level * 100);
 	const clampedPct = Math.max(Math.round(ZOOM_LEVEL_MIN * 100), Math.min(Math.round(ZOOM_LEVEL_MAX * 100), pct));
 	return clampedPct / 100;
 }
 
-export function nextZoomLevel(current: number, direction: 1 | -1): number {
+function nextZoomLevel(current: number, direction: 1 | -1): number {
 	const minPct = Math.round(ZOOM_LEVEL_MIN * 100);
 	const maxPct = Math.round(ZOOM_LEVEL_MAX * 100);
 	const step = ZOOM_KEYBOARD_STEP_PCT;
@@ -109,7 +138,7 @@ export function nextZoomLevel(current: number, direction: 1 | -1): number {
 	return Math.max(minPct, Math.min(maxPct, targetPct)) / 100;
 }
 
-export function readLocalZoomLevel(storage: StartupSettingsStorage = AppStorage): number | null {
+function readLocalZoomLevel(storage: StartupSettingsStorage = AppStorage): number | null {
 	let raw: string | null;
 	try {
 		raw = storage.getItem(ACCESSIBILITY_ZOOM_STORAGE_KEY);
@@ -126,6 +155,18 @@ export function readLocalZoomLevel(storage: StartupSettingsStorage = AppStorage)
 		return null;
 	}
 	return typeof parsed === 'number' ? clampZoomLevel(parsed) : null;
+}
+
+function readPrebootZoomFactor(): number | null {
+	if (window.electron == null) {
+		return null;
+	}
+	const raw = readRawStorageItem(ZOOM_PREBOOT_MIRROR_STORAGE_KEY);
+	if (raw === null) {
+		return null;
+	}
+	const zoomPercent = Number.parseInt(raw, 10);
+	return Number.isFinite(zoomPercent) ? clampZoomLevel(zoomPercent / 100) : null;
 }
 
 function readStoredBoolean(storage: StartupSettingsStorage, key: string): boolean | null {
@@ -181,7 +222,7 @@ function normalizeLocalMotionSettings(value: unknown): LocalMotionSettings | nul
 	};
 }
 
-export function readLocalMotionSettings(storage: StartupSettingsStorage = AppStorage): LocalMotionSettings | null {
+function readLocalMotionSettings(storage: StartupSettingsStorage = AppStorage): LocalMotionSettings | null {
 	let raw: string | null;
 	try {
 		raw = storage.getItem(ACCESSIBILITY_MOTION_STORAGE_KEY);
@@ -229,7 +270,7 @@ function readCachedSyncedMotionSettings(
 	};
 }
 
-export function readLocalShowNeko(
+function readLocalShowNeko(
 	storage: StartupSettingsStorage = AppStorage,
 	userId: string | null = readStoredSessionUserId(storage),
 ): boolean {
@@ -242,7 +283,7 @@ export function readLocalShowNeko(
 	return readStoredBoolean(storage, ACCESSIBILITY_SHOW_NEKO_STORAGE_KEY) ?? false;
 }
 
-export function readLocalKeepNekoStill(
+function readLocalKeepNekoStill(
 	storage: StartupSettingsStorage = AppStorage,
 	userId: string | null = readStoredSessionUserId(storage),
 ): boolean {
@@ -341,7 +382,7 @@ function persistLocalVideoSeekPreviewThumbnails(value: boolean): void {
 	} catch {}
 }
 
-export function readLocalCustomThemeCss(storage: StartupSettingsStorage = AppStorage): string | null {
+function readLocalCustomThemeCss(storage: StartupSettingsStorage = AppStorage): string | null {
 	let raw: string | null;
 	try {
 		raw = storage.getItem(ACCESSIBILITY_CUSTOM_THEME_STORAGE_KEY);
@@ -431,11 +472,11 @@ function shouldPreserveLegacyZoomLevel(): boolean {
 	);
 }
 
-export function readAccessibilityStartupSettings(
+function readAccessibilityStartupSettings(
 	storage: StartupSettingsStorage = AppStorage,
 	options: AccessibilityStartupSettingsOptions = {},
 ): AccessibilityStartupSettings | null {
-	const localZoomLevel = readLocalZoomLevel(storage);
+	const localZoomLevel = readPrebootZoomFactor() ?? readLocalZoomLevel(storage);
 	const localMotionSettings = readLocalMotionSettings(storage);
 	const legacySettings = readLegacyAccessibilityStartupSettings(storage);
 	const cachedSyncedMotionSettings = localMotionSettings === null ? readCachedSyncedMotionSettings(storage) : null;
@@ -481,6 +522,15 @@ function persistLocalZoomLevel(level: number): void {
 	} catch {}
 }
 
+function writeZoomPrebootMirror(level: number, isDesktop: boolean): void {
+	if (!isDesktop) {
+		writeRawStorageItem(ZOOM_PREBOOT_MIRROR_STORAGE_KEY, null);
+		return;
+	}
+	const zoomPercent = Math.max(50, Math.min(200, Math.round(clampZoomLevel(level) * 100)));
+	writeRawStorageItem(ZOOM_PREBOOT_MIRROR_STORAGE_KEY, String(zoomPercent));
+}
+
 function persistLocalMotionSettings(settings: LocalMotionSettings): void {
 	try {
 		AppStorage.setItem(ACCESSIBILITY_MOTION_STORAGE_KEY, JSON.stringify(settings));
@@ -493,6 +543,21 @@ function persistLocalCustomThemeCss(css: string | null): void {
 	} catch {}
 }
 
+function persistLocalCustomThemeCssSyncAcrossDevices(value: boolean): void {
+	try {
+		AppStorage.setItem(ACCESSIBILITY_CUSTOM_THEME_SYNC_STORAGE_KEY, JSON.stringify(value));
+	} catch {}
+}
+
+function readLocalCustomThemeCssSyncAcrossDevices(): boolean {
+	try {
+		const raw = AppStorage.getItem(ACCESSIBILITY_CUSTOM_THEME_SYNC_STORAGE_KEY);
+		return raw === null ? false : JSON.parse(raw) === true;
+	} catch {
+		return false;
+	}
+}
+
 function normalizeCustomThemeCss(css: string | null | undefined): string | null {
 	if (typeof css !== 'string') {
 		return null;
@@ -500,22 +565,11 @@ function normalizeCustomThemeCss(css: string | null | undefined): string | null 
 	return css.trim().length > 0 ? css : null;
 }
 
-export function resolveStartupReducedMotion(
+function resolveStartupReducedMotion(
 	settings: Pick<AccessibilityStartupSettings, 'syncReducedMotionWithSystem' | 'reducedMotionOverride'>,
 	systemReducedMotion: boolean,
 ): boolean {
 	return settings.syncReducedMotionWithSystem ? systemReducedMotion : (settings.reducedMotionOverride ?? false);
-}
-
-export enum GuildChannelPresenceIndicatorMode {
-	AVATARS = 0,
-	INDICATOR_ONLY = 1,
-	HIDDEN = 2,
-}
-
-export enum MediaDimensionSize {
-	SMALL = 'small',
-	LARGE = 'large',
 }
 
 export enum DMMessagePreviewMode {
@@ -582,8 +636,6 @@ export interface AccessibilitySettings {
 	showCustomEmojisInExpressionAutocomplete: boolean;
 	showStickersInExpressionAutocomplete: boolean;
 	showMemesInExpressionAutocomplete: boolean;
-	attachmentMediaDimensionSize: MediaDimensionSize;
-	embedMediaDimensionSize: MediaDimensionSize;
 	voiceChannelJoinRequiresDoubleClick: boolean;
 	customThemeCss: string | null;
 	customThemeCssSyncAcrossDevices: boolean;
@@ -600,7 +652,6 @@ export interface AccessibilitySettings {
 	hdrDisplayMode: HdrDisplayMode;
 	preserveEditDraft: boolean;
 	stayInteractiveWhenUnfocused: boolean;
-	firstClickPassThroughWhenUnfocused: boolean;
 	scrollToBottomOnMessageSend: boolean;
 	sequentialFileSend: boolean;
 	showNeko: boolean;
@@ -632,15 +683,6 @@ const DM_PREVIEW_FROM_PROTO: Record<ProtoDmMessagePreviewMode, DMMessagePreviewM
 	[ProtoDmMessagePreviewMode.UNREAD_ONLY]: DMMessagePreviewMode.UNREAD_ONLY,
 	[ProtoDmMessagePreviewMode.NONE]: DMMessagePreviewMode.NONE,
 };
-const MEDIA_DIMENSION_TO_PROTO: Record<MediaDimensionSize, ProtoMediaDimensionSize> = {
-	[MediaDimensionSize.SMALL]: ProtoMediaDimensionSize.SMALL,
-	[MediaDimensionSize.LARGE]: ProtoMediaDimensionSize.LARGE,
-};
-const MEDIA_DIMENSION_FROM_PROTO: Record<ProtoMediaDimensionSize, MediaDimensionSize> = {
-	[ProtoMediaDimensionSize.UNSPECIFIED]: MediaDimensionSize.SMALL,
-	[ProtoMediaDimensionSize.SMALL]: MediaDimensionSize.SMALL,
-	[ProtoMediaDimensionSize.LARGE]: MediaDimensionSize.LARGE,
-};
 const HDR_TO_PROTO: Record<HdrDisplayMode, ProtoHdrDisplayMode> = {
 	[HdrDisplayMode.FULL]: ProtoHdrDisplayMode.FULL,
 	[HdrDisplayMode.STANDARD]: ProtoHdrDisplayMode.STANDARD,
@@ -669,7 +711,7 @@ class Accessibility {
 	messageGroupSpacing = COMFY_MESSAGE_GROUP_SPACING_DEFAULT;
 	compactMessageGroupSpacing = COMPACT_MESSAGE_GROUP_SPACING_DEFAULT;
 	messageGutter = DEFAULT_MESSAGE_GUTTER_PX;
-	fontSize = 16;
+	fontSize = DEFAULT_FONT_SIZE_PX;
 	showUserAvatarsInCompactMode = false;
 	mobileStickerAnimationOverridden = false;
 	mobileGifAutoPlayOverridden = false;
@@ -698,8 +740,6 @@ class Accessibility {
 	showCustomEmojisInExpressionAutocomplete = true;
 	showStickersInExpressionAutocomplete = true;
 	showMemesInExpressionAutocomplete = true;
-	attachmentMediaDimensionSize = MediaDimensionSize.LARGE;
-	embedMediaDimensionSize = MediaDimensionSize.SMALL;
 	voiceChannelJoinRequiresDoubleClick = false;
 	systemReducedMotion = false;
 	customThemeCss: string | null = null;
@@ -718,14 +758,12 @@ class Accessibility {
 	hdrDisplayMode = HdrDisplayMode.FULL;
 	preserveEditDraft = false;
 	stayInteractiveWhenUnfocused = false;
-	firstClickPassThroughWhenUnfocused = false;
 	scrollToBottomOnMessageSend = true;
 	sequentialFileSend = false;
 	showNeko = false;
 	keepNekoStill = false;
 	showVideoSeekPreviewThumbnails = false;
 	mediaQuery: MediaQueryList | null = null;
-	private _hydrated = false;
 	private unsubscribeZoomStorage: (() => void) | null = null;
 	private unsubscribeMotionStorage: (() => void) | null = null;
 	private unsubscribeShowNekoSession: (() => void) | null = null;
@@ -746,9 +784,7 @@ class Accessibility {
 			persistLocalMotionSettings(this.localMotionSettingsSnapshot);
 		}
 		this.customThemeCss = readLocalCustomThemeCss();
-		if (this.customThemeCss !== null) {
-			persistLocalCustomThemeCss(this.customThemeCss);
-		}
+		this.customThemeCssSyncAcrossDevices = readLocalCustomThemeCssSyncAcrossDevices();
 		this.showNeko = readAndMigrateLocalShowNeko();
 		this.keepNekoStill = readAndMigrateLocalKeepNekoStill();
 		this.showVideoSeekPreviewThumbnails = readLocalVideoSeekPreviewThumbnails();
@@ -759,12 +795,9 @@ class Accessibility {
 		this.initializeShowNekoSessionSync();
 		this.initializeShowNekoStorageSync();
 		this.initializeVideoSeekPreviewThumbnailsStorageSync();
+		this.initializeCustomThemeCssStorageSync();
 		this.applyStartupPresentationSettings();
-		this.initPersistence();
-	}
-
-	get isHydrated(): boolean {
-		return this._hydrated;
+		initializeStore(this, () => this.initPersistence());
 	}
 
 	private async initPersistence(): Promise<void> {
@@ -813,8 +846,6 @@ class Accessibility {
 				'showCustomEmojisInExpressionAutocomplete',
 				'showStickersInExpressionAutocomplete',
 				'showMemesInExpressionAutocomplete',
-				'attachmentMediaDimensionSize',
-				'embedMediaDimensionSize',
 				'voiceChannelJoinRequiresDoubleClick',
 				'customThemeCssSyncAcrossDevices',
 				'showFavorites',
@@ -829,7 +860,6 @@ class Accessibility {
 				'hdrDisplayMode',
 				'preserveEditDraft',
 				'stayInteractiveWhenUnfocused',
-				'firstClickPassThroughWhenUnfocused',
 				'scrollToBottomOnMessageSend',
 				'sequentialFileSend',
 			],
@@ -874,10 +904,12 @@ class Accessibility {
 				showCustomEmojisInAutocomplete: s.showCustomEmojisInExpressionAutocomplete,
 				showStickersInAutocomplete: s.showStickersInExpressionAutocomplete,
 				showMemesInAutocomplete: s.showMemesInExpressionAutocomplete,
-				attachmentMediaDimensionSize: MEDIA_DIMENSION_TO_PROTO[s.attachmentMediaDimensionSize],
-				embedMediaDimensionSize: MEDIA_DIMENSION_TO_PROTO[s.embedMediaDimensionSize],
 				voiceChannelJoinRequiresDoubleClick: s.voiceChannelJoinRequiresDoubleClick,
-				customThemeCss: s.customThemeCssSyncAcrossDevices ? (s.customThemeCss ?? '') : (s.serverCustomThemeCss ?? ''),
+				customThemeCss: ((): string | undefined => {
+					const local = s.customThemeCss;
+					const server = s.serverCustomThemeCss;
+					return (s.customThemeCssSyncAcrossDevices ? local : server) ?? undefined;
+				})(),
 				showFavorites: s.showFavorites,
 				dmMessagePreviewMode: DM_PREVIEW_TO_PROTO[s.dmMessagePreviewMode],
 				enableTtsCommand: s.enableTTSCommand,
@@ -890,7 +922,6 @@ class Accessibility {
 				hdrDisplayMode: HDR_TO_PROTO[s.hdrDisplayMode],
 				preserveEditDraft: s.preserveEditDraft,
 				stayInteractiveWhenUnfocused: s.stayInteractiveWhenUnfocused,
-				firstClickPassThroughWhenUnfocused: s.firstClickPassThroughWhenUnfocused,
 				scrollToBottomOnMessageSend: s.scrollToBottomOnMessageSend,
 				sequentialFileSend: s.sequentialFileSend,
 			}),
@@ -904,17 +935,22 @@ class Accessibility {
 				s.hideKeyboardHints = m.hideKeyboardHints;
 				if (m.escapeExitsKeyboardMode !== undefined) s.escapeExitsKeyboardMode = m.escapeExitsKeyboardMode;
 				if (m.messageGroupSpacing !== undefined) {
+					const messageGroupSpacing = clampMessageGroupSpacing(m.messageGroupSpacing, s.messageGroupSpacing);
 					if (m.compactMessageGroupSpacing === undefined) {
-						const spacing = migrateLegacyMessageGroupSpacing(m.messageGroupSpacing, false);
+						const spacing = migrateLegacyMessageGroupSpacing(messageGroupSpacing, false);
 						s.messageGroupSpacing = spacing.messageGroupSpacing;
 						s.compactMessageGroupSpacing = spacing.compactMessageGroupSpacing;
 					} else {
-						s.messageGroupSpacing = m.messageGroupSpacing;
+						s.messageGroupSpacing = messageGroupSpacing;
 					}
 				}
-				if (m.compactMessageGroupSpacing !== undefined) s.compactMessageGroupSpacing = m.compactMessageGroupSpacing;
-				if (m.messageGutter !== undefined) s.messageGutter = m.messageGutter;
-				if (m.fontSize !== undefined) s.fontSize = m.fontSize;
+				if (m.compactMessageGroupSpacing !== undefined)
+					s.compactMessageGroupSpacing = clampMessageGroupSpacing(
+						m.compactMessageGroupSpacing,
+						s.compactMessageGroupSpacing,
+					);
+				if (m.messageGutter !== undefined) s.messageGutter = clampMessageGutter(m.messageGutter);
+				if (m.fontSize !== undefined) s.fontSize = clampFontSize(m.fontSize);
 				if (m.showUserAvatarsInCompactMode !== undefined)
 					s.showUserAvatarsInCompactMode = m.showUserAvatarsInCompactMode;
 				s.mobileStickerAnimationOverridden = m.mobileStickerAnimationOverridden;
@@ -952,8 +988,6 @@ class Accessibility {
 				if (m.showStickersInAutocomplete !== undefined)
 					s.showStickersInExpressionAutocomplete = m.showStickersInAutocomplete;
 				if (m.showMemesInAutocomplete !== undefined) s.showMemesInExpressionAutocomplete = m.showMemesInAutocomplete;
-				s.attachmentMediaDimensionSize = MEDIA_DIMENSION_FROM_PROTO[m.attachmentMediaDimensionSize];
-				s.embedMediaDimensionSize = MEDIA_DIMENSION_FROM_PROTO[m.embedMediaDimensionSize];
 				if (m.voiceChannelJoinRequiresDoubleClick !== undefined)
 					s.voiceChannelJoinRequiresDoubleClick = m.voiceChannelJoinRequiresDoubleClick;
 				if (m.customThemeCss !== undefined) {
@@ -980,17 +1014,11 @@ class Accessibility {
 				if (m.preserveEditDraft !== undefined) s.preserveEditDraft = m.preserveEditDraft;
 				if (m.stayInteractiveWhenUnfocused !== undefined)
 					s.stayInteractiveWhenUnfocused = m.stayInteractiveWhenUnfocused;
-				if (m.firstClickPassThroughWhenUnfocused !== undefined)
-					s.firstClickPassThroughWhenUnfocused = m.firstClickPassThroughWhenUnfocused;
 				if (m.scrollToBottomOnMessageSend !== undefined) s.scrollToBottomOnMessageSend = m.scrollToBottomOnMessageSend;
 				if (m.sequentialFileSend !== undefined) s.sequentialFileSend = m.sequentialFileSend;
 			},
 		});
 		await this.applyStoredZoom();
-		this.applyStoredCustomThemeCss();
-		runInAction(() => {
-			this._hydrated = true;
-		});
 	}
 
 	private initializeMotionDetection() {
@@ -1196,10 +1224,6 @@ class Accessibility {
 			: getMessageGroupSpacingForDisplayMode(this, messageDisplayCompact);
 	}
 
-	get messageGutterValue(): number {
-		return MobileLayout.isMobileLayout() ? 12 : this.messageGutter;
-	}
-
 	updateSettings(data: Readonly<Partial<AccessibilitySettings>>): void {
 		const validated = this.validateSettings(data);
 		const hasCustomThemeCssUpdate = Object.hasOwn(data, 'customThemeCss');
@@ -1284,10 +1308,6 @@ class Accessibility {
 			this.showStickersInExpressionAutocomplete = validated.showStickersInExpressionAutocomplete;
 		if (validated.showMemesInExpressionAutocomplete !== undefined)
 			this.showMemesInExpressionAutocomplete = validated.showMemesInExpressionAutocomplete;
-		if (validated.attachmentMediaDimensionSize !== undefined)
-			this.attachmentMediaDimensionSize = validated.attachmentMediaDimensionSize;
-		if (validated.embedMediaDimensionSize !== undefined)
-			this.embedMediaDimensionSize = validated.embedMediaDimensionSize;
 		if (validated.voiceChannelJoinRequiresDoubleClick !== undefined)
 			this.voiceChannelJoinRequiresDoubleClick = validated.voiceChannelJoinRequiresDoubleClick;
 		if (hasCustomThemeCssUpdate) {
@@ -1316,8 +1336,6 @@ class Accessibility {
 		if (validated.preserveEditDraft !== undefined) this.preserveEditDraft = validated.preserveEditDraft;
 		if (validated.stayInteractiveWhenUnfocused !== undefined)
 			this.stayInteractiveWhenUnfocused = validated.stayInteractiveWhenUnfocused;
-		if (validated.firstClickPassThroughWhenUnfocused !== undefined)
-			this.firstClickPassThroughWhenUnfocused = validated.firstClickPassThroughWhenUnfocused;
 		if (validated.scrollToBottomOnMessageSend !== undefined)
 			this.scrollToBottomOnMessageSend = validated.scrollToBottomOnMessageSend;
 		if (validated.sequentialFileSend !== undefined) this.sequentialFileSend = validated.sequentialFileSend;
@@ -1357,10 +1375,16 @@ class Accessibility {
 				data.keepGifAutoPlayUnderReducedMotion ?? this.keepGifAutoPlayUnderReducedMotion,
 			keepStickerAnimationUnderReducedMotion:
 				data.keepStickerAnimationUnderReducedMotion ?? this.keepStickerAnimationUnderReducedMotion,
-			messageGroupSpacing: data.messageGroupSpacing ?? this.messageGroupSpacing,
-			compactMessageGroupSpacing: data.compactMessageGroupSpacing ?? this.compactMessageGroupSpacing,
-			messageGutter: Math.max(0, Math.min(200, data.messageGutter ?? this.messageGutter)),
-			fontSize: data.fontSize ?? this.fontSize,
+			messageGroupSpacing: clampMessageGroupSpacing(
+				data.messageGroupSpacing ?? this.messageGroupSpacing,
+				this.messageGroupSpacing,
+			),
+			compactMessageGroupSpacing: clampMessageGroupSpacing(
+				data.compactMessageGroupSpacing ?? this.compactMessageGroupSpacing,
+				this.compactMessageGroupSpacing,
+			),
+			messageGutter: clampMessageGutter(data.messageGutter ?? this.messageGutter),
+			fontSize: clampFontSize(data.fontSize ?? this.fontSize),
 			showUserAvatarsInCompactMode: data.showUserAvatarsInCompactMode ?? this.showUserAvatarsInCompactMode,
 			mobileStickerAnimationOverridden: data.mobileStickerAnimationOverridden ?? this.mobileStickerAnimationOverridden,
 			mobileGifAutoPlayOverridden: data.mobileGifAutoPlayOverridden ?? this.mobileGifAutoPlayOverridden,
@@ -1398,8 +1422,6 @@ class Accessibility {
 				data.showStickersInExpressionAutocomplete ?? this.showStickersInExpressionAutocomplete,
 			showMemesInExpressionAutocomplete:
 				data.showMemesInExpressionAutocomplete ?? this.showMemesInExpressionAutocomplete,
-			attachmentMediaDimensionSize: data.attachmentMediaDimensionSize ?? this.attachmentMediaDimensionSize,
-			embedMediaDimensionSize: data.embedMediaDimensionSize ?? this.embedMediaDimensionSize,
 			voiceChannelJoinRequiresDoubleClick:
 				data.voiceChannelJoinRequiresDoubleClick ?? this.voiceChannelJoinRequiresDoubleClick,
 			customThemeCss: data.customThemeCss !== undefined ? data.customThemeCss : this.customThemeCss,
@@ -1418,8 +1440,6 @@ class Accessibility {
 			hdrDisplayMode: data.hdrDisplayMode ?? this.hdrDisplayMode,
 			preserveEditDraft: data.preserveEditDraft ?? this.preserveEditDraft,
 			stayInteractiveWhenUnfocused: data.stayInteractiveWhenUnfocused ?? this.stayInteractiveWhenUnfocused,
-			firstClickPassThroughWhenUnfocused:
-				data.firstClickPassThroughWhenUnfocused ?? this.firstClickPassThroughWhenUnfocused,
 			scrollToBottomOnMessageSend: data.scrollToBottomOnMessageSend ?? this.scrollToBottomOnMessageSend,
 			sequentialFileSend: data.sequentialFileSend ?? this.sequentialFileSend,
 			showNeko: data.showNeko ?? this.showNeko,
@@ -1437,6 +1457,7 @@ class Accessibility {
 			persistLocalCustomThemeCss(this.customThemeCss);
 		}
 		this.customThemeCssSyncAcrossDevices = syncAcrossDevices;
+		persistLocalCustomThemeCssSyncAcrossDevices(syncAcrossDevices);
 	}
 
 	subscribe(callback: () => void): () => void {
@@ -1464,6 +1485,7 @@ class Accessibility {
 	async applyZoom(level: number): Promise<void> {
 		const zoomLevel = clampZoomLevel(level);
 		applyAppZoomToDocument(zoomLevel * 100, window.electron);
+		writeZoomPrebootMirror(zoomLevel, window.electron != null);
 	}
 
 	async applyStoredZoom(): Promise<void> {
@@ -1473,12 +1495,23 @@ class Accessibility {
 		await this.applyZoom(zoomLevel);
 	}
 
-	applyStoredCustomThemeCss(): void {
-		const customThemeCss = readLocalCustomThemeCss();
-		if (customThemeCss !== null) {
-			this.customThemeCss = customThemeCss;
-			persistLocalCustomThemeCss(customThemeCss);
-		}
+	private initializeCustomThemeCssStorageSync(): void {
+		AppStorage.subscribe(
+			(event) => {
+				if (
+					event.key !== null &&
+					event.key !== ACCESSIBILITY_CUSTOM_THEME_STORAGE_KEY &&
+					event.key !== ACCESSIBILITY_CUSTOM_THEME_SYNC_STORAGE_KEY
+				) {
+					return;
+				}
+				runInAction(() => {
+					this.customThemeCss = readLocalCustomThemeCss();
+					this.customThemeCssSyncAcrossDevices = readLocalCustomThemeCssSyncAcrossDevices();
+				});
+			},
+			{source: 'external'},
+		);
 	}
 
 	private applyStartupPresentationSettings(): void {

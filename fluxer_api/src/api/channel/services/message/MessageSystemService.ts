@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import type {GuildID, UserID} from '@app/api/BrandedTypes';
+import {createMessageID} from '@app/api/BrandedTypes';
+import type {ChannelRepository} from '@app/api/channel/ChannelRepository';
+import type {MessageDispatchService} from '@app/api/channel/services/message/MessageDispatchService';
+import type {MessagePersistenceService} from '@app/api/channel/services/message/MessagePersistenceService';
+import type {GuildRepository} from '@app/api/guild/repositories/GuildRepository';
+import type {ISnowflakeService} from '@app/api/infrastructure/ISnowflakeService';
+import type {RequestCache} from '@app/api/middleware/RequestCacheMiddleware';
 import {MessageTypes} from '@fluxer/constants/src/ChannelConstants';
-import type {GuildID, UserID} from '../../../BrandedTypes';
-import {createMessageID} from '../../../BrandedTypes';
-import type {IGuildRepositoryAggregate} from '../../../guild/repositories/IGuildRepositoryAggregate';
-import type {ISnowflakeService} from '../../../infrastructure/ISnowflakeService';
-import type {RequestCache} from '../../../middleware/RequestCacheMiddleware';
-import type {IChannelRepositoryAggregate} from '../../repositories/IChannelRepositoryAggregate';
-import type {MessageDispatchService} from './MessageDispatchService';
-import type {MessagePersistenceService} from './MessagePersistenceService';
 
 export class MessageSystemService {
 	constructor(
-		private channelRepository: IChannelRepositoryAggregate,
-		private guildRepository: IGuildRepositoryAggregate,
+		private channelRepository: ChannelRepository,
+		private guildRepository: GuildRepository,
 		private snowflakeService: ISnowflakeService,
 		private persistenceService: MessagePersistenceService,
 		private dispatchService: MessageDispatchService,

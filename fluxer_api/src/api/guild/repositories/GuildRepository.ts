@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import type {AuditLogActionType} from '@fluxer/constants/src/AuditLogActionType';
-import type {EmojiID, GuildID, RoleID, StickerID, UserID} from '../../BrandedTypes';
+import type {EmojiID, GuildID, RoleID, StickerID, UserID} from '@app/api/BrandedTypes';
+import {enqueueRemoveThreadMemberships} from '@app/api/channel/threads/ThreadJobs';
 import type {
 	GuildAuditLogRow,
 	GuildBanRow,
@@ -11,30 +11,32 @@ import type {
 	GuildRoleRow,
 	GuildRow,
 	GuildStickerRow,
-} from '../../database/types/GuildTypes';
-import type {Guild} from '../../models/Guild';
-import type {GuildAuditLog} from '../../models/GuildAuditLog';
-import type {GuildBan} from '../../models/GuildBan';
-import type {GuildEmoji} from '../../models/GuildEmoji';
-import type {GuildMember} from '../../models/GuildMember';
-import type {GuildRole} from '../../models/GuildRole';
-import type {GuildSticker} from '../../models/GuildSticker';
-import {GuildContentRepository} from './GuildContentRepository';
-import {GuildDataRepository} from './GuildDataRepository';
-import {GuildMemberRepository} from './GuildMemberRepository';
-import {GuildModerationRepository} from './GuildModerationRepository';
-import {GuildRoleRepository} from './GuildRoleRepository';
-import type {IGuildRepositoryAggregate} from './IGuildRepositoryAggregate';
+} from '@app/api/database/types/GuildTypes';
+import {everEnabled, isTainted} from '@app/api/experiment/ChannelThreadsGate';
+import {GuildContentRepository} from '@app/api/guild/repositories/GuildContentRepository';
+import {GuildDataRepository} from '@app/api/guild/repositories/GuildDataRepository';
+import {GuildMemberRepository} from '@app/api/guild/repositories/GuildMemberRepository';
+import {GuildModerationRepository} from '@app/api/guild/repositories/GuildModerationRepository';
+import {GuildRoleRepository} from '@app/api/guild/repositories/GuildRoleRepository';
+import type {RequestCache} from '@app/api/middleware/RequestCacheMiddleware';
+import type {Guild} from '@app/api/models/Guild';
+import type {GuildAuditLog} from '@app/api/models/GuildAuditLog';
+import type {GuildBan} from '@app/api/models/GuildBan';
+import type {GuildEmoji} from '@app/api/models/GuildEmoji';
+import type {GuildMember} from '@app/api/models/GuildMember';
+import type {GuildRole} from '@app/api/models/GuildRole';
+import type {GuildSticker} from '@app/api/models/GuildSticker';
+import type {AuditLogActionType} from '@fluxer/constants/src/AuditLogActionType';
 
-export class GuildRepository implements IGuildRepositoryAggregate {
+export class GuildRepository {
 	private dataRepo: GuildDataRepository;
 	private memberRepo: GuildMemberRepository;
 	private roleRepo: GuildRoleRepository;
 	private moderationRepo: GuildModerationRepository;
 	private contentRepo: GuildContentRepository;
 
-	constructor() {
-		this.dataRepo = new GuildDataRepository();
+	constructor(requestCache?: RequestCache) {
+		this.dataRepo = new GuildDataRepository(requestCache);
 		this.memberRepo = new GuildMemberRepository();
 		this.roleRepo = new GuildRoleRepository();
 		this.moderationRepo = new GuildModerationRepository();
@@ -126,7 +128,10 @@ export class GuildRepository implements IGuildRepositoryAggregate {
 	}
 
 	async deleteMember(guildId: GuildID, userId: UserID): Promise<void> {
-		return await this.memberRepo.deleteMember(guildId, userId);
+		await this.memberRepo.deleteMember(guildId, userId);
+		if (everEnabled() && (await isTainted(guildId, {fresh: true}))) {
+			await enqueueRemoveThreadMemberships(guildId, userId);
+		}
 	}
 
 	async getMembershipMetadata(guildId: GuildID, userId: UserID): Promise<GuildMembershipMetadataRow | null> {
@@ -220,10 +225,6 @@ export class GuildRepository implements IGuildRepositoryAggregate {
 		return await this.moderationRepo.batchDeleteAndCreateAuditLogs(guildId, logsToDelete, logToCreate);
 	}
 
-	async updateAuditLogsIndexedAt(guildId: GuildID, indexedAt: Date | null): Promise<void> {
-		return await this.moderationRepo.updateAuditLogsIndexedAt(guildId, indexedAt);
-	}
-
 	async getEmoji(emojiId: EmojiID, guildId: GuildID): Promise<GuildEmoji | null> {
 		return await this.contentRepo.getEmoji(emojiId, guildId);
 	}
@@ -234,10 +235,6 @@ export class GuildRepository implements IGuildRepositoryAggregate {
 
 	async listEmojis(guildId: GuildID): Promise<Array<GuildEmoji>> {
 		return await this.contentRepo.listEmojis(guildId);
-	}
-
-	async countEmojis(guildId: GuildID): Promise<number> {
-		return await this.contentRepo.countEmojis(guildId);
 	}
 
 	async upsertEmoji(data: GuildEmojiRow): Promise<GuildEmoji> {
@@ -258,10 +255,6 @@ export class GuildRepository implements IGuildRepositoryAggregate {
 
 	async listStickers(guildId: GuildID): Promise<Array<GuildSticker>> {
 		return await this.contentRepo.listStickers(guildId);
-	}
-
-	async countStickers(guildId: GuildID): Promise<number> {
-		return await this.contentRepo.countStickers(guildId);
 	}
 
 	async upsertSticker(data: GuildStickerRow): Promise<GuildSticker> {

@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import type {UserID} from '../BrandedTypes';
-import type {IGatewayService} from '../infrastructure/IGatewayService';
-import type {Application} from '../models/Application';
-import type {User} from '../models/User';
-import type {IUserRepository} from '../user/IUserRepository';
-import {mapUserToPrivateResponse} from '../user/UserMappers';
-import type {IApplicationRepository} from './repositories/IApplicationRepository';
+import type {UserID} from '@app/api/BrandedTypes';
+import type {IGatewayService} from '@app/api/infrastructure/IGatewayService';
+import type {Application} from '@app/api/models/Application';
+import type {User} from '@app/api/models/User';
+import type {ApplicationRepository} from '@app/api/oauth/repositories/ApplicationRepository';
+import type {UserRepository} from '@app/api/user/repositories/UserRepository';
+import {mapUserToPrivateResponse} from '@app/api/user/UserMappers';
 
 export class BotMfaMirrorService {
 	constructor(
-		private readonly applicationRepository: IApplicationRepository,
-		private readonly userRepository: IUserRepository,
+		private readonly applicationRepository: ApplicationRepository,
+		private readonly userRepository: UserRepository,
 		private readonly gatewayService: IGatewayService,
 	) {}
 

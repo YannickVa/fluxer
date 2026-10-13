@@ -96,6 +96,18 @@ unsubscribe_last_session_drops_channel_store_test() ->
     ?assertNot(maps:is_key(<<"500">>, Engines)),
     ?assertEqual(undefined, ets:info(Ref, name)).
 
+empty_ranges_subscribe_drops_channel_engine_test() ->
+    Ref = guild_member_list_engine:new(),
+    State = (base_state(make_subs_tab([{<<"500">>, <<"s1">>, [{0, 99}]}])))#{
+        channel_member_list_engines => #{<<"500">> => Ref}
+    },
+    {NewState, _ShouldSync, _Ranges} = guild_member_list:subscribe_ranges(
+        <<"s1">>, <<"500">>, [], State
+    ),
+    Engines = maps:get(channel_member_list_engines, NewState, #{}),
+    ?assertNot(maps:is_key(<<"500">>, Engines)),
+    ?assertEqual(undefined, ets:info(Ref, name)).
+
 broadcast_channel_list_dispatches_sync_immediately_test() ->
     with_sync_dispatch_mock(fun run_broadcast_channel_list_dispatches_sync_immediately/0).
 
@@ -106,6 +118,7 @@ run_broadcast_channel_list_dispatches_sync_immediately() ->
             <<"user">> => #{<<"id">> => <<"1">>, <<"username">> => <<"one">>},
             <<"roles">> => []
         },
+        ok = guild_member_list_engine:bulk_load(Ref, [{1, <<"one">>, [], true}], []),
         OldState = channel_list_state(Ref, make_subs_tab([{<<"500">>, <<"s1">>, [{0, 99}]}]), [
             Member
         ]),
@@ -132,6 +145,9 @@ run_broadcast_channel_list_fans_out_repeated_syncs() ->
             #{<<"user">> => #{<<"id">> => <<"1">>, <<"username">> => <<"one">>}},
             #{<<"user">> => #{<<"id">> => <<"2">>, <<"username">> => <<"two">>}}
         ],
+        ok = guild_member_list_engine:bulk_load(
+            Ref, [{1, <<"one">>, [], true}, {2, <<"two">>, [], true}], []
+        ),
         OldState = channel_list_state(
             Ref, make_subs_tab([{<<"500">>, <<"s1">>, [{0, 99}]}]), Members
         ),
@@ -244,9 +260,6 @@ run_guild_handle_info_flushes_stale_pending_member_list_batch() ->
 sync_batch_fans_out_large_subscribed_set_immediately_test() ->
     with_sync_dispatch_mock(fun run_sync_batch_fans_out_large_subscribed_set_immediately/0).
 
-send_member_list_update_encodes_wire_payload_test() ->
-    with_member_list_relay_mock(fun run_send_member_list_update_encodes_wire_payload/0).
-
 run_sync_batch_fans_out_large_subscribed_set_immediately() ->
     ChannelIds = lists:seq(1000, 1063),
     {State, Refs} = stress_channel_list_state(ChannelIds, 4),
@@ -261,55 +274,104 @@ run_sync_batch_fans_out_large_subscribed_set_immediately() ->
         lists:foreach(fun guild_member_list_engine:destroy/1, Refs)
     end.
 
-run_send_member_list_update_encodes_wire_payload() ->
-    Sessions = #{<<"s1">> => #{pid => self(), user_id => 42}},
-    State = (base_state(make_subs_tab()))#{
-        data => #{
-            <<"members">> => [
-                #{<<"user">> => #{<<"id">> => <<"42">>}, <<"roles">> => []}
-            ]
-        },
-        sessions => Sessions
-    },
-    Payload = #{
-        id => 100,
-        <<"ops">> => [
-            #{
-                <<"op">> => <<"SYNC">>,
-                <<"range">> => [0, 0],
-                <<"items">> => [#{123 => #{id => 456, <<"roles">> => [789]}}]
-            }
-        ]
-    },
-    guild_member_list_subscribe:send_member_list_update_to_sessions(
-        <<"0">>, #{<<"s1">> => [{0, 0}]}, Sessions, Payload, State
-    ),
-    receive
-        {member_list_dispatch, [Self], guild_member_list_update, 100, Decoded} when
-            Self =:= self()
-        ->
-            ?assertEqual(
-                #{
-                    <<"id">> => <<"100">>,
-                    <<"ops">> => [
-                        #{
-                            <<"op">> => <<"SYNC">>,
-                            <<"range">> => [0, 0],
-                            <<"items">> => [
-                                #{
-                                    <<"123">> => #{
-                                        <<"id">> => <<"456">>, <<"roles">> => [<<"789">>]
-                                    }
-                                }
-                            ]
-                        }
-                    ]
-                },
-                Decoded
-            )
-    after 1000 ->
-        ?assert(false)
+broadcast_afk_only_change_skips_sync_test() ->
+    with_sync_dispatch_mock(fun run_broadcast_afk_only_change_skips_sync/0).
+
+run_broadcast_afk_only_change_skips_sync() ->
+    Ref = guild_member_list_engine:new(),
+    try
+        State = presence_delta_state(Ref),
+        {ok, NewState} = guild_member_list:broadcast_member_list_updates(
+            1,
+            State,
+            State,
+            presence_map(<<"online">>, false, false, null),
+            presence_map(<<"online">>, false, true, null)
+        ),
+        ?assertEqual(State, NewState),
+        assert_no_sync_dispatch()
+    after
+        guild_member_list_engine:destroy(Ref)
     end.
+
+broadcast_status_change_dispatches_sync_test() ->
+    with_sync_dispatch_mock(fun run_broadcast_status_change_dispatches_sync/0).
+
+run_broadcast_status_change_dispatches_sync() ->
+    Ref = guild_member_list_engine:new(),
+    try
+        State = presence_delta_state(Ref),
+        {ok, NewState} = guild_member_list:broadcast_member_list_updates(
+            1,
+            State,
+            State,
+            presence_map(<<"online">>, false, null),
+            presence_map(<<"idle">>, false, null)
+        ),
+        assert_single_channel_sync_dispatch(State, NewState),
+        assert_no_sync_dispatch()
+    after
+        guild_member_list_engine:destroy(Ref)
+    end.
+
+broadcast_custom_status_change_dispatches_sync_test() ->
+    with_sync_dispatch_mock(fun run_broadcast_custom_status_change_dispatches_sync/0).
+
+run_broadcast_custom_status_change_dispatches_sync() ->
+    Ref = guild_member_list_engine:new(),
+    try
+        State = presence_delta_state(Ref),
+        {ok, NewState} = guild_member_list:broadcast_member_list_updates(
+            1,
+            State,
+            State,
+            presence_map(<<"online">>, false, null),
+            presence_map(<<"online">>, false, #{<<"text">> => <<"hi">>})
+        ),
+        assert_single_channel_sync_dispatch(State, NewState),
+        assert_no_sync_dispatch()
+    after
+        guild_member_list_engine:destroy(Ref)
+    end.
+
+broadcast_offline_transition_dispatches_sync_test() ->
+    with_sync_dispatch_mock(fun run_broadcast_offline_transition_dispatches_sync/0).
+
+run_broadcast_offline_transition_dispatches_sync() ->
+    Ref = guild_member_list_engine:new(),
+    try
+        State = presence_delta_state(Ref),
+        {ok, NewState} = guild_member_list:broadcast_member_list_updates(
+            1,
+            State,
+            State,
+            presence_map(<<"online">>, false, null),
+            presence_map(<<"offline">>, false, null)
+        ),
+        assert_single_channel_sync_dispatch(State, NewState),
+        assert_no_sync_dispatch()
+    after
+        guild_member_list_engine:destroy(Ref)
+    end.
+
+presence_delta_state(Ref) ->
+    Member = #{
+        <<"user">> => #{<<"id">> => <<"1">>, <<"username">> => <<"one">>},
+        <<"roles">> => []
+    },
+    ok = guild_member_list_engine:bulk_load(Ref, [{1, <<"one">>, [], true}], []),
+    channel_list_state(Ref, make_subs_tab([{<<"500">>, <<"s1">>, [{0, 99}]}]), [Member]).
+
+presence_map(Status, Mobile, CustomStatus) ->
+    presence_map(Status, Mobile, false, CustomStatus).
+
+presence_map(Status, Mobile, Afk, CustomStatus) ->
+    #{
+        <<"status">> => Status,
+        <<"mobile">> => Mobile,
+        <<"afk">> => Afk,
+        <<"custom_status">> => CustomStatus
+    }.
 
 channel_list_state(Ref, SubsTab, Members) ->
     (base_state(SubsTab))#{
@@ -437,15 +499,6 @@ assert_channel_sync_dispatches_for_ids(ExpectedChannelIds, Dispatches) ->
 
 with_sync_dispatch_mock(Fun) ->
     meck:new(guild_member_list_subscribe, [passthrough, no_link]),
-    Parent = self(),
-    meck:expect(
-        guild_member_list_subscribe,
-        dispatch_sync_to_subscribed_sessions,
-        fun(ListSubs, Sessions, ChannelId, GuildId, State, SyncFun) ->
-            Parent ! {sync_dispatch, ListSubs, Sessions, ChannelId, GuildId, State, SyncFun},
-            ok
-        end
-    ),
     meck:expect(
         guild_member_list_subscribe,
         dispatch_sync_to_subscribed_list,
@@ -471,23 +524,6 @@ maybe_send_sync_dispatch(ListSubs, _Sessions, _ChannelId, _GuildId, _State, _Syn
 maybe_send_sync_dispatch(ListSubs, Sessions, ChannelId, GuildId, State, SyncFun) ->
     self() ! {sync_dispatch, ListSubs, Sessions, ChannelId, GuildId, State, SyncFun},
     ok.
-
-with_member_list_relay_mock(Fun) ->
-    meck:new(gateway_dispatch_relay, [passthrough, no_link]),
-    Parent = self(),
-    meck:expect(
-        gateway_dispatch_relay,
-        dispatch_many,
-        fun(Pids, Event, {pre_encoded, Bin}, GuildId) when is_binary(Bin) ->
-            Parent ! {member_list_dispatch, Pids, Event, GuildId, json:decode(Bin)},
-            ok
-        end
-    ),
-    try
-        Fun()
-    after
-        meck:unload(gateway_dispatch_relay)
-    end.
 
 assert_channel_sync_dispatch(
     {sync_dispatch, ListSubs, _Sessions, ChannelId, 100, _State, SyncFun}

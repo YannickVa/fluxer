@@ -8,7 +8,7 @@
 	},
 	"scripts": {
 		"test": "node --import tsx --test src/*.test.ts",
-		"typecheck": "tsgo --noEmit"
+		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
 		"pg": "catalog:"
@@ -16,7 +16,7 @@
 	"devDependencies": {
 		"@types/node": "catalog:",
 		"@types/pg": "catalog:",
-		"@typescript/native-preview": "catalog:",
-		"tsx": "catalog:"
+		"tsx": "catalog:",
+		"typescript": "catalog:ts7"
 	}
 }

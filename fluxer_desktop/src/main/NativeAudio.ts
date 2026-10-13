@@ -7,26 +7,24 @@ import type {
 	NativeAudioApplication,
 	NativeAudioAvailability,
 	NativeAudioEndReason,
-	NativeAudioRoutingGraphResult,
 	NativeAudioStartOptions,
 	NativeAudioStartResult,
 	VirtmicLinkOptions,
 	VirtmicNode,
-	VirtmicRoutingGraph,
 } from '@electron/common/Types';
+import {buildFluxerAudioExcludePatterns, isKnownFluxerAudioProcessPid} from '@electron/main/FluxerAudioIdentity';
 import {getNativeAudioMode} from '@electron/main/LaunchOptions';
-import {ipcMain} from 'electron';
-import {buildFluxerAudioExcludePatterns, isKnownFluxerAudioProcessPid} from './FluxerAudioIdentity';
-import {resolveVirtmicWindowPid} from './LinuxAudioCapture';
-import {parseWindowSourceToken as parseDesktopWindowSourceToken} from './LinuxAudioCaptureHelpers';
-import {getTccStatus} from './MacTcc';
+import {resolveVirtmicWindowPid} from '@electron/main/LinuxAudioCapture';
+import {parseWindowSourceToken as parseDesktopWindowSourceToken} from '@electron/main/LinuxAudioCaptureHelpers';
+import {refreshTccStatus} from '@electron/main/MacTcc';
 import {
 	audioFrameDebugDetails,
 	isValidAudioFrame,
 	isValidLinuxRule,
 	isValidTargetPid,
 	normalizeTimestampUs,
-} from './NativeAudioValidation';
+} from '@electron/main/NativeAudioValidation';
+import {ipcMain} from 'electron';
 
 const logger = createChildLogger('NativeAudio');
 const requireModule = createRequire(import.meta.url);
@@ -40,7 +38,7 @@ interface NativeCaptureInstance {
 	removeListener(event: 'closed', listener: () => void): this;
 	start(): Promise<void> | void;
 	stop(): Promise<void> | void;
-	routingGraph?: () => VirtmicRoutingGraph | null;
+	setRoutingRule?: (target: {linuxRule: NonNullable<NativeAudioStartOptions['linuxRule']>}) => boolean;
 }
 
 interface WindowsNativeAudioModule {
@@ -425,9 +423,9 @@ function loadNativeAudioAddon(): NativeAddonLoadResult {
 	return cachedLoadResult;
 }
 
-function getMacScreenPermissionStatus(): string | null {
+async function getMacScreenPermissionStatus(): Promise<string | null> {
 	try {
-		return getTccStatus('screen-recording');
+		return await refreshTccStatus('screen-recording');
 	} catch (error) {
 		logger.debug('Failed to read macOS screen capture status', error);
 		return null;
@@ -462,7 +460,7 @@ async function getNativeAudioAvailability(): Promise<NativeAudioAvailability> {
 				capabilities,
 			};
 		}
-		const screenPermissionStatus = getMacScreenPermissionStatus();
+		const screenPermissionStatus = await getMacScreenPermissionStatus();
 		if (screenPermissionStatus === 'denied' || screenPermissionStatus === 'restricted') {
 			return {
 				available: false,
@@ -629,6 +627,23 @@ async function stopCaptureById(
 	const session = activeSessions.get(captureId);
 	if (!session) return;
 	await stopActiveSession(session, reason, detail);
+}
+
+function reconfigureCaptureById(
+	senderId: number,
+	captureId: string,
+	linuxRule: NonNullable<NativeAudioStartOptions['linuxRule']>,
+): boolean {
+	const session = activeSessions.get(captureId);
+	if (!session || session.sender.id !== senderId) return false;
+	if (session.finalized || session.stopping) return false;
+	if (typeof session.capture.setRoutingRule !== 'function') return false;
+	try {
+		return session.capture.setRoutingRule({linuxRule});
+	} catch (error) {
+		logger.warn('Failed to reconfigure native audio routing in place', {captureId, error});
+		return false;
+	}
 }
 
 async function makeRoomForSenderSession(senderId: number): Promise<void> {
@@ -842,32 +857,6 @@ async function startNativeAudioCapture(
 	};
 }
 
-function getNativeAudioRoutingGraph(sender: Electron.WebContents, captureId?: string): NativeAudioRoutingGraphResult {
-	const loadResult = loadNativeAudioAddon();
-	const availability = loadResult.availability;
-	if (loadResult.platform !== 'linux' || !availability.available) {
-		return {ok: false, graphs: [], availability};
-	}
-	const ownedIds = activeSessionIdsBySenderId.get(sender.id);
-	const candidateIds =
-		typeof captureId === 'string' && captureId
-			? ownedIds?.has(captureId)
-				? [captureId]
-				: []
-			: Array.from(ownedIds ?? []);
-	const graphs = candidateIds
-		.map((id) => {
-			const session = activeSessions.get(id);
-			if (!session || session.sender.id !== sender.id) return null;
-			return {
-				captureId: id,
-				graph: session.capture.routingGraph?.() ?? null,
-			};
-		})
-		.filter((entry): entry is {captureId: string; graph: VirtmicRoutingGraph | null} => entry !== null);
-	return {ok: true, graphs, availability};
-}
-
 export function registerNativeAudioHandlers(): void {
 	if (handlersRegistered) return;
 	handlersRegistered = true;
@@ -885,6 +874,15 @@ export function registerNativeAudioHandlers(): void {
 		(event, options: NativeAudioStartOptions): Promise<NativeAudioStartResult> =>
 			startNativeAudioCapture(event.sender, options),
 	);
+	ipcMain.handle(
+		'native-audio:set-rule',
+		(event, captureId: unknown, linuxRule: NativeAudioStartOptions['linuxRule']): boolean => {
+			if (typeof captureId !== 'string' || !isValidLinuxRule(linuxRule)) {
+				return false;
+			}
+			return reconfigureCaptureById(event.sender.id, captureId, linuxRule);
+		},
+	);
 	ipcMain.handle('native-audio:stop', async (event, captureId: string): Promise<void> => {
 		const session = activeSessions.get(captureId);
 		if (!session || session.sender.id !== event.sender.id) {
@@ -892,10 +890,6 @@ export function registerNativeAudioHandlers(): void {
 		}
 		await stopActiveSession(session, 'stopped');
 	});
-	ipcMain.handle(
-		'native-audio:get-routing-graph',
-		(event, captureId?: string): NativeAudioRoutingGraphResult => getNativeAudioRoutingGraph(event.sender, captureId),
-	);
 }
 
 export function cleanupNativeAudio(): void {
@@ -904,8 +898,8 @@ export function cleanupNativeAudio(): void {
 	ipcMain.removeHandler('native-audio:list-applications');
 	ipcMain.removeHandler('native-audio:resolve-root-pid');
 	ipcMain.removeHandler('native-audio:start');
+	ipcMain.removeHandler('native-audio:set-rule');
 	ipcMain.removeHandler('native-audio:stop');
-	ipcMain.removeHandler('native-audio:get-routing-graph');
 	handlersRegistered = false;
 	for (const session of [...activeSessions.values()]) {
 		stopActiveSession(session, 'stopped').catch((error) =>

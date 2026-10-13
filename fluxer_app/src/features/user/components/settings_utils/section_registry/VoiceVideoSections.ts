@@ -1,5 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import type {SectionDefinition} from '@app/features/user/components/settings_utils/section_registry/SectionRegistryTypes';
+import {
+	AUDIO_2_DESCRIPTOR,
+	PREMIUM_PRODUCT_NAME_KEYWORD,
+	VOICE_DESCRIPTOR,
+	VOLUME_DESCRIPTOR,
+} from '@app/features/user/components/settings_utils/section_registry/SharedDescriptors';
 import {
 	VOICE_DIRECT_INPUT_PROFILE_DESCRIPTOR,
 	VOICE_ECHO_CANCELLATION_DESCRIPTOR,
@@ -11,8 +18,6 @@ import {
 	VOICE_OUTPUT_VOLUME_DESCRIPTOR,
 } from '@app/features/voice/utils/VoiceMessageDescriptors';
 import {msg} from '@lingui/core/macro';
-import type {SectionDefinition} from './SectionRegistryTypes';
-import {AUDIO_2_DESCRIPTOR, PLUTONIUM_DESCRIPTOR, VOICE_DESCRIPTOR, VOLUME_DESCRIPTOR} from './SharedDescriptors';
 
 const CONFIGURE_YOUR_MICROPHONE_SPEAKERS_INPUT_MODE_PROCESSING_AND_DESCRIPTOR = msg({
 	message: 'Configure your microphone, speakers, input mode, processing, and voice sounds.',
@@ -226,6 +231,10 @@ const FRAME_RATE_DESCRIPTOR = msg({
 	message: 'Frame rate',
 	comment: 'Settings search synonym. Used to match this term when the user types it in the settings search bar.',
 });
+const BITRATE_DESCRIPTOR = msg({
+	message: 'Bitrate',
+	comment: 'Settings search synonym. Used to match this term when the user types it in the settings search bar.',
+});
 const FPS_DESCRIPTOR = msg({
 	message: 'FPS',
 	comment: 'Settings search synonym. Used to match this term when the user types it in the settings search bar.',
@@ -337,11 +346,12 @@ export const voiceVideoSections = [
 			STREAMING_DESCRIPTOR,
 			FRAME_RATE_DESCRIPTOR,
 			FPS_DESCRIPTOR,
+			BITRATE_DESCRIPTOR,
 			HD_DESCRIPTOR,
 			MESSAGE_1080P_DESCRIPTOR,
 			MESSAGE_1440P_DESCRIPTOR,
 			SOURCE_QUALITY_DESCRIPTOR,
-			PLUTONIUM_DESCRIPTOR,
+			PREMIUM_PRODUCT_NAME_KEYWORD,
 		],
 		isAdvanced: false,
 	},

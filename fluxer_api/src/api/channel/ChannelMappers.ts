@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import type {UserID} from '@app/api/BrandedTypes';
+import type {UserCacheService} from '@app/api/infrastructure/UserCacheService';
+import type {RequestCache} from '@app/api/middleware/RequestCacheMiddleware';
+import type {Channel} from '@app/api/models/Channel';
+import {getCachedUserPartialResponses} from '@app/api/user/UserCacheHelpers';
 import {ChannelTypes} from '@fluxer/constants/src/ChannelConstants';
 import type {
 	ChannelOverwriteResponse,
 	ChannelPartialResponse,
 	ChannelResponse,
 } from '@fluxer/schema/src/domains/channel/ChannelSchemas';
-import type {UserID} from '../BrandedTypes';
-import type {UserCacheService} from '../infrastructure/UserCacheService';
-import type {RequestCache} from '../middleware/RequestCacheMiddleware';
-import type {Channel} from '../models/Channel';
-import {getCachedUserPartialResponses} from '../user/UserCacheHelpers';
 
 interface MapChannelToResponseParams {
 	channel: Channel;
@@ -99,6 +99,17 @@ function serializeGuildTextChannel(channel: Channel, ctx: ContentWarningCtx): Ch
 	};
 }
 
+function serializeThreadOnlyChannel(channel: Channel, ctx: ContentWarningCtx): ChannelResponse {
+	return {
+		...serializeBaseChannelFields(channel),
+		...serializeMessageableFields(channel),
+		...serializePositionableGuildChannelFields(channel),
+		topic: channel.topic,
+		...serializeContentWarningFields(channel, ctx),
+		rate_limit_per_user: channel.rateLimitPerUser,
+	};
+}
+
 function serializeGuildVoiceChannel(channel: Channel, ctx: ContentWarningCtx): ChannelResponse {
 	return {
 		...serializeBaseChannelFields(channel),
@@ -109,6 +120,7 @@ function serializeGuildVoiceChannel(channel: Channel, ctx: ContentWarningCtx): C
 		user_limit: channel.userLimit,
 		voice_connection_limit: channel.voiceConnectionLimit,
 		rtc_region: channel.rtcRegion,
+		rtc_p2p: channel.rtcP2p,
 		...serializeContentWarningFields(channel, ctx),
 		rate_limit_per_user: channel.rateLimitPerUser,
 	};
@@ -150,10 +162,11 @@ function serializeGroupDMChannel(channel: Channel): ChannelResponse {
 	return {
 		...serializeBaseChannelFields(channel),
 		...serializeMessageableFields(channel),
-		name: channel.name ?? undefined,
+		name: channel.name ?? null,
 		icon: channel.iconHash ?? null,
 		owner_id: channel.ownerId ? channel.ownerId.toString() : null,
 		nicks: nicknameMap.size > 0 ? nicks : undefined,
+		nsfw: channel.isNsfw,
 	};
 }
 
@@ -196,10 +209,15 @@ export async function mapChannelToResponse(params: MapChannelToResponseParams): 
 	let response: ChannelResponse;
 	switch (channel.type) {
 		case ChannelTypes.GUILD_TEXT:
+		case ChannelTypes.GUILD_ANNOUNCEMENT:
 			response = serializeGuildTextChannel(channel, ctx);
 			break;
 		case ChannelTypes.GUILD_VOICE:
 			response = serializeGuildVoiceChannel(channel, ctx);
+			break;
+		case ChannelTypes.GUILD_FORUM:
+		case ChannelTypes.GUILD_MEDIA:
+			response = serializeThreadOnlyChannel(channel, ctx);
 			break;
 		case ChannelTypes.GUILD_CATEGORY:
 			response = serializeGuildCategoryChannel(channel, ctx);

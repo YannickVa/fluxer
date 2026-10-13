@@ -87,7 +87,8 @@ async fn login_page(
         Some(_) => Some("Login error. Please try again."),
         None => None,
     };
-    Html(login::login_page(config, error_msg).into_string()).into_response()
+    let branding = state.self_hosted_branding().await;
+    Html(login::login_page(config, branding.as_ref(), error_msg).into_string()).into_response()
 }
 
 async fn auth_start(State(state): State<AppState>) -> Response {
@@ -187,7 +188,7 @@ async fn oauth2_callback_finish(
 
     let session_cookie_value =
         session::create_session(&user.id, &token.access_token, &config.secret_key_base);
-    let secure = if config.is_production() {
+    let secure = if config.secure_cookies() {
         "; Secure"
     } else {
         ""
@@ -348,7 +349,7 @@ fn oauth_callback_page(config: &AdminConfig, code: Option<&str>, state: Option<&
     )
 }
 
-fn json_string(value: &str) -> String {
+pub(crate) fn json_string(value: &str) -> String {
     serde_json::to_string(value)
         .expect("JSON string serialization cannot fail")
         .replace('<', "\\u003c")

@@ -196,7 +196,7 @@ const MAX_DRAIN_FRAMES_PER_TICK = 16;
 const MAX_IDLE_DIRECT_CAPTURES = 2;
 const MIX_TICK_PERIOD_MS = 20;
 
-let idleDirectCaptures = [];
+const idleDirectCaptures = [];
 
 function acquireDirectAudioCapture() {
 	if (typeof binding.DirectAudioCapture !== 'function') {
@@ -211,10 +211,6 @@ function releaseDirectAudioCapture(capture) {
 	if (idleDirectCaptures.length < MAX_IDLE_DIRECT_CAPTURES) {
 		idleDirectCaptures.push(capture);
 	}
-}
-
-function clearIdleDirectCapturePool() {
-	idleDirectCaptures = [];
 }
 
 function patternsEqual(a, b) {
@@ -233,6 +229,19 @@ function patternsEqual(a, b) {
 		if (aSet[i] !== bSet[i]) return false;
 	}
 	return true;
+}
+
+function routingRulesEqual(a, b) {
+	if (a === b) return true;
+	if (!a || !b) return false;
+	if (!patternsEqual(a.include, b.include)) return false;
+	if (!patternsEqual(a.exclude, b.exclude)) return false;
+	if (!patternsEqual(a.workaround, b.workaround)) return false;
+	return (
+		Boolean(a.ignoreDevices) === Boolean(b.ignoreDevices) &&
+		Boolean(a.onlySpeakers) === Boolean(b.onlySpeakers) &&
+		Boolean(a.onlyDefaultSpeakers) === Boolean(b.onlyDefaultSpeakers)
+	);
 }
 
 class ProcessLoopback extends EventEmitter {
@@ -291,6 +300,28 @@ class ProcessLoopback extends EventEmitter {
 		}
 	}
 
+	setRoutingRule(target, options = {}) {
+		if (this.closed || !this.started) return false;
+		if (typeof this.capture?.setRule !== 'function') return false;
+		let nextRule;
+		try {
+			nextRule = routingRuleFromTarget(target, options);
+		} catch {
+			return false;
+		}
+		if (routingRulesEqual(nextRule, this.rule)) return true;
+		let applied = false;
+		try {
+			applied = this.capture.setRule(nextRule) !== false;
+		} catch {
+			return false;
+		}
+		if (!applied) return false;
+		this.rule = nextRule;
+		this.options = options;
+		return true;
+	}
+
 	refreshRuleForLateChildren() {
 		if (this.closed || !this.started || this.targetPid === null) return;
 		let nextRule;
@@ -332,10 +363,6 @@ class ProcessLoopback extends EventEmitter {
 				timestampUs: frame.timestampUs,
 			});
 		}
-	}
-
-	routingGraph() {
-		return this.capture && typeof this.capture.routingGraph === 'function' ? this.capture.routingGraph() : null;
 	}
 
 	setScreenAudioSink(handle) {
@@ -381,15 +408,7 @@ class ProcessLoopback extends EventEmitter {
 module.exports = {
 	AudioBridge: binding.AudioBridge,
 	DirectAudioCapture: binding.DirectAudioCapture,
-	AudioMixRuntimeHandle: binding.AudioMixRuntimeHandle,
 	ProcessLoopback,
 	pipeWireAvailable: binding.pipeWireAvailable,
 	audioBackend: binding.audioBackend ?? (() => (binding.pipeWireAvailable?.() ? 'pipewire' : 'none')),
-	__setBindingForTests(nextBinding) {
-		binding = nextBinding;
-		clearIdleDirectCapturePool();
-	},
-	__getIdleDirectCaptureCountForTests() {
-		return idleDirectCaptures.length;
-	},
 };

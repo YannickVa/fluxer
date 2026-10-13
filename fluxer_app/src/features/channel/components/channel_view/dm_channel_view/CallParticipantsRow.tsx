@@ -72,7 +72,7 @@ export const CallParticipantsRow = observer(
 				event.preventDefault();
 				event.stopPropagation();
 				const participantEntry = participantEntryByUserId.get(user.id);
-				const participantName = NicknameUtils.getNickname(user, channel.guildId ?? undefined, channel.id) || user.id;
+				const participantName = NicknameUtils.getNickname(user, channel.guildId ?? null, channel.id) || user.id;
 				ContextMenuCommands.openFromEvent(event, ({onClose}) =>
 					participantEntry ? (
 						<VoiceParticipantContextMenu
@@ -81,6 +81,8 @@ export const CallParticipantsRow = observer(
 							onClose={onClose}
 							guildId={channel.guildId ?? undefined}
 							connectionId={participantEntry.connectionId}
+							surface="call-avatar"
+							source={{kind: 'participant'}}
 							data-flx="channel.channel-view.dm-channel-view.handle-context-menu.voice-participant-context-menu"
 						/>
 					) : (
@@ -155,7 +157,7 @@ export const CallParticipantsRow = observer(
 				>
 					{participants.map(({user, isRinging}) => {
 						const participantEntry = participantEntryByUserId.get(user.id);
-						const displayName = NicknameUtils.getNickname(user, channel.guildId ?? undefined, channel.id);
+						const displayName = NicknameUtils.getNickname(user, channel.guildId ?? null, channel.id);
 						return (
 							<motion.button
 								type="button"

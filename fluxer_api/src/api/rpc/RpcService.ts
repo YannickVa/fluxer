@@ -1,10 +1,120 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import {createHash} from 'node:crypto';
+import type {ApiContext} from '@app/api/ApiContext';
+import * as AuthSession from '@app/api/auth/AuthSession';
+import {visibleWebAuthnCredentials} from '@app/api/auth/services/PasskeyRelyingParty';
+import type {ChannelID, GuildID, UserID} from '@app/api/BrandedTypes';
+import {
+	createChannelID,
+	createGuildID,
+	createMessageID,
+	createUserID,
+	userIdToChannelId,
+	vanityCodeToInviteCode,
+} from '@app/api/BrandedTypes';
+import {Config} from '@app/api/Config';
+import {mapChannelToResponse} from '@app/api/channel/ChannelMappers';
+import type {ChannelRepository} from '@app/api/channel/ChannelRepository';
+import {buildBroadcastMessageData} from '@app/api/channel/services/message/MessageGatewayDispatch';
+import {ensurePersonalNotesChannelExists} from '@app/api/channel/services/PersonalNotesChannelRepair';
+import {withThreadParentFieldsMany} from '@app/api/channel/services/thread/ThreadParentSettings';
+import {
+	listThreadMembersPage,
+	loadActiveThreadMemberships,
+	loadForumUnreads,
+	loadThreadCollectionRpcData,
+	resolveThreadGateRpcData,
+} from '@app/api/channel/services/thread/ThreadRpcData';
+import {
+	getCompiledChannelThreadsConfig,
+	guildActive,
+	isTainted,
+	type ThreadViewer,
+} from '@app/api/experiment/ChannelThreadsGate';
+import {mapFavoriteMemeToResponse} from '@app/api/favorite_meme/FavoriteMemeModel';
+import type {FavoriteMemeRepository} from '@app/api/favorite_meme/FavoriteMemeRepository';
+import {
+	mapGuildEmojiToResponse,
+	mapGuildMemberToResponse,
+	mapGuildRoleToResponse,
+	mapGuildStickerToResponse,
+	mapGuildToGuildResponse,
+} from '@app/api/guild/GuildModel';
+import type {GuildRepository} from '@app/api/guild/repositories/GuildRepository';
+import type {AvatarService} from '@app/api/infrastructure/AvatarService';
+import type {IDiscriminatorService} from '@app/api/infrastructure/DiscriminatorService';
+import type {IGatewayService} from '@app/api/infrastructure/IGatewayService';
+import type {ListParticipantsResult} from '@app/api/infrastructure/ILiveKitService';
+import type {IStorageService} from '@app/api/infrastructure/IStorageService';
+import type {PremiumStateReconciliationQueueService} from '@app/api/infrastructure/PremiumStateReconciliationQueueService';
+import type {UserCacheService} from '@app/api/infrastructure/UserCacheService';
+import type {InstanceConfigRepository} from '@app/api/instance/InstanceConfigRepository';
+import type {InviteRepository} from '@app/api/invite/InviteRepository';
+import {Logger} from '@app/api/Logger';
+import type {LimitConfigService} from '@app/api/limits/LimitConfigService';
+import {resolveLimitSafe} from '@app/api/limits/LimitConfigUtils';
+import {createLimitMatchContext} from '@app/api/limits/LimitMatchContextBuilder';
+import type {RequestCache} from '@app/api/middleware/RequestCacheMiddleware';
+import type {AuthSession as AuthSessionModel} from '@app/api/models/AuthSession';
+import type {Channel} from '@app/api/models/Channel';
+import type {FavoriteMeme} from '@app/api/models/FavoriteMeme';
+import type {Guild} from '@app/api/models/Guild';
+import type {GuildMember} from '@app/api/models/GuildMember';
+import type {GuildSticker} from '@app/api/models/GuildSticker';
+import type {ReadState} from '@app/api/models/ReadState';
+import type {Relationship} from '@app/api/models/Relationship';
+import type {User} from '@app/api/models/User';
+import type {UserGuildSettings} from '@app/api/models/UserGuildSettings';
+import {UserSettings} from '@app/api/models/UserSettings';
+import type {WebAuthnCredential} from '@app/api/models/WebAuthnCredential';
+import type {BotAuthService} from '@app/api/oauth/BotAuthService';
+import {mapReadStateResponse} from '@app/api/read_state/ReadStateResponseMapper';
+import type {ReadStateService} from '@app/api/read_state/ReadStateService';
+import {badgeReadStates, visibleReadStates} from '@app/api/read_state/ReadStateVisibility';
+import {RpcSessionStartService} from '@app/api/rpc/RpcSessionStartService';
+import {
+	createRpcTimingNode,
+	RpcTimingRecorder,
+	type RpcTimingSteps,
+	startRpcTiming,
+	timeRpcStep,
+	timeRpcStepSync,
+} from '@app/api/rpc/RpcTimings';
+import type {UserRepository} from '@app/api/user/repositories/UserRepository';
+import {CustomStatusValidator} from '@app/api/user/services/CustomStatusValidator';
+import {getCachedUserPartialResponse} from '@app/api/user/UserCacheHelpers';
+import {
+	mapUserGuildSettingsForViewer,
+	SYSTEM_USER_GUILD_SETTINGS_VIEW,
+} from '@app/api/user/UserGuildSettingsThreadView';
+import {isSignInRefused} from '@app/api/user/UserHelpers';
+import {
+	mapRelationshipToResponse,
+	mapUserGuildSettingsToResponse,
+	mapUserSettingsToResponse,
+	mapUserToPrivateResponse,
+	mapWebAuthnCredentialToResponse,
+} from '@app/api/user/UserMappers';
+import {canUserAccessNsfwContent} from '@app/api/utils/AgeUtils';
+import {deriveDominantAvatarColor} from '@app/api/utils/AvatarColorUtils';
+import {calculateDistance, parseCoordinate} from '@app/api/utils/GeoUtils';
+import {lookupGeoip} from '@app/api/utils/IpUtils';
+import type {VoiceAccessContext, VoiceAvailabilityService} from '@app/api/voice/VoiceAvailabilityService';
+import type {VoiceService} from '@app/api/voice/VoiceService';
+import type {WebhookRepository} from '@app/api/webhook/WebhookRepository';
+import {ensureGuildThreadPermissionsSeeded} from '@app/api/worker/tasks/SeedThreadPermissions';
+import type {WorkerTaskName} from '@app/api/worker/WorkerLaneConfig';
 import {AUTOMATIC_VOICE_REGION_ID, ChannelTypes, MessageTypes} from '@fluxer/constants/src/ChannelConstants';
 import type {LimitKey} from '@fluxer/constants/src/LimitConfigMetadata';
 import {MAX_PRIVATE_CHANNELS_PER_USER} from '@fluxer/constants/src/LimitConstants';
-import {GroupDmAddPermissionFlags, IncomingCallFlags, UserPremiumTypes} from '@fluxer/constants/src/UserConstants';
+import {THREAD_ONLY_CHANNEL_TYPES} from '@fluxer/constants/src/ThreadConstants';
+import {
+	GroupDmAddPermissionFlags,
+	IncomingCallFlags,
+	UserFlags,
+	UserPremiumTypes,
+} from '@fluxer/constants/src/UserConstants';
 import {RateLimitError} from '@fluxer/errors/src/domains/core/RateLimitError';
 import {UnauthorizedError} from '@fluxer/errors/src/domains/core/UnauthorizedError';
 import {UnknownGuildError} from '@fluxer/errors/src/domains/guild/UnknownGuildError';
@@ -26,93 +136,6 @@ import type {IWorkerService} from '@pkgs/worker/src/contracts/IWorkerService';
 import {ms} from 'itty-time';
 import sharp from 'sharp';
 import {uint8ArrayToBase64} from 'uint8array-extras';
-import type {ApiContext} from '../ApiContext';
-import * as AuthSession from '../auth/AuthSession';
-import type {ChannelID, GuildID, UserID} from '../BrandedTypes';
-import {
-	createChannelID,
-	createGuildID,
-	createMessageID,
-	createUserID,
-	userIdToChannelId,
-	vanityCodeToInviteCode,
-} from '../BrandedTypes';
-import {Config} from '../Config';
-import {mapChannelToResponse} from '../channel/ChannelMappers';
-import type {IChannelRepository} from '../channel/IChannelRepository';
-import type {ChannelService} from '../channel/services/ChannelService';
-import {buildBroadcastMessageData} from '../channel/services/message/MessageGatewayDispatch';
-import {ensurePersonalNotesChannelExists} from '../channel/services/PersonalNotesChannelRepair';
-import {mapFavoriteMemeToResponse} from '../favorite_meme/FavoriteMemeModel';
-import type {IFavoriteMemeRepository} from '../favorite_meme/IFavoriteMemeRepository';
-import {
-	mapGuildEmojiToResponse,
-	mapGuildMemberToResponse,
-	mapGuildRoleToResponse,
-	mapGuildStickerToResponse,
-	mapGuildToGuildResponse,
-} from '../guild/GuildModel';
-import type {IGuildRepositoryAggregate} from '../guild/repositories/IGuildRepositoryAggregate';
-import type {AvatarService} from '../infrastructure/AvatarService';
-import type {IDiscriminatorService} from '../infrastructure/DiscriminatorService';
-import type {IGatewayService} from '../infrastructure/IGatewayService';
-import type {ListParticipantsResult} from '../infrastructure/ILiveKitService';
-import type {IStorageService} from '../infrastructure/IStorageService';
-import type {PremiumStateReconciliationQueueService} from '../infrastructure/PremiumStateReconciliationQueueService';
-import type {UserCacheService} from '../infrastructure/UserCacheService';
-import type {InstanceConfigRepository} from '../instance/InstanceConfigRepository';
-import type {IInviteRepository} from '../invite/IInviteRepository';
-import {Logger} from '../Logger';
-import type {LimitConfigService} from '../limits/LimitConfigService';
-import {resolveLimitSafe} from '../limits/LimitConfigUtils';
-import {createLimitMatchContext} from '../limits/LimitMatchContextBuilder';
-import type {RequestCache} from '../middleware/RequestCacheMiddleware';
-import type {AuthSession as AuthSessionModel} from '../models/AuthSession';
-import type {Channel} from '../models/Channel';
-import type {FavoriteMeme} from '../models/FavoriteMeme';
-import type {Guild} from '../models/Guild';
-import type {GuildMember} from '../models/GuildMember';
-import type {GuildSticker} from '../models/GuildSticker';
-import type {ReadState} from '../models/ReadState';
-import type {Relationship} from '../models/Relationship';
-import type {User} from '../models/User';
-import type {UserGuildSettings} from '../models/UserGuildSettings';
-import {UserSettings} from '../models/UserSettings';
-import type {WebAuthnCredential} from '../models/WebAuthnCredential';
-import type {BotAuthService} from '../oauth/BotAuthService';
-import {sendApnsPush} from '../push/ApnsPushService';
-import {encodeReadStatesResponseProto, mapReadStateResponse} from '../read_state/ReadStateResponseMapper';
-import type {ReadStateService} from '../read_state/ReadStateService';
-import {PneumaticPostRepository} from '../system/PneumaticPostRepository';
-import {PneumaticPostService} from '../system/PneumaticPostService';
-import type {IUserRepository} from '../user/IUserRepository';
-import {PaymentRepository} from '../user/repositories/PaymentRepository';
-import {CustomStatusValidator} from '../user/services/CustomStatusValidator';
-import type {UserChannelService} from '../user/services/UserChannelService';
-import {getCachedUserPartialResponse} from '../user/UserCacheHelpers';
-import {
-	mapRelationshipToResponse,
-	mapUserGuildSettingsToResponse,
-	mapUserSettingsToResponse,
-	mapUserToPrivateResponse,
-} from '../user/UserMappers';
-import {isUserAdult} from '../utils/AgeUtils';
-import {deriveDominantAvatarColor} from '../utils/AvatarColorUtils';
-import {calculateDistance, parseCoordinate} from '../utils/GeoUtils';
-import {lookupGeoip} from '../utils/IpUtils';
-import type {VoiceAccessContext, VoiceAvailabilityService} from '../voice/VoiceAvailabilityService';
-import type {VoiceService} from '../voice/VoiceService';
-import type {IWebhookRepository} from '../webhook/IWebhookRepository';
-import type {WorkerTaskName} from '../worker/WorkerLaneConfig';
-import {RpcSessionStartService} from './RpcSessionStartService';
-import {
-	createRpcTimingNode,
-	RpcTimingRecorder,
-	type RpcTimingSteps,
-	startRpcTiming,
-	timeRpcStep,
-	timeRpcStepSync,
-} from './RpcTimings';
 
 interface HandleRpcRequestParams {
 	request: RpcRequest;
@@ -126,6 +149,7 @@ interface HandleSessionRequestParams {
 	ip?: string;
 	latitude?: string;
 	longitude?: string;
+	threadChannelsCapable?: boolean;
 }
 
 interface HandleGuildCollectionRequestParams {
@@ -228,27 +252,27 @@ function mapVoiceParticipantSnapshot(result: ListParticipantsResult): {
 	};
 }
 
+const THREAD_MEMBERS_RPC_DEFAULT_LIMIT = 1000;
+
 export class RpcService {
 	private readonly customStatusValidator: CustomStatusValidator;
 	private readonly sessionStartService: RpcSessionStartService;
 
 	constructor(
-		private userRepository: IUserRepository,
-		private guildRepository: IGuildRepositoryAggregate,
-		private channelRepository: IChannelRepository,
+		private userRepository: UserRepository,
+		private guildRepository: GuildRepository,
+		private channelRepository: ChannelRepository,
 		private userCacheService: UserCacheService,
 		private readStateService: ReadStateService,
 		private apiContext: ApiContext,
 		private gatewayService: IGatewayService,
 		private discriminatorService: IDiscriminatorService,
-		private favoriteMemeRepository: IFavoriteMemeRepository,
+		private favoriteMemeRepository: FavoriteMemeRepository,
 		private botAuthService: BotAuthService,
-		private inviteRepository: IInviteRepository,
-		private webhookRepository: IWebhookRepository,
+		private inviteRepository: InviteRepository,
+		private webhookRepository: WebhookRepository,
 		private storageService: IStorageService,
 		private avatarService: AvatarService,
-		private channelService: ChannelService,
-		private userChannelService: UserChannelService,
 		private rateLimitService: IRateLimitService,
 		private readonly limitConfigService: LimitConfigService,
 		private readonly kvClient: IKVProvider,
@@ -269,20 +293,12 @@ export class RpcService {
 			userCacheService: this.userCacheService,
 			gatewayService: this.gatewayService,
 			discriminatorService: this.discriminatorService,
-			paymentRepository: new PaymentRepository(),
-			pneumaticPostService: new PneumaticPostService({
-				repository: new PneumaticPostRepository(),
-				userRepository: this.userRepository,
-				userChannelService: this.userChannelService,
-				channelService: this.channelService,
-				userCacheService: this.userCacheService,
-			}),
 		});
 	}
 
 	private async ensurePersonalNotesChannel(user: User): Promise<void> {
 		const personalNotesChannelId = userIdToChannelId(user.id);
-		const existingChannel = await this.channelRepository.findUnique(personalNotesChannelId);
+		const existingChannel = await this.channelRepository.channelData.findUnique(personalNotesChannelId);
 		if (existingChannel) {
 			if (existingChannel.type !== ChannelTypes.DM_PERSONAL_NOTES) {
 				Logger.warn(
@@ -292,7 +308,7 @@ export class RpcService {
 			}
 			return;
 		}
-		await ensurePersonalNotesChannelExists({channelRepository: this.channelRepository, userId: user.id});
+		await ensurePersonalNotesChannelExists({channelRepository: this.channelRepository.channelData, userId: user.id});
 	}
 
 	private async updateGuildMemberCount(guild: Guild, actualMemberCount: number): Promise<Guild> {
@@ -315,7 +331,6 @@ export class RpcService {
 					name: sticker.name,
 					description: sticker.description,
 					animated,
-					nsfw: sticker.isNsfw,
 					tags: sticker.tags,
 					creator_id: sticker.creatorId,
 					version: sticker.version,
@@ -341,6 +356,7 @@ export class RpcService {
 						ip: request.ip,
 						latitude: request.latitude,
 						longitude: request.longitude,
+						threadChannelsCapable: request.thread_channels_capable === true,
 					}),
 				};
 			case 'log_guild_crash': {
@@ -394,7 +410,7 @@ export class RpcService {
 					type: 'get_user_guild_settings',
 					data: {
 						user_guild_settings: result.user_guild_settings.map((settings) =>
-							settings ? mapUserGuildSettingsToResponse(settings) : null,
+							settings ? mapUserGuildSettingsToResponse(settings, SYSTEM_USER_GUILD_SETTINGS_VIEW) : null,
 						),
 					},
 				};
@@ -438,25 +454,6 @@ export class RpcService {
 						})),
 					}),
 				};
-			case 'send_apns_push': {
-				const result = await sendApnsPush({
-					userId: request.user_id.toString(),
-					subscriptionId: request.subscription_id,
-					deviceToken: request.device_token,
-					appId: request.app_id,
-					providerEnvironment: request.provider_environment,
-					payload: request.payload,
-				});
-				return {
-					type: 'send_apns_push',
-					data: {
-						success: result.success,
-						should_delete: result.shouldDelete,
-						reason: result.reason,
-						status_code: result.statusCode,
-					},
-				};
-			}
 			case 'get_user_blocked_ids':
 				return {
 					type: 'get_user_blocked_ids',
@@ -484,6 +481,10 @@ export class RpcService {
 					canStream: request.can_stream,
 					canVideo: request.can_video,
 					tokenNonce: request.token_nonce,
+					p2p: request.p2p,
+					p2pInitiator: request.p2p_initiator,
+					p2pParticipantCount: request.p2p_participant_count,
+					countryCode: request.country_code,
 				});
 				return {
 					type: 'voice_get_token',
@@ -637,6 +638,16 @@ export class RpcService {
 					data: {channel},
 				};
 			}
+			case 'get_read_state': {
+				const readState = await this.readStateService.getReadState(
+					createUserID(request.user_id),
+					createChannelID(request.channel_id),
+				);
+				return {
+					type: 'get_read_state',
+					data: {last_message_id: readState?.lastMessageId?.toString() ?? null},
+				};
+			}
 			case 'get_gateway_rollout_config': {
 				const rolloutConfig = await this.instanceConfigRepository.getGatewayRolloutConfig();
 				return {
@@ -644,6 +655,64 @@ export class RpcService {
 					data: {config: rolloutConfig},
 				};
 			}
+			case 'get_push_service_delivery_config': {
+				const config = await this.instanceConfigRepository.getLegacyPushServiceDeliveryWire();
+				return {
+					type: 'get_push_service_delivery_config',
+					data: {config},
+				};
+			}
+			case 'get_channel_threads_config': {
+				const config = await this.instanceConfigRepository.getChannelThreadsConfig();
+				return {
+					type: 'get_channel_threads_config',
+					data: {config},
+				};
+			}
+			case 'get_thread_memberships':
+				return {
+					type: 'get_thread_memberships',
+					data: {
+						members: await loadActiveThreadMemberships(
+							this.channelRepository,
+							createGuildID(request.guild_id),
+							createUserID(request.user_id),
+						),
+					},
+				};
+			case 'list_thread_members':
+				return {
+					type: 'list_thread_members',
+					data: await listThreadMembersPage(this.channelRepository, {
+						guildId: createGuildID(request.guild_id),
+						threadIds: request.thread_ids.map(createChannelID),
+						limit: request.limit ?? THREAD_MEMBERS_RPC_DEFAULT_LIMIT,
+						after: request.after_user_id !== undefined ? createUserID(request.after_user_id) : undefined,
+					}),
+				};
+			case 'forum_unreads':
+				return {
+					type: 'forum_unreads',
+					data: {
+						threads: await loadForumUnreads(this.channelRepository, {
+							guildId: createGuildID(request.guild_id),
+							channelId: createChannelID(request.channel_id),
+							threads: request.threads.map((thread) => ({
+								threadId: createChannelID(thread.thread_id),
+								ackMessageId: thread.ack_message_id !== undefined ? createMessageID(thread.ack_message_id) : undefined,
+							})),
+						}),
+					},
+				};
+			case 'guild_thread_flip_data':
+				return {
+					type: 'guild_thread_flip_data',
+					data: await this.handleGuildThreadFlipData({
+						guildId: createGuildID(request.guild_id),
+						pagedMembers: request.paged_members === true,
+						requestCache,
+					}),
+				};
 			default: {
 				const exhaustiveCheck: never = request;
 				throw new Error(
@@ -804,6 +873,10 @@ export class RpcService {
 		requestCache: RequestCache;
 	}): Promise<Array<GuildMemberResponse>> {
 		const {guildId, members, requestCache} = params;
+		await this.userCacheService.getUserPartialResponses(
+			members.map((member) => member.userId),
+			requestCache,
+		);
 		const mappedMembers = await allSettledWithConcurrency(members, RPC_RESPONSE_MAP_CONCURRENCY, (member) =>
 			mapGuildMemberToResponse(member, this.userCacheService, requestCache),
 		);
@@ -869,7 +942,7 @@ export class RpcService {
 				if (!queueAllowed) {
 					return;
 				}
-				await this.workerService.addJob('reconcileUserPayments', {userId: userIdString});
+				await this.workerService.addJob('reconcileUserPayments', {userId: userIdString}, {skipLedger: true});
 			})
 			.catch((error) => {
 				Logger.warn(
@@ -886,6 +959,7 @@ export class RpcService {
 		ip,
 		latitude,
 		longitude,
+		threadChannelsCapable = false,
 	}: HandleSessionRequestParams): Promise<RpcResponseSessionData> {
 		const timings = new RpcTimingRecorder();
 		const normalizedToken = timings.timeSync('normalize_session_token', () => this.normalizeSessionToken(token));
@@ -963,7 +1037,7 @@ export class RpcService {
 		const loadUserDataStartedAtNs = startRpcTiming();
 		const userData = await this.getUserData({userId, includePrivateChannels: true, timingSteps: loadUserDataSteps});
 		timings.record('load_user_data', loadUserDataStartedAtNs, loadUserDataSteps);
-		if (!userData || !userData.user) {
+		if (!userData?.user) {
 			Logger.warn(
 				{
 					tokenType,
@@ -972,6 +1046,10 @@ export class RpcService {
 				},
 				'RPC session user lookup failed',
 			);
+			throw new UnauthorizedError();
+		}
+		if (tokenType === 'user' && isSignInRefused(userData.user)) {
+			Logger.warn({tokenType, tokenHashPrefix, userId: userId.toString()}, 'RPC session rejected by account standing');
 			throw new UnauthorizedError();
 		}
 		let user = userData.user;
@@ -1154,6 +1232,15 @@ export class RpcService {
 				'RPC session handling completed',
 			);
 		});
+		const sessionViewer: ThreadViewer = {
+			kind: 'user',
+			userId: user.id,
+			bot: user.isBot,
+			capable: user.isBot || threadChannelsCapable,
+		};
+		const userGuildSettings = await timings.time('map_user_guild_settings', () =>
+			Promise.all(userData.guildSettings.map((settings) => mapUserGuildSettingsForViewer(settings, sessionViewer))),
+		);
 		const responseBuildSteps: RpcTimingSteps = {};
 		const responseBuildStartedAtNs = startRpcTiming();
 		const responsePayload = {
@@ -1168,17 +1255,12 @@ export class RpcService {
 						})
 					: null,
 			),
-			user_guild_settings: timeRpcStepSync(responseBuildSteps, 'map_user_guild_settings', () =>
-				userData.guildSettings.map(mapUserGuildSettingsToResponse),
-			),
+			user_guild_settings: userGuildSettings,
 			notes: timeRpcStepSync(responseBuildSteps, 'map_notes', () =>
 				Object.fromEntries(Array.from(userData.notes.entries()).map(([userId, note]) => [userId.toString(), note])),
 			),
 			read_states: timeRpcStepSync(responseBuildSteps, 'map_read_states', () =>
-				userData.readStates.map(mapReadStateResponse),
-			),
-			read_state_proto: timeRpcStepSync(responseBuildSteps, 'encode_read_state_proto', () =>
-				encodeReadStatesResponseProto(userData.readStates),
+				visibleReadStates(userData.readStates, sessionViewer).map(mapReadStateResponse),
 			),
 			guilds,
 			private_channels: privateChannels,
@@ -1188,20 +1270,21 @@ export class RpcService {
 			),
 			pinned_dms: timeRpcStepSync(responseBuildSteps, 'map_pinned_dms', () => userData.pinnedDMs?.map(String) ?? []),
 			country_code: countryCode,
+			geoip_country_code: geoipCountryIso,
 			latitude: geoipLatitude,
 			longitude: geoipLongitude,
 			rtc_regions: rtcRegions,
 			webauthn_credentials: timeRpcStepSync(responseBuildSteps, 'map_webauthn_credentials', () =>
-				userData.webAuthnCredentials.map((cred) => ({
-					id: cred.credentialId,
-					name: cred.name,
-					created_at: cred.createdAt.toISOString(),
-					last_used_at: cred.lastUsedAt?.toISOString() ?? null,
-				})),
+				visibleWebAuthnCredentials(userData.webAuthnCredentials).map((cred) =>
+					mapWebAuthnCredentialToResponse(cred, Config.auth.passkeys.rpId),
+				),
 			),
 			version,
 		};
 		timings.record('build_session_response_payload', responseBuildStartedAtNs, responseBuildSteps);
+		if ((user.flags & UserFlags.STAFF) === 0n) {
+			return responsePayload;
+		}
 		return {
 			_timings: timings.finalize(),
 			...responsePayload,
@@ -1273,6 +1356,7 @@ export class RpcService {
 		guildId: GuildID;
 	}): Promise<RpcResponseGuildCollectionData> {
 		const guild = await this.getGuildOrThrow(guildId);
+		await this.ensureThreadPermissionsSeeded(guildId);
 		const memberCount = await this.guildRepository.countMembers(guildId);
 		const repairedMemberCountGuild = await this.updateGuildMemberCount(guild, memberCount);
 		const repairedBannerGuild = await this.repairGuildBannerHeight(repairedMemberCountGuild);
@@ -1283,6 +1367,15 @@ export class RpcService {
 			...this.createGuildCollectionResponse('guild'),
 			guild: response,
 		};
+	}
+
+	private async ensureThreadPermissionsSeeded(guildId: GuildID): Promise<void> {
+		if (!guildActive(guildId)) return;
+		try {
+			await ensureGuildThreadPermissionsSeeded(this.channelRepository.threads, guildId);
+		} catch (error) {
+			Logger.warn({guildId: guildId.toString(), error}, 'Failed to ensure thread permissions are seeded');
+		}
 	}
 
 	private async handleGuildCollectionRolesRequest({
@@ -1306,9 +1399,23 @@ export class RpcService {
 		requestCache: RequestCache;
 	}): Promise<RpcResponseGuildCollectionData> {
 		const guild = await this.getGuildOrThrow(guildId);
-		const channels = await this.channelRepository.listGuildChannels(guildId);
-		const repairedGuild = await this.repairDanglingChannelReferences({guild, channels});
-		this.repairOrphanedInvitesAndWebhooks({guild: repairedGuild, channels}).catch((error) => {
+		const channels = await this.channelRepository.channelData.listGuildChannels(guildId, 'enrolled');
+		const channelIds = new Set(channels.map((channel) => channel.id));
+		let maintenanceChannelIds: Promise<ReadonlySet<ChannelID>> | null = null;
+		const resolveMaintenanceChannelIds = () => {
+			maintenanceChannelIds ??= this.resolveMaintenanceChannelIds(guildId, channelIds);
+			return maintenanceChannelIds;
+		};
+		const repairedGuild = await this.repairDanglingChannelReferences({
+			guild,
+			channelIds,
+			resolveMaintenanceChannelIds,
+		});
+		this.repairOrphanedInvitesAndWebhooks({
+			guild: repairedGuild,
+			channelIds,
+			resolveMaintenanceChannelIds,
+		}).catch((error) => {
 			Logger.warn({guildId: guildId.toString(), error}, 'Failed to repair orphaned invites/webhooks');
 		});
 		const mappedChannels = await Promise.all(
@@ -1321,9 +1428,64 @@ export class RpcService {
 				}),
 			),
 		);
+		const threadGate = await resolveThreadGateRpcData(guildId);
+		if (!threadGate || !('thread_gate' in threadGate)) {
+			return {
+				...this.createGuildCollectionResponse('channels'),
+				channels: mappedChannels,
+				...threadGate,
+			};
+		}
+		const channelsWithParentFields = await withThreadParentFieldsMany(
+			this.channelRepository.threads,
+			guildId,
+			channels,
+			mappedChannels,
+		);
 		return {
 			...this.createGuildCollectionResponse('channels'),
+			channels: channelsWithParentFields,
+			...threadGate,
+			thread_only_channels: channelsWithParentFields.filter((channel) => THREAD_ONLY_CHANNEL_TYPES.has(channel.type)),
+		};
+	}
+
+	private async handleGuildThreadFlipData({
+		guildId,
+		pagedMembers,
+		requestCache,
+	}: {
+		guildId: GuildID;
+		pagedMembers: boolean;
+		requestCache: RequestCache;
+	}): Promise<Extract<RpcResponse, {type: 'guild_thread_flip_data'}>['data']> {
+		await this.getGuildOrThrow(guildId);
+		const active = guildActive(guildId);
+		const [channels, roles, tainted] = await Promise.all([
+			this.channelRepository.channelData.listGuildChannels(guildId, 'enrolled'),
+			this.guildRepository.listRoles(guildId),
+			isTainted(guildId),
+		]);
+		const configVersion = getCompiledChannelThreadsConfig().config.config_version;
+		const mappedChannels = await Promise.all(
+			channels.map((channel) =>
+				mapChannelToResponse({channel, currentUserId: null, userCacheService: this.userCacheService, requestCache}),
+			),
+		);
+		return {
+			config_version: configVersion,
+			thread_gate: {active, config_version: configVersion},
+			thread_tainted: tainted,
 			channels: mappedChannels,
+			roles: roles.map(mapGuildRoleToResponse),
+			...(active
+				? await loadThreadCollectionRpcData(
+						this.channelRepository,
+						guildId,
+						channels.filter((channel) => channel.isThreadParent()),
+						{members: !pagedMembers},
+					)
+				: {}),
 		};
 	}
 
@@ -1365,7 +1527,9 @@ export class RpcService {
 		afterUserId?: UserID;
 		limit?: number;
 	}): Promise<RpcResponseGuildCollectionData> {
-		await this.getGuildOrThrow(guildId);
+		if (!afterUserId) {
+			await this.getGuildOrThrow(guildId);
+		}
 		const chunkSize = this.resolveGuildCollectionLimit(limit);
 		const members = await this.guildRepository.listMembersPaginated(guildId, chunkSize + 1, afterUserId);
 		const hasMore = members.length > chunkSize;
@@ -1548,7 +1712,7 @@ export class RpcService {
 			const needsIncomingCallRepair = settings.incomingCallFlags === 0;
 			const needsGroupDmRepair = settings.groupDmAddPermissionFlags === 0;
 			if (needsIncomingCallRepair || needsGroupDmRepair) {
-				const isAdult = isUserAdult(user.dateOfBirth);
+				const isAdult = canUserAccessNsfwContent({isBot: false, dateOfBirth: user.dateOfBirth});
 				const updatedRow = {
 					...settings.toRow(),
 					...(needsIncomingCallRepair && {
@@ -1640,9 +1804,16 @@ export class RpcService {
 	}> {
 		const {userIds, guildId} = params;
 		const actualGuildId = guildId === createGuildID(0n) ? null : guildId;
-		const userGuildSettings = await Promise.all(
-			userIds.map((userId) => this.userRepository.findGuildSettings(userId, actualGuildId)),
+		const settled = await allSettledWithConcurrency(userIds, RPC_RESPONSE_MAP_CONCURRENCY, (userId) =>
+			this.userRepository.findGuildSettings(userId, actualGuildId),
 		);
+		const userGuildSettings: Array<UserGuildSettings | null> = [];
+		for (const result of settled) {
+			if (result.status === 'rejected') {
+				throw result.reason;
+			}
+			userGuildSettings.push(result.value);
+		}
 		return {user_guild_settings: userGuildSettings};
 	}
 
@@ -1657,6 +1828,7 @@ export class RpcService {
 				platform: string;
 				app_id: string | null;
 				provider_environment: string | null;
+				thread_channels?: true;
 			}>
 		>
 	> {
@@ -1672,6 +1844,7 @@ export class RpcService {
 				platform: string;
 				app_id: string | null;
 				provider_environment: string | null;
+				thread_channels?: true;
 			}>
 		> = {};
 		for (const [userId, subscriptions] of subscriptionsMap.entries()) {
@@ -1683,6 +1856,7 @@ export class RpcService {
 				platform: sub.platform,
 				app_id: sub.appId,
 				provider_environment: sub.providerEnvironment,
+				...(sub.threadChannels ? {thread_channels: true as const} : {}),
 			}));
 		}
 		return result;
@@ -1694,7 +1868,7 @@ export class RpcService {
 		const badgeCounts: Record<string, number> = {};
 		await Promise.all(
 			uniqueUserIds.map(async (userId) => {
-				const readStates = await this.readStateService.getReadStates(userId);
+				const readStates = badgeReadStates(await this.readStateService.getReadStates(userId), userId);
 				const totalMentions = readStates.reduce((sum, state) => sum + state.mentionCount, 0);
 				badgeCounts[userId.toString()] = totalMentions;
 			}),
@@ -1721,9 +1895,26 @@ export class RpcService {
 		return hash.startsWith('a_') ? hash.slice(2) : hash;
 	}
 
-	private async repairDanglingChannelReferences(params: {guild: Guild; channels: Array<Channel>}): Promise<Guild> {
-		const {guild, channels} = params;
-		const channelIds = new Set(channels.map((channel) => channel.id));
+	private async resolveMaintenanceChannelIds(
+		guildId: GuildID,
+		enrolledChannelIds: ReadonlySet<ChannelID>,
+	): Promise<ReadonlySet<ChannelID>> {
+		if (guildActive(guildId) || !(await isTainted(guildId))) return enrolledChannelIds;
+		const channels = await this.channelRepository.channelData.listGuildChannels(guildId, 'maintenance');
+		return new Set(channels.map((channel) => channel.id));
+	}
+
+	private async repairDanglingChannelReferences(params: {
+		guild: Guild;
+		channelIds: ReadonlySet<ChannelID>;
+		resolveMaintenanceChannelIds: () => Promise<ReadonlySet<ChannelID>>;
+	}): Promise<Guild> {
+		const {guild} = params;
+		const referencedChannelIds = [guild.systemChannelId, guild.rulesChannelId, guild.afkChannelId];
+		if (referencedChannelIds.every((channelId) => channelId == null || params.channelIds.has(channelId))) {
+			return guild;
+		}
+		const channelIds = await params.resolveMaintenanceChannelIds();
 		const danglingSystemChannel = guild.systemChannelId != null && !channelIds.has(guild.systemChannelId);
 		const danglingRulesChannel = guild.rulesChannelId != null && !channelIds.has(guild.rulesChannelId);
 		const danglingAfkChannel = guild.afkChannelId != null && !channelIds.has(guild.afkChannelId);
@@ -1825,29 +2016,40 @@ export class RpcService {
 		}
 	}
 
-	private async repairOrphanedInvitesAndWebhooks(params: {guild: Guild; channels: Array<Channel>}): Promise<void> {
-		const {guild, channels} = params;
-		const channelIds = new Set(channels.map((channel) => channel.id));
+	private async repairOrphanedInvitesAndWebhooks(params: {
+		guild: Guild;
+		channelIds: ReadonlySet<ChannelID>;
+		resolveMaintenanceChannelIds: () => Promise<ReadonlySet<ChannelID>>;
+	}): Promise<void> {
+		const {guild} = params;
 		const vanityInviteCode = guild.vanityUrlCode ? vanityCodeToInviteCode(guild.vanityUrlCode) : null;
 		const [invites, webhooks] = await Promise.all([
 			this.inviteRepository.listGuildInvites(guild.id),
 			this.webhookRepository.listByGuild(guild.id),
 		]);
-		const orphanedInvites = invites.filter((invite) => {
-			if (!invite.channelId) {
-				return false;
-			}
-			if (vanityInviteCode && invite.code === vanityInviteCode) {
-				return false;
-			}
-			return !channelIds.has(invite.channelId);
+		const findOrphans = (channelIds: ReadonlySet<ChannelID>) => ({
+			invites: invites.filter((invite) => {
+				if (!invite.channelId) {
+					return false;
+				}
+				if (vanityInviteCode && invite.code === vanityInviteCode) {
+					return false;
+				}
+				return !channelIds.has(invite.channelId);
+			}),
+			webhooks: webhooks.filter((webhook) => {
+				if (!webhook.channelId) {
+					return false;
+				}
+				return !channelIds.has(webhook.channelId);
+			}),
 		});
-		const orphanedWebhooks = webhooks.filter((webhook) => {
-			if (!webhook.channelId) {
-				return false;
-			}
-			return !channelIds.has(webhook.channelId);
-		});
+		let orphans = findOrphans(params.channelIds);
+		if (orphans.invites.length > 0 || orphans.webhooks.length > 0) {
+			orphans = findOrphans(await params.resolveMaintenanceChannelIds());
+		}
+		const orphanedInvites = orphans.invites;
+		const orphanedWebhooks = orphans.webhooks;
 		if (orphanedInvites.length > 0) {
 			Logger.info(
 				{
@@ -1874,15 +2076,15 @@ export class RpcService {
 
 	private async getUserBlockedIds(params: {userIds: Array<UserID>}): Promise<Record<string, Array<string>>> {
 		const {userIds} = params;
+		const settled = await allSettledWithConcurrency(userIds, RPC_RESPONSE_MAP_CONCURRENCY, (userId) =>
+			this.userRepository.listBlockedUserIds(userId),
+		);
 		const result: Record<string, Array<string>> = {};
-		const relationshipsPromises = userIds.map(async (userId) => {
-			const relationships = await this.userRepository.listRelationships(userId);
-			const blockedIds = relationships.filter((rel) => rel.type === 2).map((rel) => rel.targetUserId.toString());
-			return {userId, blockedIds};
-		});
-		const results = await Promise.all(relationshipsPromises);
-		for (const {userId, blockedIds} of results) {
-			result[userId.toString()] = blockedIds;
+		for (const [index, settledBlockedIds] of settled.entries()) {
+			if (settledBlockedIds.status === 'rejected') {
+				throw settledBlockedIds.reason;
+			}
+			result[userIds[index]!.toString()] = settledBlockedIds.value.map((blockedUserId) => blockedUserId.toString());
 		}
 		return result;
 	}
@@ -1935,8 +2137,8 @@ export class RpcService {
 	}): Promise<void> {
 		const {channelId, messageId, participants, endedTimestamp} = params;
 		const [message, channel] = await Promise.all([
-			this.channelRepository.getMessage(channelId, createMessageID(messageId)),
-			this.channelRepository.findUnique(channelId),
+			this.channelRepository.messages.getMessage(channelId, createMessageID(messageId)),
+			this.channelRepository.channelData.findUnique(channelId),
 		]);
 		if (!message || !channel) {
 			return;
@@ -1945,7 +2147,7 @@ export class RpcService {
 			return;
 		}
 		const messageRow = message.toRow();
-		const updatedMessage = await this.channelRepository.upsertMessage({
+		const updatedMessage = await this.channelRepository.messages.upsertMessage({
 			...messageRow,
 			call: {
 				participant_ids: new Set(participants),
@@ -1965,7 +2167,7 @@ export class RpcService {
 							channelId,
 							messageId: createMessageID(messageId),
 							mentionCount: 0,
-							silent: true,
+							implicit: {unreadThrough: createMessageID(messageId)},
 						})
 						.catch((error) => {
 							Logger.error(
@@ -2001,7 +2203,7 @@ export class RpcService {
 		requestCache: RequestCache;
 	}): Promise<ChannelResponse | null> {
 		const {channelId, userId, requestCache} = params;
-		const channel = await this.channelRepository.findUnique(channelId);
+		const channel = await this.channelRepository.channelData.findUnique(channelId);
 		if (!channel) {
 			return null;
 		}

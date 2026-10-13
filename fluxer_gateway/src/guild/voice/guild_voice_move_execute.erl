@@ -160,10 +160,17 @@ check_perms_and_execute(Conns, ChannelId, UserId, ModId, VoiceStates, State) ->
     ModPerms = guild_permissions:get_member_permissions(ModId, ChannelId, State),
     ModHasConnect = permission_bits:has(ModPerms, ConnectPerm),
     ModHasView = permission_bits:has(ModPerms, ViewPerm),
-    case ModHasConnect andalso ModHasView of
-        false ->
+    case
+        {
+            ModHasConnect andalso ModHasView,
+            voice_p2p:guild_join_decision(false, ChannelId, State)
+        }
+    of
+        {false, _Decision} ->
             {reply, gateway_errors:error(voice_moderator_missing_connect), State};
-        true ->
+        {true, {reject, ErrorAtom}} ->
+            {reply, gateway_errors:error(ErrorAtom), State};
+        {true, _Decision} ->
             execute_move(Conns, ChannelId, UserId, VoiceStates, State)
     end.
 
@@ -256,7 +263,7 @@ member_user_id(Member) ->
 
 -spec fetch_state_and_send(integer(), integer(), map(), pid(), integer(), map()) -> ok.
 fetch_state_and_send(GuildId, ChannelId, SessionInfo, GuildPid, UserId, Member) ->
-    try gen_server:call(GuildPid, {get_sessions}, 10000) of
+    try guild_voice_server_state:guild_state_call(GuildPid, 10000) of
         StateData when is_map(StateData) ->
             request_and_broadcast(
                 GuildId, ChannelId, SessionInfo, GuildPid, UserId, Member, StateData

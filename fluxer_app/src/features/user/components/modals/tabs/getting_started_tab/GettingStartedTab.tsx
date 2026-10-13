@@ -27,7 +27,7 @@ import {
 	type PilotOnboardingProgress,
 	type PilotOnboardingStepId,
 } from '@app/features/onboarding/PilotOnboardingState';
-import {ComponentDispatch} from '@app/features/platform/utils/ComponentBus';
+import {ComponentBus} from '@app/features/platform/utils/ComponentBus';
 import {remFromPx} from '@app/features/theme/layout/RemFromPx';
 import {Button} from '@app/features/ui/button/Button';
 import * as ModalCommands from '@app/features/ui/commands/ModalCommands';
@@ -115,8 +115,8 @@ function getNotificationPermissionGranted(): boolean {
 function getNotificationPreset(primaryGuildId: string | null): PilotNotificationPreset | null {
 	if (!primaryGuildId) return null;
 	return resolvePilotNotificationPreset({
-		community: UserGuildSettings.getSettings(primaryGuildId).message_notifications,
-		directMessages: UserGuildSettings.getSettings(null).message_notifications,
+		community: UserGuildSettings.getGuildSettings(primaryGuildId).message_notifications,
+		directMessages: UserGuildSettings.getGuildSettings(null).message_notifications,
 	});
 }
 
@@ -172,7 +172,7 @@ const GettingStartedTab: React.FC = observer(() => {
 	};
 
 	const openSettings = (tab: UserSettingsTabType, section?: string) => {
-		ComponentDispatch.dispatch('USER_SETTINGS_TAB_SELECT', {tab, section});
+		ComponentBus.dispatch('USER_SETTINGS_TAB_SELECT', {tab, section});
 	};
 
 	const openCommunityChannel = (channelId: string | null) => {

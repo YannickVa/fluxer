@@ -20,12 +20,15 @@ import {z} from 'zod';
 import type {ApiContext} from '../../ApiContext';
 import {createUserID} from '../../BrandedTypes';
 import type {InstanceConfigRepository} from '../../instance/InstanceConfigRepository';
-import type {IAccountPolicyEvaluator} from '../../risk/AccountPolicyEvaluator';
+
 import {assertMigrationClaimEligible} from '../../user/MigrationAccountEligibility';
 import {checkChangeRateLimit, generateChangeVerificationCode} from '../../user/services/UserChangeChallengeUtils';
 import {lookupGeoip} from '../../utils/IpUtils';
 import * as AuthPassword from '../AuthPassword';
 import {validateDateOfBirth} from '../AuthUtility';
+import {assertEmailNotBlocklisted} from '../EmailBlocklist';
+import {isBlockedEmailDomain} from '../../infrastructure/activity/SharedLists';
+import {extractEmailDomain} from '../../utils/EmailDomainUtils';
 import {
 	hashMigrationClaimToken,
 	type MigrationClaimContext,
@@ -63,7 +66,7 @@ interface ClaimDependencies {
 	/** Public entry points must revalidate the trusted run after asynchronous gates. */
 	authorize?: () => Promise<void>;
 	instance: Pick<InstanceConfigRepository, 'getAppPublicConfig' | 'isEmailEnabled'>;
-	accountPolicy: Pick<IAccountPolicyEvaluator, 'getMinimumAgeForRegion'>;
+	accountPolicy: {getMinimumAgeForRegion(countryCode: string | null, fallback: number): number};
 }
 
 function credential(kind: 'mp1' | 'me1') {
@@ -126,6 +129,7 @@ export class MigrationClaimCompletionService {
 		await this.limit(proof.userId, 'email-cooldown', 1, 30_000);
 		if (!(await this.deps.instance.isEmailEnabled())) throw new ServiceUnavailableError();
 		const email = data.email.trim().toLowerCase();
+		await this.assertEmailAllowed(email);
 		if (!(await this.api.services.emailDnsValidation.hasValidDnsRecords(email)))
 			throw InputValidationError.fromCode('email', ValidationErrorCodes.INVALID_EMAIL_ADDRESS);
 		const existing = await this.api.services.users.findByEmail(email);
@@ -186,6 +190,7 @@ export class MigrationClaimCompletionService {
 		if (await AuthPassword.isPasswordPwned(this.api, data.password))
 			throw InputValidationError.fromCode('password', ValidationErrorCodes.PASSWORD_IS_TOO_COMMON);
 		const passwordHash = await AuthPassword.hashPassword(this.api, data.password);
+		await this.assertEmailAllowed(challenge.email);
 		// Recheck every asynchronous gate before the irreversible single-use boundary.
 		await this.loadProof(data.proof);
 		await this.readChallenge(challengeHash, proof, hash, data.code);
@@ -221,6 +226,12 @@ export class MigrationClaimCompletionService {
 
 	private proofKey(hash: string) {
 		return `${this.prefix}:proof:${hash}`;
+	}
+
+	private async assertEmailAllowed(email: string): Promise<void> {
+		if (isBlockedEmailDomain(extractEmailDomain(email)))
+			throw InputValidationError.fromCode('email', ValidationErrorCodes.INVALID_EMAIL_ADDRESS);
+		await assertEmailNotBlocklisted(email, 'email');
 	}
 	private challengeKey(hash: string) {
 		return `${this.prefix}:email:${hash}`;

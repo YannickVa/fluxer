@@ -13,16 +13,23 @@ import {
 	precacheAssets,
 	seedAppShell,
 } from '@app/features/platform/service_worker/WorkerAppShell';
-import {shouldDeleteWorkerCache, WORKER_CACHE_PREFIX} from '@app/features/platform/service_worker/WorkerCacheCleanup';
+import {
+	shouldDeleteWorkerCache,
+	WORKER_CACHE_PREFIX,
+	WORKER_NAVIGATION_CACHE_PREFIX,
+} from '@app/features/platform/service_worker/WorkerCacheCleanup';
 import {getWorkerFetchRoute} from '@app/features/platform/service_worker/WorkerFetchRouting';
 import {
 	getBadgeCount,
 	getPushNotificationClientState,
 	isNotificationClearPayload,
+	isPushNotificationReadThrough,
 	matchesPushChannelNotification,
 	normalizePushPayload,
 	resolvePushChannelId,
+	resolvePushMessageId,
 	resolvePushNotificationTag,
+	shouldRenotifyPushNotification,
 	shouldSilenceNonMobilePushNotification,
 } from '@app/features/platform/service_worker/WorkerPushPayload';
 
@@ -42,9 +49,8 @@ const ensureServiceWorkerReady: Promise<void> = Promise.resolve();
 const SERVICE_WORKER_VERSION = typeof __FLUXER_SW_VERSION__ === 'string' ? __FLUXER_SW_VERSION__ : 'dev';
 const PRECACHE_MANIFEST = typeof __FLUXER_PRECACHE_MANIFEST__ === 'undefined' ? [] : __FLUXER_PRECACHE_MANIFEST__;
 const PRECACHE_CACHE = `${WORKER_CACHE_PREFIX}-precache-${SERVICE_WORKER_VERSION}`;
-const ASSET_CACHE = `${WORKER_CACHE_PREFIX}-assets-${SERVICE_WORKER_VERSION}`;
-const NAVIGATION_CACHE = `${WORKER_CACHE_PREFIX}-navigation-${SERVICE_WORKER_VERSION}`;
-const EXPECTED_CACHES = new Set([PRECACHE_CACHE, ASSET_CACHE, NAVIGATION_CACHE]);
+const NAVIGATION_CACHE = `${WORKER_NAVIGATION_CACHE_PREFIX}${SERVICE_WORKER_VERSION}`;
+const EXPECTED_CACHES = new Set([PRECACHE_CACHE, NAVIGATION_CACHE]);
 const NAVIGATION_NETWORK_TIMEOUT_MS = 650;
 const serviceWorkerCaches = self.caches;
 const isNativeDesktopUserAgent = (userAgent: string): boolean => /\bElectron\/\d+(?:\.\d+)*/.test(userAgent);
@@ -80,20 +86,7 @@ const appShellRuntime: AppShellRuntime = {
 		void log('warn', 'app shell cache put failed', {error: describeError(error)});
 	},
 };
-const pruneCacheEntries = async (cache: Cache, maxEntries: number): Promise<void> => {
-	const keys = await cache.keys();
-	const overflow = keys.length - maxEntries;
-	if (overflow <= 0) {
-		return;
-	}
-	await Promise.all(keys.slice(0, overflow).map((request) => cache.delete(request)));
-};
-const cacheRequest = async (
-	cacheName: string,
-	request: Request | string,
-	response: Response,
-	maxEntries?: number,
-): Promise<void> => {
+const cacheRequest = async (cacheName: string, request: Request | string, response: Response): Promise<void> => {
 	if (!isCacheableResponse(response)) {
 		return;
 	}
@@ -103,9 +96,6 @@ const cacheRequest = async (
 		}
 		const cache = await serviceWorkerCaches.open(cacheName);
 		await cache.put(request, response.clone());
-		if (maxEntries != null) {
-			await pruneCacheEntries(cache, maxEntries);
-		}
 	} catch (error) {
 		await log('warn', 'cache put failed', {cacheName, error: describeError(error)});
 	}
@@ -123,15 +113,6 @@ const cleanupOldCaches = async (): Promise<void> => {
 			return serviceWorkerCaches.delete(name);
 		}),
 	);
-};
-const fetchCacheFirst = async (request: Request): Promise<Response> => {
-	const cached = await serviceWorkerCaches?.match(request);
-	if (cached) {
-		return cached;
-	}
-	const response = await fetch(request);
-	await cacheRequest(ASSET_CACHE, request, response);
-	return response;
 };
 const fetchNetworkFirst = async (request: Request): Promise<Response> => {
 	try {
@@ -175,10 +156,6 @@ self.addEventListener('fetch', (event: FetchEvent) => {
 	const route = getWorkerFetchRoute(request, self.location.origin);
 	if (route === 'navigation') {
 		event.respondWith(fetchAppShellNavigation(appShellRuntime, request));
-		return;
-	}
-	if (route === 'static-asset') {
-		event.respondWith(fetchCacheFirst(request));
 		return;
 	}
 	if (route === 'metadata') {
@@ -244,7 +221,21 @@ const closePushNotifications = async (tag: string | undefined): Promise<number> 
 		return 0;
 	}
 };
-const closePushNotificationsForChannel = async (channelId: string): Promise<number> => {
+const getShownPushNotifications = async (tag: string): Promise<ReadonlyArray<Notification>> => {
+	if (typeof self.registration.getNotifications !== 'function') {
+		return [];
+	}
+	try {
+		return await self.registration.getNotifications({tag});
+	} catch (error) {
+		await log('error', 'push: failed to read shown notifications', {tag, error: describeError(error)});
+		return [];
+	}
+};
+const closePushNotificationsForChannel = async (
+	channelId: string,
+	readThroughMessageId: string | undefined,
+): Promise<number> => {
 	if (typeof self.registration.getNotifications !== 'function') {
 		return 0;
 	}
@@ -252,7 +243,10 @@ const closePushNotificationsForChannel = async (channelId: string): Promise<numb
 		const notifications = await self.registration.getNotifications();
 		let closedCount = 0;
 		for (const notification of notifications) {
-			if (matchesPushChannelNotification(notification, channelId)) {
+			if (
+				matchesPushChannelNotification(notification, channelId) &&
+				isPushNotificationReadThrough(notification, readThroughMessageId)
+			) {
 				notification.close();
 				closedCount++;
 			}
@@ -357,7 +351,7 @@ self.addEventListener('push', (event: PushEvent) => {
 			if (isNotificationClearPayload(payload)) {
 				const channelId = resolvePushChannelId(payload);
 				const closedCount = channelId
-					? await closePushNotificationsForChannel(channelId)
+					? await closePushNotificationsForChannel(channelId, resolvePushMessageId(payload))
 					: await closePushNotifications(tag);
 				await updateAppBadge(badgeCount);
 				await log('info', 'push clear received', {tag, channelId, closedCount, badgeCount});
@@ -377,6 +371,9 @@ self.addEventListener('push', (event: PushEvent) => {
 				})) as ReadonlyArray<WindowClient>;
 				clientState = getPushNotificationClientState(clientList);
 			} catch {}
+			const renotify =
+				tag !== undefined &&
+				shouldRenotifyPushNotification(resolvePushMessageId(payload), await getShownPushNotifications(tag));
 			const options: NotificationOptions & {
 				renotify?: boolean;
 			} = {
@@ -385,7 +382,7 @@ self.addEventListener('push', (event: PushEvent) => {
 				badge: payload.badge ?? undefined,
 				data: payload.data ?? undefined,
 				tag,
-				renotify: tag !== undefined,
+				renotify,
 				...getNotificationAlertOptions({
 					mobileOrTablet: isMobileOrTabletUserAgent(workerNavigator.userAgent, workerNavigator.maxTouchPoints ?? 0),
 					silentOnNonMobile: shouldSilenceNonMobilePushNotification(clientState),
@@ -395,6 +392,7 @@ self.addEventListener('push', (event: PushEvent) => {
 				title,
 				hasBody: Boolean(payload.body),
 				tag,
+				renotify,
 				hasData: payload.data !== undefined,
 				badgeCount,
 				hasWindowClient: clientState.hasWindowClient,
@@ -463,7 +461,7 @@ const fetchInstanceConfig = async (): Promise<{
 	vapidKey: string | null;
 } | null> => {
 	try {
-		const res = await fetch('/.well-known/fluxer', {credentials: 'include'});
+		const res = await fetch('/api/.well-known/fluxer', {credentials: 'include'});
 		if (!res.ok) return null;
 		const data = (await res.json()) as {
 			endpoints?: {

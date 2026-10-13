@@ -25,6 +25,8 @@ import {UserEmailOwnershipRepository} from '../../user/repositories/account/crud
 import {canUserAccessNsfwContent} from '../../utils/AgeUtils';
 import * as IpUtils from '../../utils/IpUtils';
 import * as AuthPassword from '../AuthPassword';
+import * as EmailBlocklist from '../EmailBlocklist';
+import * as SharedLists from '../../infrastructure/activity/SharedLists';
 import {MigrationClaimCompletionService} from '../services/MigrationClaimCompletionService';
 import {type MigrationClaimContext, MigrationClaimTicketService} from '../services/MigrationClaimTicketService';
 import {createAuthHarness, findLastTestEmail, listTestEmails} from './AuthTestUtils';
@@ -103,6 +105,57 @@ describe('Restricted migrated-account claim completion', () => {
 		};
 		return {...result, challenge, data};
 	}
+
+	it.each(['domain', 'address'] as const)('rejects a blocked %s before sending claim mail', async (kind) => {
+		const {accepted} = await proof();
+		if (kind === 'domain') vi.spyOn(SharedLists, 'isBlockedEmailDomain').mockReturnValue(true);
+		else
+			vi.spyOn(EmailBlocklist, 'assertEmailNotBlocklisted').mockRejectedValue(
+				InputValidationError.fromCode('email', ValidationErrorCodes.INVALID_EMAIL_ADDRESS),
+			);
+		await expect(service.requestEmail({proof: accepted.proof, email: 'banned@example.com'})).rejects.toBeInstanceOf(
+			InputValidationError,
+		);
+		expect(mail).not.toHaveBeenCalled();
+	});
+
+	it.each(['domain', 'address'] as const)(
+		'rechecks a newly blocked %s before consuming claim credentials',
+		async (kind) => {
+			const {data} = await prepared();
+			const block =
+				kind === 'domain'
+					? vi.spyOn(SharedLists, 'isBlockedEmailDomain').mockReturnValue(true)
+					: vi
+							.spyOn(EmailBlocklist, 'assertEmailNotBlocklisted')
+							.mockRejectedValue(InputValidationError.fromCode('email', ValidationErrorCodes.INVALID_EMAIL_ADDRESS));
+			await expect(service.complete(data, request())).rejects.toBeInstanceOf(InputValidationError);
+			expect((await api.services.users.findUniqueAssert(ID)).email).toBeNull();
+			block.mockRestore();
+			await expect(service.complete(data, request())).resolves.toMatchObject({login_required: true});
+		},
+	);
+
+	it('retains legacy claim restrictions through an unrelated account write', async () => {
+		await upsertOne(
+			Users.patchByPk(
+				{user_id: ID},
+				{
+					flags: Db.set(1n << 35n),
+					has_verified_phone: Db.set(true),
+					suspicious_activity_flags: Db.set(1),
+				},
+			),
+		);
+		const before = await api.services.users.findUniqueAssert(ID);
+		const updated = await api.services.users.upsert(
+			{...before.toRow(), bio: 'unrelated profile update'},
+			before.toRow(),
+		);
+		expect(updated.flags & (1n << 35n)).not.toBe(0n);
+		expect(updated.migrationLegacySecurity).toEqual({hasVerifiedPhone: true, suspiciousActivityFlags: 1});
+		await expect(tickets.issue(ID, ID.toString())).rejects.toBeInstanceOf(InvalidTokenError);
+	});
 
 	it('verifies email, hashes the password, applies the self-supplied DOB, preserves the profile and requires normal login', async () => {
 		const {data} = await prepared();
@@ -282,19 +335,17 @@ describe('Restricted migrated-account claim completion', () => {
 		expect((await api.services.users.findUniqueAssert(ID)).email).toBeNull();
 	});
 
-	it.each([
-		'2023-02-29',
-		'2026-02-30',
-		'2099-01-01',
-		'2020-01-01',
-	])('refuses invalid, future or underage DOB %s without consuming a correct challenge', async (dob) => {
-		const {data} = await prepared();
-		await expect(service.complete({...data, date_of_birth: dob}, request())).rejects.toBeInstanceOf(
-			InputValidationError,
-		);
-		expect((await api.services.users.findUniqueAssert(ID)).dateOfBirth).toBeNull();
-		await expect(service.complete(data, request())).resolves.toHaveProperty('login_required', true);
-	});
+	it.each(['2023-02-29', '2026-02-30', '2099-01-01', '2020-01-01'])(
+		'refuses invalid, future or underage DOB %s without consuming a correct challenge',
+		async (dob) => {
+			const {data} = await prepared();
+			await expect(service.complete({...data, date_of_birth: dob}, request())).rejects.toBeInstanceOf(
+				InputValidationError,
+			);
+			expect((await api.services.users.findUniqueAssert(ID)).dateOfBirth).toBeNull();
+			await expect(service.complete(data, request())).resolves.toHaveProperty('login_required', true);
+		},
+	);
 
 	it('uses the trusted regional age policy, not a client-supplied minimum', async () => {
 		const {data} = await prepared();

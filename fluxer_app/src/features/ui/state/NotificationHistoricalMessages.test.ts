@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+// @vitest-environment happy-dom
 // Exercise the actual notification handler; isolate platform/storage/account dependencies.
 
 import {MessageFlags} from '@fluxer/constants/src/ChannelConstants';
@@ -14,11 +15,13 @@ beforeAll(async () => {
 		'@app/app/Routes',
 		'@app/features/app/state/RuntimeConfig',
 		'@app/features/auth/state/AccountManager',
+		'@app/features/auth/state/Accounts',
 		'@app/features/guild/state/Guilds',
 		'@app/features/messaging/utils/MessageUtils',
 		'@app/features/notification/utils/MessageNotificationPreview',
 		'@app/features/platform/push/PushSubscriptionService',
 		'@app/features/relationship/state/FriendsTab',
+		'@app/features/threads/state/ThreadMemberships',
 		'@app/features/user/state/UserGuildSettings',
 		'@app/features/user/state/Users',
 		'@app/features/user/utils/AvatarUtils',
@@ -43,6 +46,12 @@ beforeAll(async () => {
 	vi.doMock('@app/features/platform/types/Env', () => ({IS_DEV: false}));
 	vi.doMock('@app/features/platform/utils/AppLogger', () => ({
 		Logger: class {
+			static create() {
+				return new this();
+			}
+			debug() {}
+			info() {}
+			warn() {}
 			error() {}
 		},
 	}));
@@ -60,6 +69,15 @@ beforeAll(async () => {
 		ensureDesktopNotificationClickHandler: () => {},
 		isGranted: async () => false,
 		playSameChannelNotificationSoundIfEnabled: sound,
+	}));
+	vi.doMock('@app/features/notification/utils/NotificationIconURL', () => ({getNotificationIconURL: () => null}));
+	vi.doMock('@app/features/forum/utils/ForumNotificationUtils', () => ({
+		formatNewPostNotificationSuffix: () => null,
+		resolveNewPostNotificationLevel: () => null,
+	}));
+	vi.doMock('@app/features/threads/utils/ThreadNotificationUtils', () => ({
+		isThreadMuted: () => false,
+		resolveThreadNotificationLevel: () => null,
 	}));
 	notifications = (await import('./Notification')).default;
 });

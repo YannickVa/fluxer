@@ -14,9 +14,14 @@ use maud::{Markup, html};
 const GUILD_FEATURES: &[&str] = &[
     "ANIMATED_ICON",
     "ANIMATED_BANNER",
+    "AUDIO_BITRATE_128_KBPS",
+    "AUDIO_BITRATE_256_KBPS",
+    "AUDIO_BITRATE_384_KBPS",
     "BANNER",
     "CLONE_EMOJI_DISABLED",
+    "CLONE_EMOJI_ENABLED",
     "CLONE_STICKER_DISABLED",
+    "CLONE_STICKER_ENABLED",
     "DETACHED_BANNER",
     "INVITE_SPLASH",
     "INVITES_DISABLED",
@@ -40,9 +45,20 @@ const GUILD_FEATURES: &[&str] = &[
     "VISIONARY",
     "LARGE_GUILD_OVERRIDE",
     "VERY_LARGE_GUILD",
+    "ANNOUNCEMENT_CHANNELS_DISABLED",
 ];
 
 const HOSTED_ONLY: &[&str] = &["VISIONARY", "VIP_VOICE"];
+
+const DEPRECATED_FEATURES: &[&str] = &["CLONE_EMOJI_DISABLED", "CLONE_STICKER_DISABLED"];
+
+fn feature_label(feature: &str) -> String {
+    if DEPRECATED_FEATURES.contains(&feature) {
+        format!("{feature} (deprecated, no longer enforced)")
+    } else {
+        feature.to_owned()
+    }
+}
 
 pub fn features_tab(
     config: &AdminConfig,
@@ -85,7 +101,7 @@ pub fn features_tab(
                             (checkbox(
                                 "features[]",
                                 feature,
-                                feature,
+                                &feature_label(feature),
                                 guild.features.iter().any(|f| f == feature),
                                 true,
                             ))
@@ -139,7 +155,7 @@ fn features_tab_readonly(guild: &GuildInfo, features_list: &[&str]) -> Markup {
                     @for feature in &enabled {
                         span class="inline-flex items-center rounded-full bg-green-100 \
                                     px-2.5 py-0.5 text-xs font-medium text-green-800" {
-                            (feature)
+                            (feature_label(feature))
                         }
                     }
                     @for feature in &custom {

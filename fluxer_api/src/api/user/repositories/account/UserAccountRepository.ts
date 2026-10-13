@@ -1,5 +1,22 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import type {UserID} from '@app/api/BrandedTypes';
+import {isDeepStrictEqual} from 'node:util';
+import {Db, type DbOp} from '@app/api/database/CassandraTypes';
+import type {UserRow} from '@app/api/database/types/UserTypes';
+import {Logger} from '@app/api/Logger';
+import {User} from '@app/api/models/User';
+import {
+	UserDataRepository,
+	type UserDeletionTransition,
+} from '@app/api/user/repositories/account/crud/UserDataRepository';
+import {
+	type EmailClaimReservation,
+	UserEmailOwnershipRepository,
+} from '@app/api/user/repositories/account/crud/UserEmailOwnershipRepository';
+import {UserIndexRepository} from '@app/api/user/repositories/account/crud/UserIndexRepository';
+import {UserSearchRepository} from '@app/api/user/repositories/account/crud/UserSearchRepository';
+import {UserLookupRepository} from '@app/api/user/repositories/account/UserLookupRepository';
 import {
 	extractPremiumFlagsFromLegacyUserFlags,
 	LEGACY_DEAD_USER_FLAGS_MASK,
@@ -7,17 +24,24 @@ import {
 } from '@fluxer/constants/src/UserConstants';
 import {InvalidTokenError} from '@fluxer/errors/src/domains/core/InvalidTokenError';
 import type {IKVProvider} from '@pkgs/kv_client/src/IKVProvider';
-import type {UserID} from '../../../BrandedTypes';
-import {Db, type DbOp} from '../../../database/CassandraTypes';
-import type {UserRow} from '../../../database/types/UserTypes';
-import {User} from '../../../models/User';
-import {assertMigrationClaimEligible} from '../../MigrationAccountEligibility';
-import type {MigratedAccountClaimData} from '../IUserAccountRepository';
-import {UserDataRepository} from './crud/UserDataRepository';
-import {type EmailClaimReservation, UserEmailOwnershipRepository} from './crud/UserEmailOwnershipRepository';
-import {UserIndexRepository} from './crud/UserIndexRepository';
-import {UserSearchRepository} from './crud/UserSearchRepository';
-import {UserLookupRepository} from './UserLookupRepository';
+import {assertMigrationClaimEligible, LEGACY_SUSPICIOUS_DISABLED_FLAG} from '@app/api/user/MigrationAccountEligibility';
+import type {MigratedAccountClaimData} from '@app/api/user/repositories/IUserAccountRepository';
+
+export interface UserDeletionScheduleUpdate {
+	pending_deletion_at: Date | null;
+	flags?: bigint;
+	deletion_reason_code?: number | null;
+	deletion_public_reason?: string | null;
+	deletion_audit_log_reason?: string | null;
+	deletion_scheduled_by?: UserID | null;
+	deletion_scheduled_at?: Date | null;
+	temp_banned_until?: Date | null;
+	first_refund_at?: Date | null;
+}
+
+const USER_FLAGS_WRITE_ATTEMPTS = 3;
+// Do not erase the earlier version's claim restriction during an unrelated account write.
+const RETIRED_USER_FLAGS_TO_CLEAR = LEGACY_DEAD_USER_FLAGS_MASK & ~LEGACY_SUSPICIOUS_DISABLED_FLAG;
 
 export class UserAccountRepository {
 	private dataRepo: UserDataRepository;
@@ -87,9 +111,27 @@ export class UserAccountRepository {
 		const reservation = await this.emailOwnershipRepo.claimEmail(data.email, userId);
 		// Email ownership may involve asynchronous I/O. Recheck the original proof
 		// deadline immediately before authorizing the final database write.
-		await data.authorize?.();
-		if (data.expiresAt.getTime() <= Date.now()) throw new InvalidTokenError();
-		const applied = await this.dataRepo.patchUserIf(userId, patch, expected);
+		let applied = false;
+		let candidate = current;
+		for (let attempt = 0; attempt < USER_FLAGS_WRITE_ATTEMPTS; attempt++) {
+			await data.authorize?.();
+			if (data.expiresAt.getTime() <= Date.now()) throw new InvalidTokenError();
+			applied = await this.dataRepo.patchUserIf(
+				userId,
+				{...patch, version: Db.set(candidate.version + 1)},
+				{...expected, version: candidate.version},
+			);
+			if (applied) break;
+			const latest = await this.dataRepo.findRow(userId);
+			// Retry profile-only races while preserving the monotonic version and every
+			// original eligibility condition. Credential or restriction changes fail closed.
+			if (
+				!latest ||
+				guardColumns.some((col) => col !== 'version' && !isDeepStrictEqual(latest[col] ?? null, expected[col]))
+			)
+				throw new InvalidTokenError();
+			candidate = latest;
+		}
 		// Keep reservations for reconciliation on both uncertain writes and CAS losses.
 		// Same-account, same-email requests can share a reservation token: aborting a
 		// loser could delete the winner's ownership. Unused reservations are bounded by
@@ -112,10 +154,6 @@ export class UserAccountRepository {
 
 	async findUniqueAssert(userId: UserID): Promise<User> {
 		return this.dataRepo.findUniqueAssert(userId);
-	}
-
-	async listAllUsersPaginated(limit: number, lastUserId?: UserID): Promise<Array<User>> {
-		return this.dataRepo.listAllUsersPaginated(limit, lastUserId);
 	}
 
 	async scanAllUsersPage(
@@ -160,30 +198,86 @@ export class UserAccountRepository {
 			return updatedUser;
 		} catch (error) {
 			if (!dataCommitted && emailClaim) {
-				await this.emailOwnershipRepo.abortEmailClaim(emailClaim);
+				await this.emailOwnershipRepo.abortEmailClaim(emailClaim).catch((abortError: unknown) => {
+					Logger.warn(
+						{userId: userId.toString(), abortError},
+						'Failed to abort the email claim of a user write that did not commit',
+					);
+				});
 			}
 			throw error;
 		}
 	}
 
 	async patchUpsert(userId: UserID, patchData: Partial<UserRow>, oldData?: UserRow | null): Promise<User> {
+		return this.patchAccount(userId, patchData, oldData);
+	}
+
+	async compareAndSetFlags(user: User, flags: bigint): Promise<User | null> {
+		const result = await this.dataRepo.compareAndSetFlags(user, flags & ~RETIRED_USER_FLAGS_TO_CLEAR);
+		if (!result) return null;
+		const updatedUser = new User(result.updatedData);
+		await this.searchRepo.updateUser(updatedUser);
+		return updatedUser;
+	}
+
+	async updateFlags(userId: UserID, mutate: (flags: bigint) => bigint): Promise<User | null> {
+		for (let attempt = 0; attempt < USER_FLAGS_WRITE_ATTEMPTS; attempt++) {
+			const user = await this.findUnique(userId);
+			if (!user) return null;
+			const next = mutate(user.flags);
+			if (next === user.flags) return user;
+			const updated = await this.compareAndSetFlags(user, next);
+			if (updated) return updated;
+		}
+		throw new Error(`User ${userId} flags kept changing during update`);
+	}
+
+	async updateDeletionSchedule(user: User, patch: UserDeletionScheduleUpdate): Promise<User> {
+		return this.patchAccount(
+			user.id,
+			{
+				...patch,
+				deletion_scheduled_by: patch.deletion_scheduled_by ?? null,
+				deletion_scheduled_at: patch.deletion_scheduled_at ?? null,
+			},
+			user.toRow(),
+			'schedule',
+		);
+	}
+
+	async startDeletion(userId: UserID, pendingDeletionAt: Date): Promise<User | null> {
+		return this.dataRepo.startDeletion(userId, pendingDeletionAt);
+	}
+
+	async anonymizeForDeletion(user: User, patch: Partial<UserRow>): Promise<User> {
+		return this.patchAccount(user.id, patch, user.toRow(), 'anonymise');
+	}
+
+	async completeDeletion(user: User): Promise<void> {
+		await this.dataRepo.patchDeletion(user, {pending_deletion_at: Db.clear()}, 'complete');
+	}
+
+	private async patchAccount(
+		userId: UserID,
+		patchData: Partial<UserRow>,
+		oldData?: UserRow | null,
+		deletionTransition?: UserDeletionTransition,
+	): Promise<User> {
 		if (!oldData) {
 			const existingUser = await this.findUniqueAssert(userId);
 			oldData = existingUser.toRow();
 		}
 		patchData = this.migratePremiumFlagsInPatch(patchData, oldData);
-		const definedPatchData = Object.fromEntries(Object.entries(patchData).filter(([, v]) => v !== undefined));
 		const userPatch: Record<string, DbOp<unknown>> = {};
-		for (const [key, value] of Object.entries(definedPatchData)) {
-			if (key === 'user_id') continue;
-			const userRowKey = key as keyof UserRow;
-			if (value === null) {
-				const oldVal = oldData?.[userRowKey];
-				if (oldVal !== null && oldVal !== undefined) {
-					userPatch[key] = Db.clear();
-				}
-			} else {
+		for (const [key, value] of Object.entries(patchData)) {
+			if (key === 'user_id' || value === undefined) continue;
+			if (value !== null) {
 				userPatch[key] = Db.set(value);
+				continue;
+			}
+			if (oldData[key as keyof UserRow] != null) {
+				userPatch[key] = Db.clear();
 			}
 		}
 		const nextEmail = typeof patchData.email === 'string' ? patchData.email : null;
@@ -194,7 +288,9 @@ export class UserAccountRepository {
 		}
 		let dataCommitted = false;
 		try {
-			const result = await this.dataRepo.patchUser(userId, userPatch, oldData);
+			const result = deletionTransition
+				? await this.dataRepo.patchDeletion(new User(oldData), userPatch, deletionTransition)
+				: await this.dataRepo.patchUser(userId, userPatch, oldData);
 			if (result.finalVersion === null) {
 				throw new Error(`Failed to update user ${userId} due to concurrent modification`);
 			}
@@ -204,7 +300,9 @@ export class UserAccountRepository {
 			const updatedUser = new User(updatedData);
 			await this.emailOwnershipRepo.finalizeEmailClaim(emailClaim);
 			await this.releasePreviousEmailIfChanged(previousData, updatedData);
-			await this.indexRepo.syncIndices(updatedData, previousData);
+			if (deletionTransition !== 'anonymise') {
+				await this.indexRepo.syncIndices(updatedData, previousData);
+			}
 			await this.searchRepo.updateUser(updatedUser);
 			return updatedUser;
 		} catch (error) {
@@ -253,6 +351,7 @@ export class UserAccountRepository {
 		updates: {
 			premiumWillCancel: boolean;
 			computedPremiumUntil: Date | null;
+			periodStart: Date | null;
 		},
 	): Promise<{
 		finalVersion: number | null;
@@ -274,7 +373,7 @@ export class UserAccountRepository {
 	private applyPremiumFlagsMigration(data: UserRow, oldData: UserRow | null | undefined): void {
 		const rawFlags = data.flags ?? 0n;
 		const legacyPremiumBits = extractPremiumFlagsFromLegacyUserFlags(rawFlags);
-		const sanitizedFlags = rawFlags & ~LEGACY_PREMIUM_FLAGS_MASK & ~LEGACY_DEAD_USER_FLAGS_MASK;
+		const sanitizedFlags = rawFlags & ~LEGACY_PREMIUM_FLAGS_MASK & ~RETIRED_USER_FLAGS_TO_CLEAR;
 		if (sanitizedFlags !== rawFlags) {
 			data.flags = sanitizedFlags;
 		}
@@ -287,23 +386,20 @@ export class UserAccountRepository {
 	private migratePremiumFlagsInPatch(patchData: Partial<UserRow>, oldData: UserRow): Partial<UserRow> {
 		const oldRawFlags = oldData.flags ?? 0n;
 		const oldLegacyPremiumBits = extractPremiumFlagsFromLegacyUserFlags(oldRawFlags);
-		const oldHasDeadBits = (oldRawFlags & LEGACY_DEAD_USER_FLAGS_MASK) !== 0n;
 		const flagsInPatch = patchData.flags;
 		let migratedPatch = patchData;
 		if (flagsInPatch !== undefined && flagsInPatch !== null) {
 			const inboundLegacyPremium = extractPremiumFlagsFromLegacyUserFlags(flagsInPatch);
-			const sanitizedFlags = flagsInPatch & ~LEGACY_PREMIUM_FLAGS_MASK & ~LEGACY_DEAD_USER_FLAGS_MASK;
+			const sanitizedFlags = flagsInPatch & ~LEGACY_PREMIUM_FLAGS_MASK & ~RETIRED_USER_FLAGS_TO_CLEAR;
 			migratedPatch = {...patchData, flags: sanitizedFlags};
 			if (inboundLegacyPremium !== 0) {
 				const basePremiumFlags = patchData.premium_flags ?? oldData.premium_flags ?? 0;
 				migratedPatch.premium_flags = basePremiumFlags | inboundLegacyPremium;
 			}
-		} else if (oldLegacyPremiumBits !== 0 || oldHasDeadBits) {
-			migratedPatch = {...patchData, flags: oldRawFlags & ~LEGACY_PREMIUM_FLAGS_MASK & ~LEGACY_DEAD_USER_FLAGS_MASK};
-			if (oldLegacyPremiumBits !== 0) {
-				const basePremiumFlags = patchData.premium_flags ?? oldData.premium_flags ?? 0;
-				migratedPatch.premium_flags = basePremiumFlags | oldLegacyPremiumBits;
-			}
+		} else if (oldLegacyPremiumBits !== 0) {
+			migratedPatch = {...patchData, flags: oldRawFlags & ~LEGACY_PREMIUM_FLAGS_MASK & ~RETIRED_USER_FLAGS_TO_CLEAR};
+			const basePremiumFlags = patchData.premium_flags ?? oldData.premium_flags ?? 0;
+			migratedPatch.premium_flags = basePremiumFlags | oldLegacyPremiumBits;
 		}
 		return migratedPatch;
 	}

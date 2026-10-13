@@ -1,6 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import type {ITestEmailService, SentEmailRecord} from '@pkgs/email/src/ITestEmailService';
+import type {ReportReceivedTargetKind} from '@pkgs/email/src/email_i18n/EmailI18nTypes';
+import type {IEmailService} from '@pkgs/email/src/IEmailService';
+
+export interface SentEmailRecord {
+	to: string;
+	type: string;
+	timestamp: Date;
+	metadata: Record<string, string>;
+}
 
 function maskToken(token: string): string {
 	if (token.length <= 8) {
@@ -11,7 +19,7 @@ function maskToken(token: string): string {
 
 const noopLogger = {info: (_message: string) => {}};
 
-export class TestEmailService implements ITestEmailService {
+export class TestEmailService implements IEmailService {
 	private readonly sentEmails: Array<SentEmailRecord> = [];
 	private readonly logger: {
 		info: (message: string) => void;
@@ -69,16 +77,6 @@ export class TestEmailService implements ITestEmailService {
 		return this.record(email, 'ip_authorization', {token: authorizationToken, ip: ipAddress, location});
 	}
 
-	async sendAccountDisabledForSuspiciousActivityEmail(
-		email: string,
-		username: string,
-		reason: string | null,
-		_locale?: string | null,
-	): Promise<boolean> {
-		this.logger.info(`Account disabled email sent to ${email} for user ${username}, reason: ${reason ?? 'none'}`);
-		return this.record(email, 'account_disabled_suspicious', {reason: reason ?? ''});
-	}
-
 	async sendAccountTempBannedEmail(
 		email: string,
 		username: string,
@@ -123,27 +121,67 @@ export class TestEmailService implements ITestEmailService {
 		return this.record(email, 'self_deletion_scheduled', {deletion_date: deletionDate.toISOString()});
 	}
 
+	async sendAccountDeletionRequestedEmail(
+		email: string,
+		username: string,
+		reason: string | null,
+		deletionDate: Date,
+		_locale?: string | null,
+	): Promise<boolean> {
+		this.logger.info(
+			`Requested deletion email sent to ${email} for user ${username}, date: ${deletionDate.toISOString()}`,
+		);
+		return this.record(email, 'account_deletion_scheduled_requested', {
+			reason: reason ?? '',
+			deletion_date: deletionDate.toISOString(),
+		});
+	}
+
+	async sendAccountDeletionInactivityEmail(
+		email: string,
+		username: string,
+		reason: string | null,
+		deletionDate: Date,
+		_locale?: string | null,
+	): Promise<boolean> {
+		this.logger.info(
+			`Inactivity deletion email sent to ${email} for user ${username}, date: ${deletionDate.toISOString()}`,
+		);
+		return this.record(email, 'account_deletion_scheduled_inactivity', {
+			reason: reason ?? '',
+			deletion_date: deletionDate.toISOString(),
+		});
+	}
+
+	async sendAccountDeletionCancelledEmail(email: string, username: string, _locale?: string | null): Promise<boolean> {
+		this.logger.info(`Deletion cancelled email sent to ${email} for user ${username}`);
+		return this.record(email, 'account_deletion_cancelled');
+	}
+
 	async sendUnbanNotification(
 		email: string,
 		username: string,
-		reason: string,
+		reason: string | null,
 		_locale?: string | null,
 	): Promise<boolean> {
-		this.logger.info(`Unban notification sent to ${email} for user ${username}, reason: ${reason}`);
-		return this.record(email, 'unban_notification', {reason});
+		this.logger.info(`Unban notification sent to ${email} for user ${username}, reason: ${reason ?? 'none'}`);
+		return this.record(email, 'unban_notification', {reason: reason ?? ''});
 	}
 
 	async sendScheduledDeletionNotification(
 		email: string,
 		username: string,
 		deletionDate: Date,
-		reason: string,
+		reason: string | null,
 		_locale?: string | null,
 	): Promise<boolean> {
 		this.logger.info(
 			`Scheduled deletion notification sent to ${email} for user ${username}, date: ${deletionDate.toISOString()}`,
 		);
-		return this.record(email, 'scheduled_deletion_notification', {deletion_date: deletionDate.toISOString(), reason});
+		return this.record(email, 'scheduled_deletion_notification', {
+			deletion_date: deletionDate.toISOString(),
+			reason: reason ?? '',
+		});
 	}
 
 	async sendInactivityWarningEmail(
@@ -198,6 +236,26 @@ export class TestEmailService implements ITestEmailService {
 		return this.record(email, 'report_resolved', {report_id: reportId, public_comment: publicComment});
 	}
 
+	async sendDsaReportResolvedEmail(
+		email: string,
+		reportId: string,
+		publicComment: string,
+		_locale?: string | null,
+	): Promise<boolean> {
+		this.logger.info(`DSA report resolved email sent to ${email}, report: ${reportId}`);
+		return this.record(email, 'dsa_report_resolved', {report_id: reportId, public_comment: publicComment});
+	}
+
+	async sendReportReceivedEmail(
+		email: string,
+		reportId: string,
+		targetKind: ReportReceivedTargetKind,
+		_locale?: string | null,
+	): Promise<boolean> {
+		this.logger.info(`Report received email sent to ${email}, report: ${reportId}`);
+		return this.record(email, 'report_received', {report_id: reportId, target_kind: targetKind});
+	}
+
 	async sendDsaReportVerificationCode(
 		email: string,
 		code: string,
@@ -208,11 +266,6 @@ export class TestEmailService implements ITestEmailService {
 		return this.record(email, 'dsa_report_verification', {code, expires_at: expiresAt.toISOString()});
 	}
 
-	async sendRegistrationApprovedEmail(email: string, username: string, _locale?: string | null): Promise<boolean> {
-		this.logger.info(`Registration approved email sent to ${email} for user ${username}`);
-		return this.record(email, 'registration_approved');
-	}
-
 	async sendPasswordChangeVerification(
 		email: string,
 		username: string,
@@ -221,6 +274,16 @@ export class TestEmailService implements ITestEmailService {
 	): Promise<boolean> {
 		this.logger.info(`Password change verification sent to ${email} for user ${username}`);
 		return this.record(email, 'password_change_verification', {code});
+	}
+
+	async sendMfaBackupCodesVerification(
+		email: string,
+		username: string,
+		code: string,
+		_locale?: string | null,
+	): Promise<boolean> {
+		this.logger.info(`MFA backup codes verification sent to ${email} for user ${username}`);
+		return this.record(email, 'mfa_backup_codes_view', {code});
 	}
 
 	async sendEmailChangeOriginal(

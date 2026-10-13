@@ -3,12 +3,8 @@
 import {fromTimestamp} from '@fluxer/snowflake/src/SnowflakeUtils';
 import {describe, expect, it} from 'vitest';
 import {
-	createReadStateEntryStatusSnapshot,
 	type ReadStateEntryStatusInput,
-	type ReadStateEntryStatusValue,
 	resolveReadStateEntryStatus,
-	selectReadStateEntryStatusModel,
-	transitionReadStateEntryStatusSnapshot,
 } from './ReadStateEntryStatusMachine';
 
 const BASE_TIMESTAMP = Date.UTC(2024, 0, 1);
@@ -17,9 +13,10 @@ const LAST_ID = fromTimestamp(BASE_TIMESTAMP + 2000);
 
 function input(overrides: Partial<ReadStateEntryStatusInput> = {}): ReadStateEntryStatusInput {
 	return {
-		canTrackUnreads: true,
+		supportsUnreadTracking: true,
 		hasBlockedDirectMessageRecipient: false,
-		readStateKnown: true,
+		ackTimestamp: BASE_TIMESTAMP,
+		lastMessageTimestamp: BASE_TIMESTAMP,
 		lastMessageId: LAST_ID,
 		ackMessageId: LAST_ID,
 		mentionCount: 0,
@@ -27,7 +24,7 @@ function input(overrides: Partial<ReadStateEntryStatusInput> = {}): ReadStateEnt
 	};
 }
 
-function expectResolvedState(overrides: Partial<ReadStateEntryStatusInput>, expected: ReadStateEntryStatusValue): void {
+function expectResolvedState(overrides: Partial<ReadStateEntryStatusInput>, expected: ReturnType<typeof resolveReadStateEntryStatus>['state']): void {
 	expect(resolveReadStateEntryStatus(input(overrides)).state).toBe(expected);
 }
 
@@ -43,10 +40,9 @@ describe('readStateEntryStatusMachine', () => {
 		expect(live).toMatchObject({state: 'unread', hasUnread: true, hasMentions: true});
 	});
 	it('routes the read-state status by priority', () => {
-		expectResolvedState({canTrackUnreads: false, mentionCount: 1, ackMessageId: ACK_ID}, 'untracked');
+		expectResolvedState({supportsUnreadTracking: false, mentionCount: 1, ackMessageId: ACK_ID}, 'untracked');
 		expectResolvedState({hasBlockedDirectMessageRecipient: true, mentionCount: 1, ackMessageId: ACK_ID}, 'blocked');
-		expectResolvedState({readStateKnown: false, ackMessageId: ACK_ID}, 'unknown');
-		expectResolvedState({lastMessageId: null, ackMessageId: ACK_ID}, 'unknown');
+		expectResolvedState({lastMessageId: null, ackMessageId: ACK_ID}, 'read');
 		expectResolvedState({ackMessageId: ACK_ID}, 'unread');
 		expectResolvedState({ackMessageId: LAST_ID}, 'read');
 	});
@@ -55,43 +51,29 @@ describe('readStateEntryStatusMachine', () => {
 		expect(resolveReadStateEntryStatus(input({ackMessageId: ACK_ID, mentionCount: 2}))).toMatchObject({
 			state: 'unread',
 			canBeUnread: true,
-			canHaveMentions: true,
+			supportsMentions: true,
 			hasUnread: true,
 			hasMentions: true,
-			hasUnreadOrMentions: true,
+			isUnreadOrMentioned: true,
 		});
 		expect(resolveReadStateEntryStatus(input({hasBlockedDirectMessageRecipient: true, mentionCount: 2}))).toMatchObject(
 			{
 				state: 'blocked',
 				canBeUnread: true,
-				canHaveMentions: false,
+				supportsMentions: false,
 				hasUnread: false,
 				hasMentions: true,
-				hasUnreadOrMentions: false,
+				isUnreadOrMentioned: false,
 			},
 		);
-		expect(resolveReadStateEntryStatus(input({canTrackUnreads: false, mentionCount: 2}))).toMatchObject({
+		expect(resolveReadStateEntryStatus(input({supportsUnreadTracking: false, mentionCount: 2}))).toMatchObject({
 			state: 'untracked',
 			canBeUnread: false,
-			canHaveMentions: false,
+			supportsMentions: false,
 			hasUnread: false,
 			hasMentions: true,
-			hasUnreadOrMentions: false,
+			isUnreadOrMentioned: false,
 		});
 	});
 
-	it('re-routes when entry inputs change', () => {
-		const readSnapshot = createReadStateEntryStatusSnapshot(input());
-		expect(selectReadStateEntryStatusModel(readSnapshot).state).toBe('read');
-
-		const unreadSnapshot = transitionReadStateEntryStatusSnapshot(readSnapshot, {
-			type: 'readStateEntry.updated',
-			input: input({ackMessageId: ACK_ID, mentionCount: 1}),
-		});
-
-		expect(selectReadStateEntryStatusModel(unreadSnapshot)).toMatchObject({
-			state: 'unread',
-			hasUnreadOrMentions: true,
-		});
-	});
 });

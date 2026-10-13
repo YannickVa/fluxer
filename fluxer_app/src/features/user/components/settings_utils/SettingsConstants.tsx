@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {PREMIUM_PRODUCT_FULL_NAME} from '@app/features/app/config/I18nDisplayConstants';
 import RuntimeConfig from '@app/features/app/state/RuntimeConfig';
+
+import {getPremiumProductFullName, shouldShowPremiumFeatures} from '@app/features/premium/utils/PremiumUtils';
 import {guessPlatform, isDesktop} from '@app/features/ui/utils/NativeUtils';
 import {
 	ADVANCED_SETTINGS_TAG_LABELS,
@@ -15,7 +16,6 @@ import {
 	getSectionsForTab as registryGetSectionsForTab,
 	getVisibleSectionsForTab as registryGetVisibleSectionsForTab,
 	tabHasMultipleLinkableSections as registryTabHasMultipleLinkableSections,
-	tabHasSections as registryTabHasSections,
 	type SettingsSectionConfig,
 	type SettingsSectionId,
 	type UserSettingsTabType,
@@ -46,17 +46,12 @@ import {
 	ProhibitIcon,
 	RobotIcon,
 	ShieldIcon,
-	StickerIcon,
 	TranslateIcon,
 	UserIcon,
 	UserListIcon,
 } from '@phosphor-icons/react';
 import type React from 'react';
 
-const EXPRESSION_PACKS_DESCRIPTOR = msg({
-	message: 'Expression packs',
-	comment: 'User settings tab for purchased or owned emoji/sticker expression packs.',
-});
 const BLOCKED_USERS_DESCRIPTOR = msg({
 	message: 'Blocked users',
 	comment: 'User settings tab listing accounts the current user has blocked.',
@@ -164,30 +159,6 @@ const DESIGN_SYSTEM_DESCRIPTOR = msg({
 	message: 'Design system',
 	comment: 'Developer settings tab showing UI component examples.',
 });
-
-export type AppearanceTabType =
-	| 'theme'
-	| 'hdr'
-	| 'chat-font-scaling'
-	| 'app-zoom-level'
-	| 'streamer-mode'
-	| 'messages'
-	| 'interface'
-	| 'channel-list'
-	| 'active-now';
-export type AccessibilityTabType = 'visual' | 'screen-reader' | 'tts' | 'keyboard' | 'animation' | 'motion';
-export type ChatTab = 'display' | 'media' | 'input';
-export type VoiceVideoTabType = 'audio' | 'video';
-export type PrivacySafetyTabType =
-	| 'profile-privacy'
-	| 'connections'
-	| 'communication'
-	| 'active-now'
-	| 'sensitive-content'
-	| 'data-export'
-	| 'data-deletion';
-export type AccountSecurityTabType = 'account' | 'security' | 'danger_zone';
-export type NotificationsTabType = 'notifications' | 'mention-preference' | 'sounds' | 'text-to-speech' | 'push';
 export type UserSettingsSubtabType = SettingsSectionId;
 type UserSettingsTabCategories = 'user_settings' | 'billing' | 'app_settings' | 'developer';
 
@@ -199,7 +170,7 @@ export interface SettingsTab {
 	iconWeight?: IconWeight;
 }
 
-type SettingsTabLabel = MessageDescriptor | string;
+type SettingsTabLabel = MessageDescriptor | string | (() => string);
 
 interface SettingsTabDescriptor {
 	type: UserSettingsTabType;
@@ -275,7 +246,7 @@ const ALL_TABS_DESCRIPTORS: Array<SettingsTabDescriptor> = [
 	{
 		type: 'plutonium',
 		category: 'billing',
-		label: PREMIUM_PRODUCT_FULL_NAME,
+		label: getPremiumProductFullName,
 		icon: CrownIcon,
 	},
 	{
@@ -283,12 +254,6 @@ const ALL_TABS_DESCRIPTORS: Array<SettingsTabDescriptor> = [
 		category: 'billing',
 		label: GIFTS_AND_CODES_DESCRIPTOR,
 		icon: GiftIcon,
-	},
-	{
-		type: 'expression_packs',
-		category: 'billing',
-		label: EXPRESSION_PACKS_DESCRIPTOR,
-		icon: StickerIcon,
 	},
 	{
 		type: 'appearance',
@@ -376,12 +341,23 @@ export const USER_SETTINGS_LABEL_DESCRIPTOR = msg({
 	message: 'User settings',
 	comment: 'Root label for the current user settings modal and settings search paths.',
 });
+export const USER_SETTINGS_PRIVACY_REVIEW_NEEDED_DESCRIPTOR = msg({
+	message: 'User settings, privacy review needed',
+	comment: 'Accessible label for the user settings button while the user has not yet reviewed who can message them.',
+});
+export const PRIVACY_REVIEW_NEEDED_DESCRIPTOR = msg({
+	message: 'Review needed',
+	comment:
+		'Screen reader text read after the Privacy item in the settings sidebar while the user has not yet reviewed who can message them. A red dot marks the item visually.',
+});
 
 export function getUserSettingsTabLabel(i18n: I18n, tabType: UserSettingsTabType): string {
 	const tab = ALL_TABS_DESCRIPTORS.find((candidate) => candidate.type === tabType);
 	if (!tab) return '';
 	if (tab.type === 'desktop_settings') return getDesktopSettingsTabLabel(i18n);
-	return typeof tab.label === 'string' ? tab.label : i18n._(tab.label);
+	if (typeof tab.label === 'string') return tab.label;
+	if (typeof tab.label === 'function') return tab.label();
+	return i18n._(tab.label);
 }
 
 export function getUserSettingsTabIconDescriptor(
@@ -428,7 +404,7 @@ export const getSettingsTabs = (i18n: I18n): Array<SettingsTab> => {
 		...tab,
 		label: getUserSettingsTabLabel(i18n, tab.type),
 	}));
-	const isSelfHosted = RuntimeConfig.isSelfHosted();
+	const showPremium = shouldShowPremiumFeatures();
 	const showClaimedAccountUi = shouldShowClaimedAccountUi();
 	return allTabs.filter((tab) => {
 		if (tab.type === 'getting_started' && !RuntimeConfig.onboarding.enabled) {
@@ -440,7 +416,7 @@ export const getSettingsTabs = (i18n: I18n): Array<SettingsTab> => {
 		if (ACCOUNT_NESTED_TAB_TYPES.some((tabType) => tabType === tab.type)) {
 			return false;
 		}
-		if (isSelfHosted && (tab.type === 'plutonium' || tab.type === 'gift_inventory')) {
+		if (!showPremium && (tab.type === 'plutonium' || tab.type === 'gift_inventory')) {
 			return false;
 		}
 		if (tab.type === 'desktop_settings' && !isDesktop()) {
@@ -460,7 +436,7 @@ function shouldShowClaimedAccountUi(): boolean {
 	return Users.getCurrentUser()?.isClaimed() ?? true;
 }
 
-export function getDesktopSettingsTabLabel(i18n: I18n): string {
+function getDesktopSettingsTabLabel(i18n: I18n): string {
 	switch (guessPlatform()) {
 		case 'windows':
 			return i18n._(WINDOWS_SETTINGS_DESCRIPTOR);
@@ -502,10 +478,6 @@ export function getSubtabsForTab(tabType: UserSettingsTabType, i18n: I18n): Arra
 
 export function getSectionsForTab(tabType: UserSettingsTabType, i18n: I18n): Array<SettingsSectionConfig> {
 	return registryGetSectionsForTab(tabType, i18n);
-}
-
-export function tabHasSections(tabType: UserSettingsTabType): boolean {
-	return registryTabHasSections(tabType);
 }
 
 export function tabHasMultipleLinkableSections(tabType: UserSettingsTabType): boolean {

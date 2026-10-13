@@ -43,6 +43,10 @@ function getProfileAvatarUrl(
 	if (previewAvatarUrl) {
 		return previewAvatarUrl;
 	}
+	const systemAvatarUrl = AvatarUtils.getSystemUserBrandingAvatarURL(user.id);
+	if (systemAvatarUrl !== null) {
+		return systemAvatarUrl;
+	}
 	if (!ignoreGuildAvatar && guildId && guildMember) {
 		return AvatarUtils.getGuildMemberDisplayAvatarURL({
 			guildId,
@@ -91,7 +95,7 @@ export function getProfileAvatarMenuUrl(
 	return null;
 }
 
-export function getProfileBannerUrl(
+function getProfileBannerUrl(
 	context: ProfileDisplayContext,
 	overrides?: ProfilePreviewOverrides,
 	animated = false,

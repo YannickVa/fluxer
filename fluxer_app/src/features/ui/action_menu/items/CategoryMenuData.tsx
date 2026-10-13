@@ -2,8 +2,8 @@
 
 import {showChannelDeleteFailedModal} from '@app/features/app/components/alerts/ChannelDeleteFailedModal';
 import {ConfirmModal} from '@app/features/app/components/dialogs/ConfirmModal';
+import {ChannelSettingsModal} from '@app/features/app/components/dialogs/LoadableSettingsModals';
 import * as ChannelCommands from '@app/features/channel/commands/ChannelCommands';
-import {ChannelSettingsModal} from '@app/features/channel/components/modals/ChannelSettingsModal';
 import type {Channel} from '@app/features/channel/models/Channel';
 import Channels from '@app/features/channel/state/Channels';
 import {DELETE_CATEGORY_DESCRIPTOR} from '@app/features/channel/utils/ChannelMessageDescriptors';
@@ -103,7 +103,7 @@ export interface CategoryMenuData {
 	state: CategoryMenuState;
 }
 
-export interface CategoryMenuHandlers {
+interface CategoryMenuHandlers {
 	handleMarkAsRead: () => void;
 	handleToggleCollapse: () => void;
 	handleToggleCollapseAll: () => void;
@@ -115,7 +115,7 @@ export interface CategoryMenuHandlers {
 	handleResetMatureContentAgreeState: () => void;
 }
 
-export interface CategoryMenuState {
+interface CategoryMenuState {
 	hasUnread: boolean;
 	isCollapsed: boolean;
 	allCategoriesCollapsed: boolean;
@@ -132,11 +132,11 @@ function getCategoryMenuState(category: Channel): CategoryMenuState {
 		(ch) => ch.parentId === category.id && ch.type !== ChannelTypes.GUILD_CATEGORY,
 	);
 	const hasUnread = channelsInCategory.some((ch) => ReadStates.hasUnread(ch.id));
-	const isCollapsed = UserGuildSettings.isChannelCollapsed(guildId, category.id);
+	const isCollapsed = UserGuildSettings.isChannelSectionCollapsed(guildId, category.id);
 	const categoryIds = channels.filter((ch) => ch.type === ChannelTypes.GUILD_CATEGORY).map((ch) => ch.id);
 	const allCategoriesCollapsed =
 		categoryIds.length > 0
-			? categoryIds.every((categoryId) => UserGuildSettings.isChannelCollapsed(guildId, categoryId))
+			? categoryIds.every((categoryId) => UserGuildSettings.isChannelSectionCollapsed(guildId, categoryId))
 			: false;
 	const categoryOverride = UserGuildSettings.getChannelOverride(guildId, category.id);
 	const isMuted = categoryOverride?.muted ?? false;
@@ -192,12 +192,15 @@ export function useCategoryMenuData(category: Channel, options: CategoryMenuData
 			handleEditCategory: () => {
 				ModalCommands.pushAfterBottomSheetClose(
 					onClose,
-					modal(() => (
-						<ChannelSettingsModal
-							channelId={category.id}
-							data-flx="ui.action-menu.items.category-menu-data.handle-edit-category.channel-settings-modal"
-						/>
-					)),
+					modal(
+						() => (
+							<ChannelSettingsModal
+								channelId={category.id}
+								data-flx="ui.action-menu.items.category-menu-data.handle-edit-category.channel-settings-modal"
+							/>
+						),
+						'channel-settings',
+					),
 				);
 			},
 			handleDeleteCategory: () => {

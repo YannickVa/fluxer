@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {applySortModeToParams} from '@app/features/channel/components/channel_search_results/ChannelSearchResultsShared';
 import {
 	DEFAULT_SCOPE_VALUE,
 	getScopeOptionsForChannel,
@@ -13,6 +14,7 @@ import {
 	transitionSearchMachineSnapshot,
 } from '@app/features/channel/components/SearchStateMachine';
 import type {Channel} from '@app/features/channel/models/Channel';
+import {getChannelSearchContextId} from '@app/features/channel/state/ChannelSearch';
 import Channels from '@app/features/channel/state/Channels';
 import {getChannelSearchIndexingPollInterval} from '@app/features/channel/utils/ChannelSearchPolling';
 import GuildMatureContentAgree from '@app/features/guild/state/GuildMatureContentAgree';
@@ -87,22 +89,6 @@ interface ChannelSearchExecutionOverrides {
 	sortMode?: ChannelSearchSortMode;
 }
 
-const applySortModeToParams = (params: MessageSearchParams, mode: ChannelSearchSortMode): void => {
-	switch (mode) {
-		case 'newest':
-			params.sortBy = 'timestamp';
-			params.sortOrder = 'desc';
-			break;
-		case 'oldest':
-			params.sortBy = 'timestamp';
-			params.sortOrder = 'asc';
-			break;
-		case 'relevant':
-			params.sortBy = 'relevance';
-			params.sortOrder = 'desc';
-			break;
-	}
-};
 const filtersToParams = (filters: ChannelSearchFilters): MessageSearchParams => {
 	const params: MessageSearchParams = {};
 	if (filters.content?.trim()) {
@@ -269,7 +255,7 @@ export const useChannelSearch = ({
 			currentSegmentsRef.current = segments;
 			currentFiltersRef.current = null;
 			const params = parseSearchQueryWithSegments(query, segments, {
-				channelId: channel.id,
+				historyKey: getChannelSearchContextId(channel) ?? undefined,
 				guildId: channel.guildId ?? null,
 			});
 			await executeSearch(params, page, overrides);
@@ -293,7 +279,7 @@ export const useChannelSearch = ({
 				executeSearch(params, page);
 			} else if (currentQueryRef.current) {
 				const params = parseSearchQueryWithSegments(currentQueryRef.current, currentSegmentsRef.current, {
-					channelId: channel.id,
+					historyKey: getChannelSearchContextId(channel) ?? undefined,
 					guildId: channel.guildId ?? null,
 				});
 				executeSearch(params, page);
@@ -364,7 +350,7 @@ export const useChannelSearch = ({
 					params = filtersToParams(currentFiltersRef.current);
 				} else {
 					params = parseSearchQueryWithSegments(currentQueryRef.current, currentSegmentsRef.current, {
-						channelId: channel.id,
+						historyKey: getChannelSearchContextId(channel) ?? undefined,
 						guildId: channel.guildId ?? null,
 					});
 				}

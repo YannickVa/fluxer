@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {fetchMany, fetchOne, upsertOne} from '../../database/CassandraQueryExecution';
-import type {BillingPaymentByInvoiceRow, BillingPaymentRow} from '../../database/types/BillingTypes';
-import {BillingPayments, BillingPaymentsByInvoice} from '../../Tables';
-import {isExistingNewer} from './BillingRepoHelpers';
+import {isExistingNewer} from '@app/api/billing/repositories/BillingRepoHelpers';
+import {fetchMany, fetchOne, upsertOne} from '@app/api/database/CassandraQueryExecution';
+import type {BillingPaymentByInvoiceRow, BillingPaymentRow} from '@app/api/database/types/BillingTypes';
+import {BillingPayments, BillingPaymentsByInvoice} from '@app/api/Tables';
 
 const FETCH_BY_ID = BillingPayments.selectCql({
 	where: BillingPayments.where.eq('provider_id'),
@@ -48,25 +48,5 @@ export class BillingPaymentRepository {
 			await upsertOne(BillingPaymentsByInvoice.upsertAll(mapped.byInvoice));
 		}
 		return {changed: true, row: mapped.primary};
-	}
-
-	async upsertFromStripe(
-		p: BillingPaymentRow,
-		hints?: {
-			byInvoice?: BillingPaymentByInvoiceRow;
-		},
-	): Promise<{
-		changed: boolean;
-		row: BillingPaymentRow;
-	}> {
-		const existing = await this.findById(p.provider_id);
-		if (isExistingNewer(existing, p)) {
-			return {changed: false, row: existing!};
-		}
-		await upsertOne(BillingPayments.upsertAll(p));
-		if (hints?.byInvoice?.invoice_id) {
-			await upsertOne(BillingPaymentsByInvoice.upsertAll(hints.byInvoice));
-		}
-		return {changed: true, row: p};
 	}
 }

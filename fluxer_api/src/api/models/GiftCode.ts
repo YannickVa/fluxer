@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import type {UserID} from '../BrandedTypes';
-import type {GiftCodeDurationType, GiftCodeRow} from '../database/types/PaymentTypes';
-import {addMonthsClamp} from '../stripe/StripeUtils';
+import type {UserID} from '@app/api/BrandedTypes';
+import type {GiftCodeDurationType, GiftCodeRow} from '@app/api/database/types/PaymentTypes';
+import {addMonthsClamp} from '@app/api/stripe/StripeUtils';
 
 interface GiftCodeDuration {
 	durationType: GiftCodeDurationType;
@@ -113,6 +113,8 @@ export class GiftCode {
 	readonly stripePaymentIntentId: string | null;
 	readonly visionarySequenceNumber: number | null;
 	readonly checkoutSessionId: string | null;
+	readonly revokedAt: Date | null;
+	readonly premiumReversedSeconds: number | null;
 	readonly version: number;
 
 	constructor(row: GiftCodeRow) {
@@ -128,6 +130,8 @@ export class GiftCode {
 		this.stripePaymentIntentId = row.stripe_payment_intent_id ?? null;
 		this.visionarySequenceNumber = row.visionary_sequence_number ?? null;
 		this.checkoutSessionId = row.checkout_session_id ?? null;
+		this.revokedAt = row.revoked_at ?? null;
+		this.premiumReversedSeconds = row.premium_reversed_seconds ?? null;
 		this.version = row.version;
 	}
 
@@ -144,6 +148,8 @@ export class GiftCode {
 			stripe_payment_intent_id: this.stripePaymentIntentId,
 			visionary_sequence_number: this.visionarySequenceNumber,
 			checkout_session_id: this.checkoutSessionId,
+			revoked_at: this.revokedAt,
+			premium_reversed_seconds: this.premiumReversedSeconds,
 			version: this.version,
 		};
 	}

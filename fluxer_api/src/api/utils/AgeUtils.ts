@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {instanceCollectsDateOfBirth} from '@app/api/instance/DateOfBirthCollectionCache';
+
 interface BirthDate {
 	year: number;
 	month: number;
@@ -68,6 +70,9 @@ interface NsfwEligibilityUser {
 
 export function canUserAccessNsfwContent(user: NsfwEligibilityUser): boolean {
 	if (user.isBot) {
+		return true;
+	}
+	if (!instanceCollectsDateOfBirth()) {
 		return true;
 	}
 	return isUserAdult(user.dateOfBirth);

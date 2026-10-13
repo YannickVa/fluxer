@@ -164,16 +164,21 @@ describe('Final migrated-account repository claim (trusted service inputs only)'
 		const allIndexes = vi.spyOn(UserIndexRepository.prototype, 'syncIndices');
 		const emailIndex = vi.spyOn(UserIndexRepository.prototype, 'syncEmailIndex');
 		const search = vi.spyOn(UserSearchRepository.prototype, 'updateUser');
+		let raced = false;
 		vi.spyOn(UserDataRepository.prototype, 'patchUserIf').mockImplementation(async function (
 			this: UserDataRepository,
 			...args
 		) {
-			await upsertOne(Users.patchByPk({user_id: ID}, {username: Db.set('new-profile'), bio: Db.set('new bio')}));
+			if (!raced) {
+				raced = true;
+				await this.patchUser(ID, {username: Db.set('new-profile'), bio: Db.set('new bio')});
+			}
 			return write.apply(this, args);
 		});
 		const user = await getUserRepository().claimMigratedAccount(ID, ID.toString(), data());
 		expect(user.username).toBe('new-profile');
 		expect(user.bio).toBe('new bio');
+		expect(user.version).toBe(3);
 		expect(allIndexes).not.toHaveBeenCalled();
 		expect(emailIndex).toHaveBeenCalledExactlyOnceWith(ID, data().email);
 		expect(search).toHaveBeenCalledWith(user);

@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {APIErrorCodes} from '@fluxer/constants/src/ApiErrorCodes';
-import {NotFoundError} from '@fluxer/errors/src/domains/core/NotFoundError';
-import {UnknownUserError} from '@fluxer/errors/src/domains/user/UnknownUserError';
-import type {IpInfoLookupResult, IpInfoService} from '@pkgs/geoip/src/IpInfoService';
-import type {ApiContext} from '../../ApiContext';
-import {createUserID, type UserID} from '../../BrandedTypes';
+import type {ApiContext} from '@app/api/ApiContext';
+import type {AdminRepository} from '@app/api/admin/AdminRepository';
+import type {AdminAuditService} from '@app/api/admin/services/AdminAuditService';
+import {createUserID, type UserID} from '@app/api/BrandedTypes';
+import {isIpBanExempt} from '@app/api/ban/IpBanExemptions';
 import {
 	BANNED_AVATAR_HASHES_REFRESH_CHANNEL,
 	BANNED_FILE_SHAS_REFRESH_CHANNEL,
@@ -15,35 +14,83 @@ import {
 	BANNED_URLS_REFRESH_CHANNEL,
 	ContentBlocklistCategory,
 	ContentBlocklistSeverity,
-} from '../../constants/ContentModeration';
-import {IP_BAN_REFRESH_CHANNEL} from '../../constants/IpBan';
-import type {BannedProfileSubstringScope} from '../../database/types/AdminArchiveTypes';
-import {Logger} from '../../Logger';
-import {bannedAvatarHashCache} from '../../middleware/BannedAvatarHashCache';
-import {fileShaCache} from '../../middleware/FileShaCache';
-import {ipBanCache} from '../../middleware/IpBanMiddleware';
-import {phraseBlocklistCache} from '../../middleware/PhraseBlocklistCache';
-import {profileSubstringBlocklistCache} from '../../middleware/ProfileSubstringBlocklistCache';
-import {urlBlocklistCache} from '../../middleware/UrlBlocklistCache';
-import {
-	getSuspiciousIpSkipReason,
-	hasHighCgnatBlastRadiusRisk,
-	isSingleIpBanCandidate,
-} from '../../risk/IpBanCgnatGuard';
-import {isIpBanExempt} from '../../risk/IpBanExemptions';
-import type {ISuspiciousIpRepository} from '../../risk/SuspiciousIpRepository';
-import {tryParseSingleIp} from '../../utils/IpRangeUtils';
-import {canonicalizeStoredPhrase} from '../../utils/PhraseBlocklistNormalization';
-import {canonicalizeUrl} from '../../utils/UrlNormalizer';
-import type {IAdminRepository} from '../IAdminRepository';
-import type {AdminAuditService} from './AdminAuditService';
+} from '@app/api/constants/ContentModeration';
+import {IP_BAN_REFRESH_CHANNEL} from '@app/api/constants/IpBan';
+import type {BannedProfileSubstringScope} from '@app/api/database/types/AdminArchiveTypes';
+import {bannedAvatarHashCache} from '@app/api/middleware/BannedAvatarHashCache';
+import {fileShaCache} from '@app/api/middleware/FileShaCache';
+import {ipBanCache} from '@app/api/middleware/IpBanMiddleware';
+import {phraseBlocklistCache} from '@app/api/middleware/PhraseBlocklistCache';
+import {profileSubstringBlocklistCache} from '@app/api/middleware/ProfileSubstringBlocklistCache';
+import {urlBlocklistCache} from '@app/api/middleware/UrlBlocklistCache';
+import {canonicalizeStoredPhrase} from '@app/api/utils/PhraseBlocklistNormalization';
+import {parseUrlDomainEntry} from '@app/api/utils/UrlHostRules';
+import {canonicalizeUrl} from '@app/api/utils/UrlNormalizer';
+import {APIErrorCodes} from '@fluxer/constants/src/ApiErrorCodes';
+import {ValidationErrorCodes} from '@fluxer/constants/src/ValidationErrorCodes';
+import {BadRequestError} from '@fluxer/errors/src/domains/core/BadRequestError';
+import {InputValidationError} from '@fluxer/errors/src/domains/core/InputValidationError';
+import {NotFoundError} from '@fluxer/errors/src/domains/core/NotFoundError';
+import {UnknownUserError} from '@fluxer/errors/src/domains/user/UnknownUserError';
+import type {AdminBlocklistListType} from '@fluxer/schema/src/domains/admin/AdminBlocklistSchemas';
 
 interface AdminBanManagementServiceDeps {
 	apiContext: ApiContext;
-	adminRepository: IAdminRepository;
+	adminRepository: AdminRepository;
 	auditService: AdminAuditService;
-	ipInfoService: IpInfoService;
-	suspiciousIpRepository: ISuspiciousIpRepository;
+}
+
+interface AdminBlocklistEntry {
+	list_type: AdminBlocklistListType;
+	value: string;
+	scope: string | null;
+	category: string | null;
+	severity: number | null;
+	source_url: string | null;
+	notes: string | null;
+	content_type: string | null;
+	match_subdomains: boolean | null;
+	reason: string | null;
+	expires_at: string | null;
+	created_at: string | null;
+	created_by_user_id: string | null;
+}
+
+interface AdminBlocklistEntryPage {
+	items: Array<AdminBlocklistEntry>;
+	has_more: boolean;
+	next_after: string | null;
+}
+
+function createBlocklistEntry(
+	listType: AdminBlocklistListType,
+	value: string,
+	overrides: Partial<Omit<AdminBlocklistEntry, 'list_type' | 'value'>> = {},
+): AdminBlocklistEntry {
+	return {
+		list_type: listType,
+		value,
+		scope: null,
+		category: null,
+		severity: null,
+		source_url: null,
+		notes: null,
+		content_type: null,
+		match_subdomains: null,
+		reason: null,
+		expires_at: null,
+		created_at: null,
+		created_by_user_id: null,
+		...overrides,
+	};
+}
+
+function toIsoString(value: Date | null | undefined): string | null {
+	return value ? value.toISOString() : null;
+}
+
+function toSnowflakeString(value: bigint | null | undefined): string | null {
+	return value == null ? null : value.toString();
 }
 
 interface AdminBlocklistAuditParams {
@@ -62,6 +109,16 @@ function normalizeAvatarHashes(hashes: Array<string>): Array<string> {
 	return Array.from(new Set(hashes.map((hash) => stripAvatarAnimationPrefix(hash.toLowerCase()))));
 }
 
+function hostFromUrlOrHostname(value: string): string | null {
+	const trimmed = value.trim();
+	if (!/^https?:\/\//i.test(trimmed)) return trimmed;
+	try {
+		return new URL(trimmed).hostname;
+	} catch {
+		return null;
+	}
+}
+
 function withReasonMetadata(entries: Array<[string, string]>, reason: string | undefined): Map<string, string> {
 	if (!reason) {
 		return new Map(entries);
@@ -76,6 +133,7 @@ export class AdminBanManagementService {
 	async banIp(
 		data: {
 			ip: string;
+			duration_hours?: number;
 		},
 		adminUserId: UserID,
 		auditLogReason: string | null,
@@ -91,28 +149,29 @@ export class AdminBanManagementService {
 				auditLogReason,
 				metadata: new Map([['ip', data.ip]]),
 			});
-			return;
-		}
-		if (await this.shouldSkipIpBanForCgnat(data.ip)) {
-			await auditService.createAuditLog({
-				adminUserId,
-				targetType: 'ip',
-				targetId: BigInt(0),
-				action: 'ban_ip_skipped_cgnat',
-				auditLogReason,
-				metadata: new Map([['ip', data.ip]]),
+			throw new BadRequestError({
+				code: APIErrorCodes.IP_BAN_DECLINED,
+				message: 'This IP address is on the instance exemption list',
 			});
-			return;
 		}
-		await adminRepository.banIp(data.ip);
-		ipBanCache.ban(data.ip);
+		const durationHours = data.duration_hours ?? 0;
+		const metadata = new Map([['ip', data.ip]]);
+		if (durationHours > 0) {
+			const ttlSeconds = durationHours * 3600;
+			await adminRepository.banIp(data.ip, ttlSeconds);
+			metadata.set('duration_hours', durationHours.toString());
+			metadata.set('expires_at', new Date(Date.now() + ttlSeconds * 1000).toISOString());
+		} else {
+			await adminRepository.banIp(data.ip);
+		}
+		await ipBanCache.refresh();
 		await cacheService.publish(IP_BAN_REFRESH_CHANNEL, 'refresh');
 		await this.createBlocklistAuditLog({
 			adminUserId,
 			targetType: 'ip',
 			action: 'ban_ip',
 			auditLogReason,
-			metadata: new Map([['ip', data.ip]]),
+			metadata,
 		});
 	}
 
@@ -139,108 +198,10 @@ export class AdminBanManagementService {
 
 	async checkIpBan(data: {ip: string}): Promise<{
 		banned: boolean;
+		expires_at: string | null;
 	}> {
-		const banned = ipBanCache.isBanned(data.ip);
-		return {banned};
-	}
-
-	async markSuspiciousIpForScheduledDeletion(
-		data: {
-			ip: string;
-			sourceUserId: UserID;
-			deletionReasonCode: number;
-		},
-		adminUserId: UserID,
-		auditLogReason: string | null,
-	): Promise<void> {
-		const parsed = tryParseSingleIp(data.ip);
-		if (!parsed) {
-			await this.deps.auditService.createAuditLog({
-				adminUserId,
-				targetType: 'ip',
-				targetId: BigInt(0),
-				action: 'mark_suspicious_ip_skipped_invalid',
-				auditLogReason,
-				metadata: new Map([['ip', data.ip]]),
-			});
-			return;
-		}
-		let info: IpInfoLookupResult;
-		try {
-			info = await this.deps.ipInfoService.lookup(parsed.canonical, {
-				source: 'admin.scheduled_deletion_suspicious_ip',
-				reason: 'pre_write_suspicious_ip_guard',
-				metadata: {
-					source_user_id: data.sourceUserId.toString(),
-					deletion_reason_code: data.deletionReasonCode,
-				},
-			});
-		} catch (error) {
-			Logger.warn({error, ip: parsed.canonical}, 'IPInfo guard failed while marking suspicious IP');
-			return;
-		}
-		const skipReason = getSuspiciousIpSkipReason(info);
-		if (skipReason) {
-			Logger.info({ip: parsed.canonical, skipReason}, 'Skipping suspicious IP marker from scheduled deletion');
-			await this.deps.auditService.createAuditLog({
-				adminUserId,
-				targetType: 'ip',
-				targetId: BigInt(0),
-				action: `mark_suspicious_ip_skipped_${skipReason}`,
-				auditLogReason,
-				metadata: new Map([
-					['ip', parsed.canonical],
-					['source_user_id', data.sourceUserId.toString()],
-					['deletion_reason_code', data.deletionReasonCode.toString()],
-					['provider_name', info.anonymous.providerName ?? ''],
-				]),
-			});
-			return;
-		}
-		await this.deps.suspiciousIpRepository.markSuspiciousIp({
-			ip: parsed.canonical,
-			source: 'scheduled_deletion',
-			reason: 'account_scheduled_for_deletion',
-			sourceUserId: data.sourceUserId,
-			deletionReasonCode: data.deletionReasonCode,
-			providerName: info.anonymous.providerName,
-			asn: info.asn.number,
-			asnName: info.asn.name,
-			asnType: info.asn.type,
-			riskNote: info.riskNote,
-		});
-		await this.deps.auditService.createAuditLog({
-			adminUserId,
-			targetType: 'ip',
-			targetId: BigInt(0),
-			action: 'mark_suspicious_ip',
-			auditLogReason,
-			metadata: new Map([
-				['ip', parsed.canonical],
-				['source_user_id', data.sourceUserId.toString()],
-				['deletion_reason_code', data.deletionReasonCode.toString()],
-				['provider_name', info.anonymous.providerName ?? ''],
-			]),
-		});
-	}
-
-	private async shouldSkipIpBanForCgnat(ip: string): Promise<boolean> {
-		if (!isSingleIpBanCandidate(ip)) {
-			return false;
-		}
-		try {
-			const highRisk = await hasHighCgnatBlastRadiusRisk(ip, this.deps.ipInfoService, {
-				source: 'admin.ip_ban',
-				reason: 'pre_write_cgnat_guard',
-			});
-			if (highRisk) {
-				Logger.warn({ip}, 'Skipping IP ban because IPInfo indicates high CGNAT blast-radius risk');
-			}
-			return highRisk;
-		} catch (error) {
-			Logger.warn({error, ip}, 'IPInfo CGNAT guard failed while adding IP ban');
-			return false;
-		}
+		const match = ipBanCache.getMatch(data.ip);
+		return {banned: match !== null, expires_at: toIsoString(match?.expiresAt)};
 	}
 
 	async banEmail(
@@ -284,50 +245,6 @@ export class AdminBanManagementService {
 	}> {
 		const {adminRepository} = this.deps;
 		const banned = await adminRepository.isEmailBanned(data.email);
-		return {banned};
-	}
-
-	async addSuspiciousEmailDomain(
-		data: {
-			domain: string;
-		},
-		adminUserId: UserID,
-		auditLogReason: string | null,
-	) {
-		const {adminRepository} = this.deps;
-		await adminRepository.addSuspiciousEmailDomain(data.domain);
-		await this.createBlocklistAuditLog({
-			adminUserId,
-			targetType: 'email_domain',
-			action: 'add_suspicious_email_domain',
-			auditLogReason,
-			metadata: new Map([['domain', data.domain]]),
-		});
-	}
-
-	async removeSuspiciousEmailDomain(
-		data: {
-			domain: string;
-		},
-		adminUserId: UserID,
-		auditLogReason: string | null,
-	) {
-		const {adminRepository} = this.deps;
-		await adminRepository.removeSuspiciousEmailDomain(data.domain);
-		await this.createBlocklistAuditLog({
-			adminUserId,
-			targetType: 'email_domain',
-			action: 'remove_suspicious_email_domain',
-			auditLogReason,
-			metadata: new Map([['domain', data.domain]]),
-		});
-	}
-
-	async checkSuspiciousEmailDomain(data: {domain: string}): Promise<{
-		banned: boolean;
-	}> {
-		const {adminRepository} = this.deps;
-		const banned = await adminRepository.isEmailDomainSuspicious(data.domain);
 		return {banned};
 	}
 
@@ -393,7 +310,7 @@ export class AdminBanManagementService {
 		const {adminRepository} = this.deps;
 		const {cache: cacheService} = this.deps.apiContext.services;
 		const canonical = canonicalizeUrl(data.url);
-		if (!canonical) throw new Error('URL could not be canonicalized');
+		if (!canonical) throw InputValidationError.fromCode('url', ValidationErrorCodes.INVALID_URL_FORMAT);
 		await adminRepository.banUrl({
 			url_canonical: canonical,
 			category: data.category ?? ContentBlocklistCategory.MANUAL,
@@ -427,7 +344,7 @@ export class AdminBanManagementService {
 		const {adminRepository} = this.deps;
 		const {cache: cacheService} = this.deps.apiContext.services;
 		const canonical = canonicalizeUrl(data.url);
-		if (!canonical) throw new Error('URL could not be canonicalized');
+		if (!canonical) throw InputValidationError.fromCode('url', ValidationErrorCodes.INVALID_URL_FORMAT);
 		await adminRepository.unbanUrl(canonical);
 		urlBlocklistCache.removeExactUrl(canonical);
 		await cacheService.publish(BANNED_URLS_REFRESH_CHANNEL, 'refresh');
@@ -460,7 +377,9 @@ export class AdminBanManagementService {
 	) {
 		const {adminRepository} = this.deps;
 		const {cache: cacheService} = this.deps.apiContext.services;
-		const d = data.domain.toLowerCase();
+		const entry = parseUrlDomainEntry(data.domain);
+		if (!entry.ok) throw InputValidationError.create('domain', entry.message);
+		const d = entry.value;
 		const matchSubs = data.match_subdomains ?? true;
 		await adminRepository.banUrlDomain({
 			domain: d,
@@ -472,7 +391,7 @@ export class AdminBanManagementService {
 			added_by: adminUserId,
 			notes: data.notes ?? null,
 		});
-		urlBlocklistCache.addDomain(d);
+		urlBlocklistCache.addDomain(d, matchSubs);
 		await cacheService.publish(BANNED_URL_DOMAINS_REFRESH_CHANNEL, 'refresh');
 		await this.createBlocklistAuditLog({
 			adminUserId,
@@ -482,6 +401,7 @@ export class AdminBanManagementService {
 			metadata: new Map([
 				['domain', d],
 				['match_subdomains', String(matchSubs)],
+				['pattern', String(entry.pattern)],
 			]),
 		});
 	}
@@ -495,7 +415,8 @@ export class AdminBanManagementService {
 	) {
 		const {adminRepository} = this.deps;
 		const {cache: cacheService} = this.deps.apiContext.services;
-		const d = data.domain.toLowerCase();
+		const entry = parseUrlDomainEntry(data.domain);
+		const d = entry.ok ? entry.value : data.domain.trim().toLowerCase();
 		await adminRepository.unbanUrlDomain(d);
 		urlBlocklistCache.removeDomain(d);
 		await cacheService.publish(BANNED_URL_DOMAINS_REFRESH_CHANNEL, 'refresh');
@@ -511,7 +432,8 @@ export class AdminBanManagementService {
 	async checkUrlDomainBan(data: {domain: string}): Promise<{
 		banned: boolean;
 	}> {
-		return {banned: urlBlocklistCache.isHostnameBanned(data.domain)};
+		const host = hostFromUrlOrHostname(data.domain);
+		return {banned: host != null && urlBlocklistCache.isHostnameBanned(host)};
 	}
 
 	async banFileSha(
@@ -525,9 +447,9 @@ export class AdminBanManagementService {
 		},
 		adminUserId: UserID,
 		auditLogReason: string | null,
+		options?: {deferRefresh?: boolean},
 	) {
 		const {adminRepository} = this.deps;
-		const {cache: cacheService} = this.deps.apiContext.services;
 		const hex = data.sha256_hex.toLowerCase();
 		await adminRepository.banFileSha({
 			sha256_hex: hex,
@@ -540,7 +462,9 @@ export class AdminBanManagementService {
 			notes: data.notes ?? null,
 		});
 		fileShaCache.add(hex);
-		await cacheService.publish(BANNED_FILE_SHAS_REFRESH_CHANNEL, 'refresh');
+		if (!options?.deferRefresh) {
+			await this.publishFileShaRefresh();
+		}
 		await this.createBlocklistAuditLog({
 			adminUserId,
 			targetType: 'file_sha',
@@ -548,6 +472,11 @@ export class AdminBanManagementService {
 			auditLogReason,
 			metadata: new Map([['sha256', hex]]),
 		});
+	}
+
+	async publishFileShaRefresh(): Promise<void> {
+		const {cache: cacheService} = this.deps.apiContext.services;
+		await cacheService.publish(BANNED_FILE_SHAS_REFRESH_CHANNEL, 'refresh');
 	}
 
 	async unbanFileSha(
@@ -760,6 +689,120 @@ export class AdminBanManagementService {
 			}
 		}
 		return {banned: false};
+	}
+
+	async listBlocklistEntries(params: {
+		listType: AdminBlocklistListType;
+		limit: number;
+		after: string | null;
+		scope: BannedProfileSubstringScope | null;
+	}): Promise<AdminBlocklistEntryPage> {
+		const entries = await this.loadBlocklistEntries(params.listType, params.scope);
+		entries.sort((left, right) => (left.value < right.value ? -1 : left.value > right.value ? 1 : 0));
+		const after = params.after;
+		const remaining = after == null ? entries : entries.filter((entry) => entry.value > after);
+		const page = remaining.slice(0, params.limit);
+		const hasMore = remaining.length > page.length;
+		const lastEntry = page.at(-1);
+		return {
+			items: page,
+			has_more: hasMore,
+			next_after: hasMore && lastEntry ? lastEntry.value : null,
+		};
+	}
+
+	private async loadBlocklistEntries(
+		listType: AdminBlocklistListType,
+		scope: BannedProfileSubstringScope | null,
+	): Promise<Array<AdminBlocklistEntry>> {
+		const {adminRepository} = this.deps;
+		switch (listType) {
+			case 'ip': {
+				const rows = await adminRepository.loadAllBannedIpEntries();
+				return rows.map((row) =>
+					createBlocklistEntry(listType, row.ip, {
+						reason: row.reason,
+						expires_at: toIsoString(row.expiresAt),
+						created_at: toIsoString(row.createdAt),
+					}),
+				);
+			}
+			case 'email': {
+				const rows = await adminRepository.loadAllBannedEmails();
+				return rows.map((value) => createBlocklistEntry(listType, value));
+			}
+			case 'phrase': {
+				const rows = await adminRepository.loadAllBannedPhrases();
+				return rows.map((value) => createBlocklistEntry(listType, value));
+			}
+			case 'url': {
+				const rows = await adminRepository.loadAllBannedUrls();
+				return rows.map((row) =>
+					createBlocklistEntry(listType, row.url_canonical, {
+						category: row.category,
+						severity: row.severity,
+						source_url: row.source_url,
+						notes: row.notes,
+						created_at: toIsoString(row.added_at),
+						created_by_user_id: toSnowflakeString(row.added_by),
+					}),
+				);
+			}
+			case 'url-domain': {
+				const rows = await adminRepository.loadAllBannedUrlDomains();
+				return rows.map((row) =>
+					createBlocklistEntry(listType, row.domain, {
+						category: row.category,
+						severity: row.severity,
+						source_url: row.source_url,
+						notes: row.notes,
+						match_subdomains: row.match_subdomains,
+						created_at: toIsoString(row.added_at),
+						created_by_user_id: toSnowflakeString(row.added_by),
+					}),
+				);
+			}
+			case 'file-sha': {
+				const rows = await adminRepository.loadAllBannedFileShas();
+				return rows.map((row) =>
+					createBlocklistEntry(listType, row.sha256_hex, {
+						category: row.category,
+						severity: row.severity,
+						source_url: row.source_url,
+						notes: row.notes,
+						content_type: row.content_type,
+						created_at: toIsoString(row.added_at),
+						created_by_user_id: toSnowflakeString(row.added_by),
+					}),
+				);
+			}
+			case 'avatar-hash': {
+				const rows = await adminRepository.loadAllBannedAvatarHashes();
+				return rows.map((row) =>
+					createBlocklistEntry(listType, row.hash_short, {
+						category: row.category,
+						severity: row.severity,
+						source_url: row.source_url,
+						notes: row.notes,
+						created_at: toIsoString(row.added_at),
+						created_by_user_id: toSnowflakeString(row.added_by),
+					}),
+				);
+			}
+			case 'profile-substring': {
+				const rows = await adminRepository.loadAllBannedProfileSubstrings();
+				return rows
+					.filter((row) => scope == null || row.scope === scope)
+					.map((row) =>
+						createBlocklistEntry(listType, row.substring, {
+							scope: row.scope,
+							notes: row.notes,
+							created_at: toIsoString(row.added_at),
+							created_by_user_id: toSnowflakeString(row.added_by),
+						}),
+					);
+			}
+		}
 	}
 
 	private async createBlocklistAuditLog({

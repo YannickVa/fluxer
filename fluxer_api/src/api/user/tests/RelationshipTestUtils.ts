@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {createFriendship as channelCreateFriendship} from '@app/api/channel/tests/ChannelTestUtils';
+import type {ApiTestHarness} from '@app/api/test/ApiTestHarness';
+import {createBuilder} from '@app/api/test/TestRequestBuilder';
 import {RelationshipTypes} from '@fluxer/constants/src/UserConstants';
 import type {RelationshipResponse} from '@fluxer/schema/src/domains/user/UserResponseSchemas';
 import {expect} from 'vitest';
-import {createFriendship as channelCreateFriendship} from '../../channel/tests/ChannelTestUtils';
-import type {ApiTestHarness} from '../../test/ApiTestHarness';
-import {createBuilder} from '../../test/TestRequestBuilder';
 
 export async function sendFriendRequest(
 	harness: ApiTestHarness,
@@ -96,25 +96,6 @@ export async function listRelationships(
 }> {
 	const {response, json} = await createBuilder<Array<RelationshipResponse>>(harness, token)
 		.get('/users/@me/relationships')
-		.executeWithResponse();
-	if (response.status !== 200) {
-		throw new Error(`Expected 200, got ${response.status}`);
-	}
-	return {response, json};
-}
-
-export async function updateFriendNickname(
-	harness: ApiTestHarness,
-	token: string,
-	targetId: string,
-	nickname: string | null,
-): Promise<{
-	response: Response;
-	json: RelationshipResponse;
-}> {
-	const {response, json} = await createBuilder<RelationshipResponse>(harness, token)
-		.patch(`/users/@me/relationships/${targetId}`)
-		.body({nickname})
 		.executeWithResponse();
 	if (response.status !== 200) {
 		throw new Error(`Expected 200, got ${response.status}`);

@@ -5,6 +5,7 @@ pub mod applications;
 pub mod auth;
 pub mod bans;
 mod bans_actions;
+mod billing_actions;
 pub mod codes;
 pub mod discovery;
 mod guild_tabs;
@@ -72,8 +73,15 @@ pub fn build_router(config: AdminConfig) -> Router {
         .merge(admin::router())
         .route("/", get(dashboard))
         .route("/dashboard", get(dashboard))
+        .layer(from_fn_with_state(
+            state.clone(),
+            middleware::account_identity::scope_account_identity,
+        ))
         .layer(from_fn(middleware::htmx::flash_redirect_to_toast))
-        .layer(from_fn(middleware::csrf::csrf_protection))
+        .layer(from_fn_with_state(
+            state.clone(),
+            middleware::csrf::csrf_protection,
+        ))
         .layer(from_fn(middleware::self_hosted::self_hosted_override))
         .layer(from_fn_with_state(
             state.clone(),
@@ -142,7 +150,10 @@ fn build_admin_csp(config: &AdminConfig) -> String {
         "default-src 'self'".to_owned(),
         "script-src 'self' 'unsafe-inline'".to_owned(),
         "style-src 'self' 'unsafe-inline'".to_owned(),
-        format!("img-src 'self' data: blob: {static_cdn} {media} https://fluxer-reports.ewr1.vultrobjects.com"),
+        format!(
+            "img-src 'self' data: blob: {static_cdn} {media} {}",
+            config.reports_bucket_origin
+        ),
         "font-src 'self'".to_owned(),
         "connect-src 'self'".to_owned(),
         "object-src 'none'".to_owned(),

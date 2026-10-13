@@ -14,15 +14,14 @@ import {AppearanceInlineContent} from '@app/features/user/components/modals/tabs
 import ApplicationsTab from '@app/features/user/components/modals/tabs/applications_tab';
 import {ChatSettingsInlineContent} from '@app/features/user/components/modals/tabs/chat_settings_tab/ChatSettingsTabInline';
 import DesktopSettingsTab from '@app/features/user/components/modals/tabs/DesktopSettingsTab';
-import ExpressionPacksTab from '@app/features/user/components/modals/tabs/ExpressionPacksTab';
 import GiftInventoryTab from '@app/features/user/components/modals/tabs/GiftInventoryTab';
 import GettingStartedTab from '@app/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab';
 import KeybindsTab from '@app/features/user/components/modals/tabs/KeybindsTab';
 import LanguageTab from '@app/features/user/components/modals/tabs/LanguageTab';
 import LinkedAccountsTab from '@app/features/user/components/modals/tabs/LinkedAccountsTab';
 import MyProfileTab from '@app/features/user/components/modals/tabs/MyProfileTab';
-import {NotificationsInlineContent} from '@app/features/user/components/modals/tabs/notifications_tab/NotificationsTabInline';
-import PlutoniumTab from '@app/features/user/components/modals/tabs/PlutoniumTab';
+import {NotificationsInlineContent} from '@app/features/user/components/modals/tabs/NotificationsTab';
+import {PlutoniumInlineTab} from '@app/features/user/components/modals/tabs/PlutoniumTab';
 import {PrivacyDashboardContent} from '@app/features/user/components/modals/tabs/privacy_safety_tab/PrivacySafetyTabInline';
 import SupportCenterTab from '@app/features/user/components/modals/tabs/support_center_tab/SupportCenterTab';
 import {VoiceVideoInlineContent} from '@app/features/user/components/modals/tabs/voice_video_tab/VoiceVideoTabInline';
@@ -66,9 +65,8 @@ const INLINE_TAB_COMPONENTS: Partial<Record<UserSettingsTabType, React.Component
 	getting_started: GettingStartedTab,
 	my_profile: MyProfileTab,
 	account_security: AccountSecurityInlineTab,
-	plutonium: PlutoniumTab,
+	plutonium: PlutoniumInlineTab,
 	gift_inventory: GiftInventoryTab,
-	expression_packs: ExpressionPacksTab,
 	privacy_safety: PrivacyDashboardContent,
 	authorized_apps: AccountSecurityInlineTab,
 	blocked_users: AccountSecurityInlineTab,
@@ -271,7 +269,15 @@ export const AllSettingsRenderer: React.FC<AllSettingsRendererProps> = observer(
 			>
 				<div className={styles.resultsHeader} data-flx="app.all-settings-renderer.results-header">
 					<Trans>
-						Found {resultCount} results in {categoryCount} categories
+						Found{' '}
+						<Plural value={resultCount} one="# result" other="# results" data-flx="app.all-settings-renderer.plural" />{' '}
+						in{' '}
+						<Plural
+							value={categoryCount}
+							one="# category"
+							other="# categories"
+							data-flx="app.all-settings-renderer.plural--2"
+						/>
 					</Trans>
 				</div>
 				{searchResults.map((result) => (

@@ -125,7 +125,8 @@ export async function toggleSelfMute(_guildId: string | null = null): Promise<vo
 	}
 	const room = MediaEngine.room;
 	const connectedChannelId = MediaEngine.channelId;
-	const currentMute = LocalVoiceState.getSelfMute();
+	const microphoneFailureLatched = MediaEngine.isMicrophoneFailureLatched();
+	const currentMute = LocalVoiceState.getSelfMute() || microphoneFailureLatched;
 	const currentDeaf = LocalVoiceState.getSelfDeaf();
 	const willUndeafen = currentDeaf;
 	const willUnmute = currentMute;
@@ -139,6 +140,7 @@ export async function toggleSelfMute(_guildId: string | null = null): Promise<vo
 	logger.info('toggleSelfMute', {
 		currentMute,
 		currentDeaf,
+		microphoneFailureLatched,
 		willUnmute,
 		willUndeafen,
 		willMute,
@@ -158,6 +160,7 @@ export async function toggleSelfMute(_guildId: string | null = null): Promise<vo
 			handleMicrophonePermissionBlocked();
 			return;
 		}
+		MediaEngine.clearMicrophoneFailureLatch();
 		if (!MediaPermission.isMicrophoneGranted()) {
 			logger.info('Microphone permission not granted, requesting permission');
 			const permissionGranted = room?.localParticipant
@@ -174,6 +177,11 @@ export async function toggleSelfMute(_guildId: string | null = null): Promise<vo
 				SoundCommands.playSound(SoundType.Unmute);
 				return;
 			}
+		}
+		if (!LocalVoiceState.getSelfMute() && !LocalVoiceState.getSelfDeaf()) {
+			logger.debug('Unmute intent only had to clear the microphone failure latch');
+			SoundCommands.playSound(SoundType.Unmute);
+			return;
 		}
 	}
 	LocalVoiceState.toggleSelfMute();
@@ -198,7 +206,7 @@ const updateConnectionProperty = async (
 	if (!voiceState) return;
 	const socket = GatewayConnection.socket;
 	if (!socket) return;
-	socket.updateVoiceState({
+	socket.updateVoiceStateExplicit({
 		guild_id: voiceState.guild_id,
 		channel_id: voiceState.channel_id,
 		connection_id: connectionId,
@@ -218,7 +226,7 @@ const updateConnectionsProperty = async (
 	for (const connectionId of connectionIds) {
 		const voiceState = MediaEngine.getVoiceStateByConnectionId(connectionId);
 		if (!voiceState) continue;
-		socket.updateVoiceState({
+		socket.updateVoiceStateExplicit({
 			guild_id: voiceState.guild_id,
 			channel_id: voiceState.channel_id,
 			connection_id: connectionId,
@@ -274,7 +282,7 @@ export async function bulkDisconnect(connectionIds: Array<string>): Promise<void
 	for (const connectionId of connectionIds) {
 		const voiceState = MediaEngine.getVoiceStateByConnectionId(connectionId);
 		if (!voiceState) continue;
-		socket.updateVoiceState({
+		socket.updateVoiceStateExplicit({
 			guild_id: voiceState.guild_id,
 			channel_id: null,
 			connection_id: connectionId,
@@ -297,7 +305,7 @@ export async function bulkMoveConnections(connectionIds: Array<string>, targetCh
 			await MediaEngine.connectToVoiceChannel(voiceState.guild_id ?? null, targetChannelId);
 			continue;
 		}
-		socket.updateVoiceState({
+		socket.updateVoiceStateExplicit({
 			guild_id: voiceState.guild_id,
 			channel_id: targetChannelId,
 			connection_id: connectionId,

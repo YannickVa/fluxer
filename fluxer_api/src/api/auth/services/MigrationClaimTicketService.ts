@@ -6,7 +6,7 @@ import type {ICacheService} from '@pkgs/cache/src/ICacheService';
 import {z} from 'zod';
 import {createUserID, type UserID} from '../../BrandedTypes';
 import type {User} from '../../models/User';
-import type {IUserRepository} from '../../user/IUserRepository';
+import type {UserRepository} from '@app/api/user/repositories/UserRepository';
 import {assertMigrationClaimEligible} from '../../user/MigrationAccountEligibility';
 
 const LIFETIME_SECONDS = 15 * 60;
@@ -56,7 +56,7 @@ export class MigrationClaimTicketService {
 
 	constructor(
 		private readonly cache: ClaimCache,
-		private readonly users: Pick<IUserRepository, 'findUnique'>,
+		private readonly users: Pick<UserRepository, 'findUnique'>,
 		context: MigrationClaimContext,
 	) {
 		const parsed = MigrationClaimContextSchema.safeParse(context);

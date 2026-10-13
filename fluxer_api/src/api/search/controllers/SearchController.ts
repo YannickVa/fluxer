@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {viewerFromCtx} from '@app/api/experiment/ChannelThreadsGate';
+import {LoginRequired} from '@app/api/middleware/AuthMiddleware';
+import {RateLimitMiddleware} from '@app/api/middleware/RateLimitMiddleware';
+import {OpenAPI} from '@app/api/middleware/ResponseTypeMiddleware';
+import {RateLimitConfigs} from '@app/api/RateLimitConfig';
+import type {HonoApp} from '@app/api/types/HonoEnv';
+import {Validator} from '@app/api/Validator';
 import {ValidationErrorCodes} from '@fluxer/constants/src/ValidationErrorCodes';
 import {InputValidationError} from '@fluxer/errors/src/domains/core/InputValidationError';
 import {GlobalSearchMessagesRequest} from '@fluxer/schema/src/domains/message/MessageRequestSchemas';
 import {MessageSearchResponse} from '@fluxer/schema/src/domains/message/MessageResponseSchemas';
-import {LoginRequired} from '../../middleware/AuthMiddleware';
-import {RateLimitMiddleware} from '../../middleware/RateLimitMiddleware';
-import {OpenAPI} from '../../middleware/ResponseTypeMiddleware';
-import {RateLimitConfigs} from '../../RateLimitConfig';
-import type {HonoApp} from '../../types/HonoEnv';
-import {Validator} from '../../Validator';
 
 export function SearchController(app: HonoApp) {
 	app.post(
@@ -23,7 +24,7 @@ export function SearchController(app: HonoApp) {
 				'Searches for messages across guilds and channels accessible to the authenticated user. Bots must supply a context guild or channel and may only use the current scope.',
 			responseSchema: MessageSearchResponse,
 			statusCode: 200,
-			security: ['bearerToken', 'sessionToken'],
+			security: ['botToken', 'bearerToken', 'sessionToken'],
 			tags: 'Search',
 		}),
 		Validator('json', GlobalSearchMessagesRequest),
@@ -35,7 +36,9 @@ export function SearchController(app: HonoApp) {
 			}
 			const userId = user.id;
 			const requestCache = ctx.get('requestCache');
-			const result = await ctx.get('searchService').searchMessages({userId, requestCache, data: params});
+			const result = await ctx
+				.get('searchService')
+				.searchMessages({viewer: viewerFromCtx(ctx), userId, requestCache, data: params});
 			return ctx.json(result);
 		},
 	);

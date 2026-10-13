@@ -14,6 +14,7 @@ const WILL_CHANGE = /will-change\s*:\s*([^;]*)/;
 const ANIMATION_STATE_SELECTOR = /\[data-(dragging|state|animating)|:hover|:active|Animating|Animated|Dragging/;
 
 const NON_TEXT_WILL_CHANGE_ALLOWLIST = new Set([
+	'features/premium/components/plutonium_page/PlutoniumPage.module.css @supports (animation-timeline: scroll()) @media (prefers-reduced-motion: no-preference) and (pointer: fine) .starfield::before',
 	'features/channel/components/GifPicker.module.css .loadingSkeletonBlob',
 	'features/channel/components/GuildMembersPage.module.css .progressBar',
 	'features/channel/components/direct_message/DMChannelView.module.css .callParticipantAvatar',

@@ -9,7 +9,6 @@ import ChatSettingsTab from '@app/features/user/components/modals/tabs/ChatSetti
 import ComponentGalleryTab from '@app/features/user/components/modals/tabs/component_gallery_tab';
 import DesktopSettingsTab from '@app/features/user/components/modals/tabs/DesktopSettingsTab';
 import EmbedDebuggerTab from '@app/features/user/components/modals/tabs/EmbedDebuggerTab';
-import ExpressionPacksTab from '@app/features/user/components/modals/tabs/ExpressionPacksTab';
 import GiftInventoryTab from '@app/features/user/components/modals/tabs/GiftInventoryTab';
 import GettingStartedTab from '@app/features/user/components/modals/tabs/getting_started_tab/GettingStartedTab';
 import KeybindsTab from '@app/features/user/components/modals/tabs/KeybindsTab';
@@ -48,7 +47,6 @@ const DESKTOP_TAB_COMPONENTS: Partial<Record<UserSettingsTabType, React.Componen
 	embed_debugger: EmbedDebuggerTab,
 	applications: ApplicationsTab,
 	component_gallery: ComponentGalleryTab,
-	expression_packs: ExpressionPacksTab,
 };
 export const getSettingsTabComponent = (
 	tabType: UserSettingsTabType,

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {getSameIpDecisionKey} from '@fluxer/ip_utils/src/IpAddress';
-import type {UserID} from '../../../../BrandedTypes';
-import {BatchBuilder, upsertOne} from '../../../../database/CassandraQueryExecution';
-import type {UserRow} from '../../../../database/types/UserTypes';
+import {upsertOne} from '@app/api/database/CassandraQueryExecution';
+import type {UserID} from '@app/api/BrandedTypes';
+import {BatchBuilder} from '@app/api/database/CassandraQueryExecution';
+import type {UserRow} from '@app/api/database/types/UserTypes';
 import {
 	UserByEmail,
 	UserByLastActiveIp,
@@ -11,7 +11,8 @@ import {
 	UserByStripeCustomerId,
 	UserByStripeSubscriptionId,
 	UserByUsername,
-} from '../../../../Tables';
+} from '@app/api/Tables';
+import {getSameIpDecisionKey} from '@fluxer/ip_utils/src/IpAddress';
 
 export class UserIndexRepository {
 	async syncEmailIndex(userId: UserID, email: string): Promise<void> {
@@ -20,7 +21,7 @@ export class UserIndexRepository {
 
 	async syncIndices(data: UserRow, oldData?: UserRow | null): Promise<void> {
 		const batch = new BatchBuilder();
-		if (!!data.username && data.discriminator != null && data.discriminator !== undefined) {
+		if (data.username && data.discriminator != null && data.discriminator !== undefined) {
 			batch.addPrepared(
 				UserByUsername.upsertAll({
 					username: data.username.toLowerCase(),
@@ -167,7 +168,7 @@ export class UserIndexRepository {
 				);
 			}
 		}
-		await batch.execute();
+		await batch.execute(false);
 	}
 
 	async deleteIndices(

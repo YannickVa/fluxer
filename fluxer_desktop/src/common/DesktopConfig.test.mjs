@@ -44,7 +44,7 @@ await build({
 					if (stubPath === 'constants') {
 						return {
 							contents:
-								"export const CANARY_APP_URL = 'https://web.canary.fluxer.app'; export const STABLE_APP_URL = 'https://web.fluxer.app';",
+								"export const CHANNEL_APP_URLS = {stable: 'https://web.fluxer.app', canary: 'https://web.canary.fluxer.app', development: 'http://localhost:5173'}; export const CANARY_MIGRATED_APP_ORIGIN = 'https://canary.fluxer.com'; export const STABLE_MIGRATED_APP_ORIGIN = 'https://fluxer.com';",
 							loader: 'js',
 						};
 					}
@@ -72,13 +72,47 @@ test('preserves a custom instance URL while upgrading and saving unrelated setti
 		);
 
 		desktopConfig.loadDesktopConfig(profileDir);
-		assert.equal(desktopConfig.getAppUrl(), 'https://matskos.duckdns.org');
-		assert.equal(desktopConfig.getCustomAppUrl(), 'https://matskos.duckdns.org');
+		assert.equal(desktopConfig.getLegacyAppOrigin(), 'https://matskos.duckdns.org');
+		assert.equal(desktopConfig.getInitialInstanceEndpoint(), 'https://matskos.duckdns.org');
+
+		const immediatelyPersisted = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+		assert.equal(immediatelyPersisted.app_url, undefined);
+		assert.equal(immediatelyPersisted.migration_instance_endpoint, 'https://matskos.duckdns.org');
+		assert.equal(immediatelyPersisted.legacy_app_origin, 'https://matskos.duckdns.org');
 
 		desktopConfig.setDesktopWindowBehaviorSettings({closeToTray: false});
 		const persisted = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
-		assert.equal(persisted.app_url, 'https://matskos.duckdns.org');
+		assert.equal(persisted.app_url, undefined);
+		assert.equal(persisted.migration_instance_endpoint, 'https://matskos.duckdns.org');
+		assert.equal(persisted.legacy_app_origin, 'https://matskos.duckdns.org');
 	} finally {
 		fs.rmSync(profileDir, {recursive: true, force: true});
 	}
+});
+
+test('rejects malformed legacy instance URLs and preserves fresh-profile isolation', () => {
+	for (const input of [
+		'javascript:alert(1)',
+		'file:///private',
+		'https://user:password@example.com',
+		'https://example.com?token=secret',
+		'https://example.com#token',
+		'bad',
+	]) {
+		const profileDir = fs.mkdtempSync(path.join(temporaryDir, 'invalid-'));
+		fs.writeFileSync(path.join(profileDir, 'settings.json'), JSON.stringify({app_url: input}));
+		desktopConfig.loadDesktopConfig(profileDir);
+		assert.equal(desktopConfig.getInitialInstanceEndpoint(), null);
+		assert.equal(desktopConfig.getLegacyAppOrigin(), 'https://web.canary.fluxer.app');
+	}
+});
+
+test('keeps a LAN staging instance distinct from official origin migration', () => {
+	const profileDir = fs.mkdtempSync(path.join(temporaryDir, 'lan-'));
+	fs.writeFileSync(path.join(profileDir, 'settings.json'), JSON.stringify({app_url: 'http://192.0.2.10:8443'}));
+	desktopConfig.loadDesktopConfig(profileDir);
+	assert.equal(desktopConfig.getInitialInstanceEndpoint(), 'http://192.0.2.10:8443');
+	assert.equal(desktopConfig.getLegacyAppOrigin(), 'http://192.0.2.10:8443');
+	desktopConfig.loadDesktopConfig(fs.mkdtempSync(path.join(temporaryDir, 'fresh-')));
+	assert.equal(desktopConfig.getInitialInstanceEndpoint(), null);
 });

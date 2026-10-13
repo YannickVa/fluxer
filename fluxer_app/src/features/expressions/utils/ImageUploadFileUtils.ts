@@ -19,14 +19,7 @@ export function isSvgFile(file: ImageUploadFileLike): boolean {
 	return (file.name ?? '').toLowerCase().endsWith('.svg');
 }
 
-export function getImageUploadMimeType(file: ImageUploadFileLike): string {
-	if (isSvgFile(file)) return 'image/svg+xml';
-	const type = normalizeImageMimeType(file.type);
-	if (type.startsWith('image/')) return type;
-	return 'image/png';
-}
-
-export function readBlobAsDataUrl(blob: Blob): Promise<string> {
+function readBlobAsDataUrl(blob: Blob): Promise<string> {
 	return new Promise((resolve, reject) => {
 		const reader = new FileReader();
 		reader.onload = () => resolve(String(reader.result));

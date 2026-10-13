@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {AdminRepository} from '@app/api/admin/AdminRepository';
+import {upsertOne} from '@app/api/database/CassandraQueryExecution';
+import {BannedIps} from '@app/api/Tables';
+import type {ApiTestHarness} from '@app/api/test/ApiTestHarness';
+import {createApiTestHarness} from '@app/api/test/ApiTestHarness';
 import {afterAll, beforeAll, beforeEach, describe, expect, it} from 'vitest';
-import {upsertOne} from '../../database/CassandraQueryExecution';
-import {BannedIps} from '../../Tables';
-import type {ApiTestHarness} from '../../test/ApiTestHarness';
-import {createApiTestHarness} from '../../test/ApiTestHarness';
-import {AdminRepository} from '../AdminRepository';
 
 describe('AdminRepository IP ban canonicalization', () => {
 	let harness: ApiTestHarness;

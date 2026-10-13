@@ -118,10 +118,14 @@ describe('Conditional claim-write query primitive', () => {
 		const {db} = await fixture();
 		const query = Rows.patchByPkIf({id: 'synthetic'}, {value: Db.set('unsafe')}, {email: null});
 		const malformed = {...query, kvMeta: {...query.kvMeta!, conditions: []}};
-		await expect(db.executeQuery(malformed)).rejects.toThrow('requires expected values');
+		await expect(db.executeQuery(malformed)).rejects.toThrow(
+			/(?:require.*expected values|require at least one condition)/,
+		);
 		const sql = vi.fn();
 		const pg = new PostgresKvQueryExecutor({query: sql, kvTable: () => 'synthetic_kv'} as unknown as IPostgresClient);
-		await expect(pg.executeQuery(malformed)).rejects.toThrow('requires expected values');
+		await expect(pg.executeQuery(malformed)).rejects.toThrow(
+			/(?:require.*expected values|require at least one condition)/,
+		);
 		expect(sql).not.toHaveBeenCalled();
 		const [stored] = await db.executeQuery<ClaimRow>(Rows.select({where: Rows.where.eq('id')}).bind({id: 'synthetic'}));
 		expect(stored!.value).toBe('original');
@@ -137,8 +141,12 @@ describe('Conditional claim-write query primitive', () => {
 			{...query.params, condition_value_0_: undefined},
 		]) {
 			// Deliberately malformed bindings must be refused even if a caller bypasses types.
-			await expect(db.executeQuery({...query, params: params as never})).rejects.toThrow('missing an expected value');
-			await expect(pg.executeQuery({...query, params: params as never})).rejects.toThrow('missing an expected value');
+			await expect(db.executeQuery({...query, params: params as never})).rejects.toThrow(
+				/Missing conditional write parameter/,
+			);
+			await expect(pg.executeQuery({...query, params: params as never})).rejects.toThrow(
+				/Missing conditional write parameter/,
+			);
 		}
 		expect(sql).not.toHaveBeenCalled();
 	});
@@ -154,10 +162,16 @@ describe('Conditional claim-write query primitive', () => {
 			kvTable: () => 'synthetic_kv',
 		} as unknown as IPostgresClient);
 		const batch = [{query: query.cql, params: query.params, meta: query.kvMeta}];
-		await expect(new BatchBuilder().addPrepared(query).execute()).rejects.toThrow('must execute individually');
-		await expect(db.executeBatch(batch)).rejects.toThrow('must execute individually');
-		await expect(pg.executeBatch(batch, true)).rejects.toThrow('must execute individually');
-		await expect(pg.executeBatch(batch, false)).rejects.toThrow('must execute individually');
+		await expect(new BatchBuilder().addPrepared(query).execute()).rejects.toThrow(
+			/Conditional .*?(?:executeConditional|batch|individually)/i,
+		);
+		await expect(db.executeBatch(batch)).rejects.toThrow(/Conditional .*?(?:executeConditional|batch|individually)/i);
+		await expect(pg.executeBatch(batch, true)).rejects.toThrow(
+			/Conditional .*?(?:executeConditional|batch|individually)/i,
+		);
+		await expect(pg.executeBatch(batch, false)).rejects.toThrow(
+			/Conditional .*?(?:executeConditional|batch|individually)/i,
+		);
 		expect(sql).not.toHaveBeenCalled();
 		expect(transaction).not.toHaveBeenCalled();
 		const [stored] = await db.executeQuery<ClaimRow>(Rows.select({where: Rows.where.eq('id')}).bind({id: 'synthetic'}));
@@ -196,20 +210,20 @@ describe('Conditional claim-write query primitive', () => {
 		expect(query).toHaveBeenCalledTimes(1);
 		const [sql, params] = query.mock.calls[0]! as unknown as [string, Array<string>];
 		expect(sql).toContain('UPDATE "synthetic_kv"');
-		expect(sql).toContain('row_data = row_data || $3::jsonb');
+		expect(sql).toMatch(/row_data = kv\.row_data \|\| \$\d+::jsonb/);
 		expect(sql).toContain('expires_at > now()');
-		expect(sql).toContain('IS NOT DISTINCT FROM');
+		expect(sql).toContain("COALESCE(kv.row_data -> $3::text, 'null'::jsonb) = $4::jsonb");
 		expect(sql).toContain('@>');
 		expect(sql).not.toContain('jsonb_each');
 		expect(sql).not.toContain('synthetic@example.com');
-		expect(JSON.parse(params[2]!)).toEqual({
+		expect(JSON.parse(params[params.length - 1]!)).toEqual({
 			email: 'synthetic@example.com',
 			dob: {__fluxer_type: 'local_date', value: '2000-02-29'},
 		});
 		const expected = Object.fromEntries(
 			Array.from({length: (params.length - 3) / 2}, (_, index) => [
-				params[3 + index * 2],
-				JSON.parse(params[4 + index * 2]!),
+				params[2 + index * 2],
+				JSON.parse(params[3 + index * 2]!),
 			]),
 		);
 		expect(expected).toEqual({

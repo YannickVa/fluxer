@@ -3,8 +3,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {BUILD_CHANNEL} from '@electron/common/BuildChannel';
-import {CANARY_APP_URL, STABLE_APP_URL} from '@electron/common/Constants';
+import {CANARY_MIGRATED_APP_ORIGIN, CHANNEL_APP_URLS, STABLE_MIGRATED_APP_ORIGIN} from '@electron/common/Constants';
+import {
+	GLOBAL_SHORTCUT_DESCRIPTION_MAX_LENGTH,
+	type GlobalShortcutAction,
+	isGlobalShortcutAction,
+} from '@electron/common/GlobalShortcutActions';
 import type {DesktopTroubleshootingSettings, DesktopWindowBehaviorSettings} from '@electron/common/Types';
+import {InstanceEndpointKind, normalizeInstanceEndpoint} from '@fluxer/instance_bootstrap/src/EndpointNormalization';
 import log from 'electron-log';
 
 export type {DesktopTroubleshootingSettings, DesktopWindowBehaviorSettings} from '@electron/common/Types';
@@ -14,11 +20,38 @@ const MINIMIZE_TO_TRAY_STORAGE_KEY_V2 = 'minimizeToTrayV2';
 const CLOSE_TO_TRAY_STORAGE_KEY_V2 = 'closeToTrayV2';
 
 interface DesktopConfig extends Record<string, unknown> {
-	app_url?: string;
+	migration_instance_endpoint?: string;
+	legacy_app_origin?: string;
 	chromiumSwitches?: ChromiumSwitchesSetting;
 	window_behavior?: PersistedDesktopWindowBehaviorSettings;
 	troubleshooting?: PersistedDesktopTroubleshootingSettings;
 	theme_allowed_local_files?: Array<string>;
+	app_origin?: string;
+	preboot_theme?: string;
+	global_shortcuts?: PersistedGlobalShortcutsSettings;
+	mac_screen_recording_requested?: boolean;
+}
+
+export type GlobalShortcutsPortalConsent = 'unset' | 'granted' | 'declined';
+
+interface PersistedGlobalShortcutAction {
+	action: GlobalShortcutAction;
+	description: string;
+	preferredTrigger: string | null;
+}
+
+interface PersistedGlobalShortcutsSettings {
+	portal_consent?: GlobalShortcutsPortalConsent;
+	direct_input_enabled?: boolean;
+	migrated?: boolean;
+	last_actions?: Array<PersistedGlobalShortcutAction>;
+}
+
+export interface GlobalShortcutsSettings {
+	portalConsent: GlobalShortcutsPortalConsent;
+	directInputEnabled: boolean;
+	migrated: boolean;
+	lastActions: Array<PersistedGlobalShortcutAction>;
 }
 
 export type ChromiumSwitchesSetting = ReadonlyArray<string> | Record<string, unknown>;
@@ -28,20 +61,23 @@ interface PersistedDesktopWindowBehaviorSettings {
 	useNativeTitleBar?: boolean;
 	minimizeToTrayV2?: boolean;
 	closeToTrayV2?: boolean;
+	startMinimized?: boolean;
 	rememberWindowState?: boolean;
 	allowTransparency?: boolean;
 	smoothScrolling?: boolean;
 	middleClickAutoscroll?: boolean;
-	firstClickPassThroughWhenUnfocused?: boolean;
 }
 
 interface PersistedDesktopTroubleshootingSettings {
 	disableHardwareAcceleration?: boolean;
 }
 
+const INSTANCE_ENDPOINT_ARGS = ['--fluxer-instance'];
+
+const PREBOOT_THEME_PATTERN = /^[a-z0-9][a-z0-9_-]{0,63}$/u;
+
 let config: DesktopConfig = {};
 let configPath: string | null = null;
-let runtimeAppUrlOverride: string | null = null;
 
 function getDefaultDesktopTroubleshootingSettings(): DesktopTroubleshootingSettings {
 	return {
@@ -54,6 +90,7 @@ function getDefaultDesktopWindowBehaviorSettings(): DesktopWindowBehaviorSetting
 		showTrayIcon: true,
 		minimizeToTray: false,
 		closeToTray: true,
+		startMinimized: false,
 		useNativeTitleBar: false,
 		activeUseNativeTitleBar: false,
 		rememberWindowState: true,
@@ -63,7 +100,6 @@ function getDefaultDesktopWindowBehaviorSettings(): DesktopWindowBehaviorSetting
 		activeSmoothScrolling: true,
 		middleClickAutoscroll: false,
 		activeMiddleClickAutoscroll: false,
-		firstClickPassThroughWhenUnfocused: false,
 	};
 }
 
@@ -96,8 +132,8 @@ function sanitizePersistedDesktopWindowBehaviorSettings(
 	if (typeof value.middleClickAutoscroll === 'boolean') {
 		settings.middleClickAutoscroll = value.middleClickAutoscroll;
 	}
-	if (typeof value.firstClickPassThroughWhenUnfocused === 'boolean') {
-		settings.firstClickPassThroughWhenUnfocused = value.firstClickPassThroughWhenUnfocused;
+	if (typeof value.startMinimized === 'boolean') {
+		settings.startMinimized = value.startMinimized;
 	}
 	const minimizeToTrayV2 = value[MINIMIZE_TO_TRAY_STORAGE_KEY_V2];
 	if (typeof minimizeToTrayV2 === 'boolean') {
@@ -139,15 +175,108 @@ function sanitizeChromiumSwitchesSetting(value: unknown): ChromiumSwitchesSettin
 	return undefined;
 }
 
+const PREFERRED_TRIGGER_MAX_LENGTH = 100;
+
+function sanitizePersistedGlobalShortcutActions(value: unknown): Array<PersistedGlobalShortcutAction> | undefined {
+	if (!Array.isArray(value)) {
+		return undefined;
+	}
+	const actions: Array<PersistedGlobalShortcutAction> = [];
+	const seen = new Set<string>();
+	for (const item of value) {
+		if (!isRecord(item) || !isGlobalShortcutAction(item.action) || seen.has(item.action)) continue;
+		if (typeof item.description !== 'string') continue;
+		const description = item.description.trim();
+		if (description.length === 0 || description.length > GLOBAL_SHORTCUT_DESCRIPTION_MAX_LENGTH) continue;
+		const preferredTrigger =
+			typeof item.preferredTrigger === 'string' &&
+			item.preferredTrigger.length > 0 &&
+			item.preferredTrigger.length <= PREFERRED_TRIGGER_MAX_LENGTH
+				? item.preferredTrigger
+				: null;
+		seen.add(item.action);
+		actions.push({action: item.action, description, preferredTrigger});
+	}
+	return actions.length > 0 ? actions : undefined;
+}
+
+export function sanitizePersistedGlobalShortcutsSettings(value: unknown): PersistedGlobalShortcutsSettings | undefined {
+	if (!isRecord(value)) {
+		return undefined;
+	}
+	const settings: PersistedGlobalShortcutsSettings = {};
+	if (value.portal_consent === 'unset' || value.portal_consent === 'granted' || value.portal_consent === 'declined') {
+		settings.portal_consent = value.portal_consent;
+	}
+	if (typeof value.direct_input_enabled === 'boolean') {
+		settings.direct_input_enabled = value.direct_input_enabled;
+	}
+	if (typeof value.migrated === 'boolean') {
+		settings.migrated = value.migrated;
+	}
+	const lastActions = sanitizePersistedGlobalShortcutActions(value.last_actions);
+	if (lastActions) {
+		settings.last_actions = lastActions;
+	}
+	return Object.keys(settings).length > 0 ? settings : undefined;
+}
+
+function normalizeGlobalShortcutsSettings(settings?: PersistedGlobalShortcutsSettings): GlobalShortcutsSettings {
+	return {
+		portalConsent: settings?.portal_consent ?? 'unset',
+		directInputEnabled: settings?.direct_input_enabled ?? false,
+		migrated: settings?.migrated ?? false,
+		lastActions: settings?.last_actions ? settings.last_actions.map((entry) => ({...entry})) : [],
+	};
+}
+
+function serializeGlobalShortcutsSettings(settings: GlobalShortcutsSettings): PersistedGlobalShortcutsSettings {
+	return {
+		portal_consent: settings.portalConsent,
+		direct_input_enabled: settings.directInputEnabled,
+		migrated: settings.migrated,
+		...(settings.lastActions.length > 0 ? {last_actions: settings.lastActions.map((entry) => ({...entry}))} : {}),
+	};
+}
+
+function getLegacyWebAppOrigin(): string {
+	return new URL(CHANNEL_APP_URLS[BUILD_CHANNEL]).origin;
+}
+
+function getMigratedAppOrigin(): string {
+	return BUILD_CHANNEL === 'canary' ? CANARY_MIGRATED_APP_ORIGIN : STABLE_MIGRATED_APP_ORIGIN;
+}
+
+function getOfficialAppOrigins(): Array<string> {
+	return [getLegacyWebAppOrigin(), getMigratedAppOrigin()];
+}
+
+function sanitizeAppOrigin(value: unknown): string | undefined {
+	return typeof value === 'string' && getOfficialAppOrigins().includes(value) ? value : undefined;
+}
+
+function sanitizePrebootTheme(value: unknown): string | undefined {
+	return typeof value === 'string' && PREBOOT_THEME_PATTERN.test(value) ? value : undefined;
+}
+
 function sanitizeDesktopConfig(value: unknown): DesktopConfig {
 	if (!isRecord(value)) {
 		return {};
 	}
 	const nextConfig: DesktopConfig = {...value};
-	if (typeof value.app_url === 'string') {
-		nextConfig.app_url = value.app_url;
+	const legacyInput = sanitizeLegacyInstanceInput(value.app_url);
+	const endpoint = sanitizeLegacyInstanceInput(value.migration_instance_endpoint) ?? legacyInput;
+	if (endpoint) nextConfig.migration_instance_endpoint = normalizeInstanceEndpoint(endpoint, InstanceEndpointKind.API)!;
+	else delete nextConfig.migration_instance_endpoint;
+	const legacyOrigin = sanitizeLegacyInstanceInput(value.legacy_app_origin) ?? legacyInput;
+	if (legacyOrigin) nextConfig.legacy_app_origin = new URL(legacyOrigin).origin;
+	else delete nextConfig.legacy_app_origin;
+	delete nextConfig.app_url;
+	const appOrigin = sanitizeAppOrigin(value.app_origin);
+	if (appOrigin) {
+		nextConfig.app_origin = appOrigin;
 	} else {
-		delete nextConfig.app_url;
+		delete nextConfig.app_origin;
 	}
 	const chromiumSwitches = sanitizeChromiumSwitchesSetting(value.chromiumSwitches);
 	if (chromiumSwitches) {
@@ -167,12 +296,29 @@ function sanitizeDesktopConfig(value: unknown): DesktopConfig {
 	} else {
 		delete nextConfig.troubleshooting;
 	}
+	const globalShortcuts = sanitizePersistedGlobalShortcutsSettings(value.global_shortcuts);
+	if (globalShortcuts) {
+		nextConfig.global_shortcuts = globalShortcuts;
+	} else {
+		delete nextConfig.global_shortcuts;
+	}
+	if (value.mac_screen_recording_requested === true) {
+		nextConfig.mac_screen_recording_requested = true;
+	} else {
+		delete nextConfig.mac_screen_recording_requested;
+	}
 	if (Array.isArray(value.theme_allowed_local_files)) {
 		nextConfig.theme_allowed_local_files = value.theme_allowed_local_files.filter(
 			(item): item is string => typeof item === 'string' && item.trim().length > 0,
 		);
 	} else {
 		delete nextConfig.theme_allowed_local_files;
+	}
+	const prebootTheme = sanitizePrebootTheme(value.preboot_theme);
+	if (prebootTheme) {
+		nextConfig.preboot_theme = prebootTheme;
+	} else {
+		delete nextConfig.preboot_theme;
 	}
 	return nextConfig;
 }
@@ -199,6 +345,10 @@ function normalizeDesktopWindowBehaviorSettings(
 				: typeof normalizedSettings?.closeToTrayV2 === 'boolean'
 					? normalizedSettings.closeToTrayV2
 					: defaults.closeToTray,
+		startMinimized:
+			typeof normalizedSettings?.startMinimized === 'boolean'
+				? normalizedSettings.startMinimized
+				: defaults.startMinimized,
 		useNativeTitleBar:
 			typeof normalizedSettings?.useNativeTitleBar === 'boolean'
 				? normalizedSettings.useNativeTitleBar
@@ -243,14 +393,11 @@ function normalizeDesktopWindowBehaviorSettings(
 				: typeof normalizedSettings?.middleClickAutoscroll === 'boolean'
 					? normalizedSettings.middleClickAutoscroll
 					: defaults.middleClickAutoscroll,
-		firstClickPassThroughWhenUnfocused:
-			typeof normalizedSettings?.firstClickPassThroughWhenUnfocused === 'boolean'
-				? normalizedSettings.firstClickPassThroughWhenUnfocused
-				: defaults.firstClickPassThroughWhenUnfocused,
 	};
 	if (!normalized.showTrayIcon) {
 		normalized.minimizeToTray = false;
 		normalized.closeToTray = false;
+		normalized.startMinimized = false;
 	}
 	return normalized;
 }
@@ -265,7 +412,7 @@ function serializeDesktopWindowBehaviorSettings(
 		allowTransparency: settings.allowTransparency,
 		smoothScrolling: settings.smoothScrolling,
 		middleClickAutoscroll: settings.middleClickAutoscroll,
-		firstClickPassThroughWhenUnfocused: settings.firstClickPassThroughWhenUnfocused,
+		startMinimized: settings.startMinimized,
 		[MINIMIZE_TO_TRAY_STORAGE_KEY_V2]: settings.minimizeToTray,
 		[CLOSE_TO_TRAY_STORAGE_KEY_V2]: settings.closeToTray,
 	};
@@ -311,10 +458,13 @@ function saveDesktopConfig(): void {
 
 export function loadDesktopConfig(userDataPath: string): void {
 	configPath = path.join(userDataPath, CONFIG_FILE_NAME);
+	config = {};
 	try {
 		if (fs.existsSync(configPath)) {
 			const data = fs.readFileSync(configPath, 'utf-8');
-			config = sanitizeDesktopConfig(JSON.parse(data));
+			const loaded = JSON.parse(data);
+			config = sanitizeDesktopConfig(loaded);
+			if (loaded.app_url && config.migration_instance_endpoint) saveDesktopConfig();
 			log.info('Loaded desktop config from', configPath);
 		}
 	} catch (error) {
@@ -322,31 +472,55 @@ export function loadDesktopConfig(userDataPath: string): void {
 	}
 }
 
-export function getAppUrl(): string {
-	if (runtimeAppUrlOverride) {
-		return runtimeAppUrlOverride;
-	}
-	if (config.app_url) {
-		return config.app_url;
-	}
-	return BUILD_CHANNEL === 'canary' ? CANARY_APP_URL : STABLE_APP_URL;
+export function getLegacyAppOrigin(): string {
+	if (config.legacy_app_origin) return config.legacy_app_origin;
+	const migratedAppOrigin = getMigratedAppOrigin();
+	return config.app_origin === migratedAppOrigin ? migratedAppOrigin : getLegacyWebAppOrigin();
 }
 
-export function getCustomAppUrl(): string | null {
-	return runtimeAppUrlOverride ?? config.app_url ?? null;
-}
-
-export function setRuntimeAppUrlOverride(appUrl: string | null): void {
-	runtimeAppUrlOverride = appUrl;
-}
-
-export function setCustomAppUrl(appUrl: string | null): void {
-	if (appUrl) {
-		config.app_url = appUrl;
-	} else {
-		delete config.app_url;
+function sanitizeLegacyInstanceInput(value: unknown): string | null {
+	if (typeof value !== 'string') return null;
+	try {
+		const url = new URL(value.trim());
+		if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.search || url.hash)
+			return null;
+		return url.toString();
+	} catch {
+		return null;
 	}
-	saveDesktopConfig();
+}
+
+export function getInitialInstanceEndpoint(): string | null {
+	const configured = config.migration_instance_endpoint;
+	if (configured) return configured;
+	const bundled = sanitizeLegacyInstanceInput(process.env.PUBLIC_DESKTOP_INSTANCE_ENDPOINT);
+	return bundled ? normalizeInstanceEndpoint(bundled, InstanceEndpointKind.API) : null;
+}
+
+export function getLaunchInstanceEndpointOverride(argv: ReadonlyArray<string> = process.argv): string | null {
+	let raw: string | null = null;
+	for (let index = 0; index < argv.length; index += 1) {
+		const arg = argv[index];
+		for (const name of INSTANCE_ENDPOINT_ARGS) {
+			if (arg === name) {
+				const next = argv[index + 1];
+				raw = next && !next.startsWith('--') ? next : '';
+			} else if (arg.startsWith(`${name}=`)) {
+				raw = arg.slice(name.length + 1);
+			}
+		}
+	}
+	if (raw === null) {
+		return null;
+	}
+	if (process.defaultApp !== true) {
+		throw new Error('--fluxer-instance is only accepted in a development build');
+	}
+	const endpoint = normalizeInstanceEndpoint(raw.trim(), InstanceEndpointKind.API);
+	if (endpoint == null || !endpoint.includes('://')) {
+		throw new Error('--fluxer-instance requires an absolute http(s) API endpoint');
+	}
+	return endpoint;
 }
 
 export function getConfiguredChromiumSwitches(): ChromiumSwitchesSetting | undefined {
@@ -387,6 +561,19 @@ export function setDesktopTroubleshootingSettings(
 	return getDesktopTroubleshootingSettings();
 }
 
+export function getGlobalShortcutsSettings(): GlobalShortcutsSettings {
+	return normalizeGlobalShortcutsSettings(config.global_shortcuts);
+}
+
+export function setGlobalShortcutsSettings(settings: Partial<GlobalShortcutsSettings>): GlobalShortcutsSettings {
+	config.global_shortcuts = serializeGlobalShortcutsSettings({
+		...getGlobalShortcutsSettings(),
+		...settings,
+	});
+	saveDesktopConfig();
+	return getGlobalShortcutsSettings();
+}
+
 export function getAllowedThemeLocalFiles(): Array<string> {
 	return Array.isArray(config.theme_allowed_local_files) ? [...config.theme_allowed_local_files] : [];
 }
@@ -401,6 +588,31 @@ export function addAllowedThemeLocalFiles(paths: ReadonlyArray<string>): Array<s
 	config.theme_allowed_local_files = [...next].sort();
 	saveDesktopConfig();
 	return getAllowedThemeLocalFiles();
+}
+
+export function getPrebootTheme(): string | null {
+	return sanitizePrebootTheme(config.preboot_theme) ?? null;
+}
+
+export function setPrebootTheme(theme: string): void {
+	const sanitized = sanitizePrebootTheme(theme);
+	if (sanitized === undefined || sanitized === getPrebootTheme()) {
+		return;
+	}
+	config.preboot_theme = sanitized;
+	saveDesktopConfig();
+}
+
+export function hasRequestedMacScreenRecording(): boolean {
+	return config.mac_screen_recording_requested === true;
+}
+
+export function markMacScreenRecordingRequested(): void {
+	if (config.mac_screen_recording_requested === true) {
+		return;
+	}
+	config.mac_screen_recording_requested = true;
+	saveDesktopConfig();
 }
 
 export function clearAllowedThemeLocalFiles(): void {

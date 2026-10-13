@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import {Routes} from '@app/app/Routes';
-import RuntimeConfig from '@app/features/app/state/RuntimeConfig';
+import type {RuntimeConfigSnapshot} from '@app/features/app/state/InstanceSnapshotStore';
+import {AuthRuntimeTargetGate} from '@app/features/auth/flow/AuthRuntimeTargetGate';
+import {AuthCardVariant} from '@app/features/auth/state/AuthLayoutContext';
 import styles from '@app/features/auth/components/pages/ResetPasswordPage.module.css';
 import FormField from '@app/features/auth/flow/AuthFormField';
 import {AuthRouterLink} from '@app/features/auth/flow/AuthRouterLink';
@@ -13,7 +15,7 @@ import {
 	getRegistrationLegalConsentConfig,
 	RegistrationLegalConsent,
 } from '@app/features/auth/flow/RegistrationLegalConsent';
-import {useAuthCardPresentation} from '@app/features/auth/flow/useAuthCardPresentation';
+import {useAuthPresentation} from '@app/features/auth/flow/useAuthPresentation';
 import Authentication from '@app/features/auth/state/Authentication';
 import SessionManager from '@app/features/platform/state/AuthSession';
 import {Button} from '@app/features/ui/button/Button';
@@ -26,9 +28,13 @@ import {flushSync} from 'react-dom';
 
 const EMPTY_FORM = {email: '', code: '', password: '', confirmation: '', year: '', month: '', day: '', consent: false};
 
-const MigrationClaimPage = observer(function MigrationClaimPage() {
+const MigrationClaimPageContent = observer(function MigrationClaimPageContent({
+	runtimeSnapshot,
+}: {
+	runtimeSnapshot: RuntimeConfigSnapshot | null;
+}) {
 	const {i18n} = useLingui();
-	useAuthCardPresentation({showLogoSide: false, variant: 'standard'});
+	useAuthPresentation({variant: AuthCardVariant.STANDARD});
 	const id = useId();
 	const heading = useRef<HTMLHeadingElement>(null);
 	const flow = useRef<MigrationClaimFlow | null>(null);
@@ -39,7 +45,9 @@ const MigrationClaimPage = observer(function MigrationClaimPage() {
 	const [now, setNow] = useState(Date.now);
 	const authenticated = Authentication.isAuthenticated;
 	const initialized = SessionManager.isInitialized;
-	const legal = getRegistrationLegalConsentConfig();
+	const legal = runtimeSnapshot
+		? getRegistrationLegalConsentConfig(runtimeSnapshot)
+		: {termsUrl: null, privacyUrl: null, requirement: null};
 	useFluxerDocumentTitle(i18n._(msg`Claim your migrated account`));
 
 	function clear() {
@@ -81,8 +89,8 @@ const MigrationClaimPage = observer(function MigrationClaimPage() {
 				flow.current = new MigrationClaimFlow(
 					takeMigrationClaimLink(),
 					new MigrationClaimClient(() => ({
-						apiEndpoint: RuntimeConfig.apiEndpoint,
-						apiVersion: RuntimeConfig.apiCodeVersion,
+						apiEndpoint: runtimeSnapshot!.apiEndpoint,
+						apiVersion: runtimeSnapshot!.apiCodeVersion,
 					})),
 				);
 				setView(flow.current.view);
@@ -92,7 +100,7 @@ const MigrationClaimPage = observer(function MigrationClaimPage() {
 				setView({stage: 'stopped', busy: false, failure: 'unavailable'});
 			}
 		}
-	}, [authenticated, initialized]);
+	}, [authenticated, initialized, runtimeSnapshot]);
 
 	useEffect(() => {
 		heading.current?.focus();
@@ -397,6 +405,20 @@ const MigrationClaimPage = observer(function MigrationClaimPage() {
 				</AuthRouterLink>
 			</div>
 		</>
+	);
+});
+
+const MigrationClaimPage = observer(function MigrationClaimPage() {
+	if (Authentication.isAuthenticated) return <MigrationClaimPageContent runtimeSnapshot={null} />;
+	return (
+		<AuthRuntimeTargetGate>
+			{(runtimeSnapshot) => (
+				<MigrationClaimPageContent
+					key={`${runtimeSnapshot.apiEndpoint}:${runtimeSnapshot.apiCodeVersion}`}
+					runtimeSnapshot={runtimeSnapshot}
+				/>
+			)}
+		</AuthRuntimeTargetGate>
 	);
 });
 

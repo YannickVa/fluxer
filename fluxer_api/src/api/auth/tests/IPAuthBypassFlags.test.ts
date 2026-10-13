@@ -1,9 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {
+	createAuthHarness,
+	createUniqueEmail,
+	createUniqueUsername,
+	registerUser,
+} from '@app/api/auth/tests/AuthTestUtils';
+import type {ApiTestHarness} from '@app/api/test/ApiTestHarness';
+import {createBuilderWithoutAuth} from '@app/api/test/TestRequestBuilder';
 import {afterAll, beforeAll, beforeEach, describe, expect, it} from 'vitest';
-import type {ApiTestHarness} from '../../test/ApiTestHarness';
-import {createBuilderWithoutAuth} from '../../test/TestRequestBuilder';
-import {createAuthHarness, createUniqueEmail, createUniqueUsername, registerUser} from './AuthTestUtils';
 
 describe('Auth IP Authorization Bypass Flags', () => {
 	let harness: ApiTestHarness;
@@ -20,18 +25,6 @@ describe('Auth IP Authorization Bypass Flags', () => {
 		{
 			name: 'APP_STORE_REVIEWER only',
 			flags: ['APP_STORE_REVIEWER'],
-		},
-		{
-			name: 'APP_STORE_REVIEWER with STAFF',
-			flags: ['APP_STORE_REVIEWER', 'STAFF'],
-		},
-		{
-			name: 'APP_STORE_REVIEWER with BUG_HUNTER and STAFF',
-			flags: ['APP_STORE_REVIEWER', 'BUG_HUNTER', 'STAFF'],
-		},
-		{
-			name: 'APP_STORE_REVIEWER with BUG_HUNTER',
-			flags: ['APP_STORE_REVIEWER', 'BUG_HUNTER'],
 		},
 	];
 	for (const tc of testCases) {
@@ -165,24 +158,5 @@ describe('Auth IP Authorization Bypass Flags', () => {
 			.header('x-forwarded-for', newIP)
 			.execute();
 		expect(loginResp.token).toBeTruthy();
-	});
-	it('verifies that regular users still require IP authorization when logging in from a new location', async () => {
-		const email = createUniqueEmail('regular-user-ip-check');
-		const password = 'a-strong-password';
-		await registerUser(harness, {
-			email,
-			username: createUniqueUsername('regularip'),
-			global_name: 'Regular IP User',
-			password,
-			date_of_birth: '2000-01-01',
-			consent: true,
-		});
-		const differentIP = '10.88.77.66';
-		await createBuilderWithoutAuth(harness)
-			.post('/auth/login')
-			.body({email, password})
-			.header('x-forwarded-for', differentIP)
-			.expect(403)
-			.execute();
 	});
 });

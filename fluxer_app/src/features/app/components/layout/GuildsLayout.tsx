@@ -86,13 +86,11 @@ import GuildListState, {type OrganizedItem} from '@app/features/guild/state/Guil
 import GuildReadState from '@app/features/guild/state/GuildReadState';
 import HiddenGuildListButtons from '@app/features/guild/state/HiddenGuildListButtons';
 import {PRIMARY_NAVIGATION_LANDMARK_DESCRIPTOR} from '@app/features/i18n/utils/CommonMessageDescriptors';
-import {getPilotOnboardingProgress} from '@app/features/onboarding/PilotOnboardingPreferences';
-import {shouldAutoOpenPilotOnboarding} from '@app/features/onboarding/PilotOnboardingState';
-import {openMacPermissionsModal} from '@app/features/permissions/system/commands/MacPermissionsModalCommands';
-import MacPermissions from '@app/features/permissions/system/state/MacPermissions';
+import {usePilotOnboardingAutoOpen} from '@app/features/onboarding/usePilotOnboardingAutoOpen';
+import {preloadMacPermissionsModal} from '@app/features/permissions/system/commands/MacPermissionsModalCommands';
 import {useLocation} from '@app/features/platform/components/router/RouterReact';
 import {Platform} from '@app/features/platform/types/Platform';
-import {ComponentDispatch} from '@app/features/platform/utils/ComponentBus';
+import {ComponentBus} from '@app/features/platform/utils/ComponentBus';
 import ReadStates from '@app/features/read_state/state/ReadStates';
 import {getRemScaleForDocument} from '@app/features/theme/layout/RemFromPx';
 import {AxisOrientation, type VerticalEdge} from '@app/features/ui/AxisOrientation';
@@ -162,7 +160,8 @@ const GUILD_ROW_STYLE_WITH_GAP: React.CSSProperties = Object.freeze({
 	width: '100%',
 	paddingBottom: 'var(--guild-list-item-gap)',
 });
-const pilotOnboardingOpenedThisSession = new Set<string>();
+const openPilotOnboarding = () =>
+	ModalCommands.push(ModalCommands.modal(() => <UserSettingsModal initialTab="getting_started" />));
 
 interface GuildsLayoutSidebarStyle extends React.CSSProperties {
 	'--layout-sidebar-width': string;
@@ -190,7 +189,7 @@ function resolveGuildFolderId(folderId: number | null): number {
 
 function resolveGuildListScrollerNode(scroller: ScrollerHandle | null): HTMLElement | null {
 	if (scroller == null) return null;
-	return scroller.getScrollerNode();
+	return scroller.getViewportElement();
 }
 
 type GuildNavigationRow =
@@ -220,7 +219,7 @@ function useGuildNavigationVisibility(): GuildNavigationVisibility {
 	const fluxerVisible = !RuntimeConfig.directMessagesDisabled;
 	const favoritesVisible = Accessibility.showFavorites;
 	const downloadVisible = !Platform.isElectron && !Platform.isPWA && !HiddenGuildListButtons.downloadButtonHidden;
-	const helpVisible = !HiddenGuildListButtons.helpButtonHidden;
+	const helpVisible = !HiddenGuildListButtons.helpButtonHidden && Routes.help() != null;
 	return useMemo(
 		() =>
 			Object.freeze({
@@ -429,11 +428,11 @@ function resolvePinnedCallChannel(directMessagesDisabled: boolean): Channel | nu
 
 interface DMChannelVisibilityControllerState {
 	readonly removalDelayMs: number;
-	readonly removalTimers: React.MutableRefObject<Map<string, number>>;
+	readonly removalTimers: React.RefObject<Map<string, number>>;
 	readonly orderedUnreadChannels: ReadonlyArray<Channel>;
 	readonly setVisibleChannels: React.Dispatch<React.SetStateAction<ReadonlyArray<Channel>>>;
 	readonly unreadChannels: ReadonlyArray<Channel>;
-	readonly unreadIdsRef: React.MutableRefObject<ReadonlySet<string>>;
+	readonly unreadIdsRef: React.RefObject<ReadonlySet<string>>;
 }
 
 interface ProjectVisibleDMChannelsRequest {
@@ -443,11 +442,11 @@ interface ProjectVisibleDMChannelsRequest {
 
 class DMChannelVisibilityController {
 	private readonly removalDelayMs: number;
-	private readonly removalTimers: React.MutableRefObject<Map<string, number>>;
+	private readonly removalTimers: React.RefObject<Map<string, number>>;
 	private readonly orderedUnreadChannels: ReadonlyArray<Channel>;
 	private readonly setVisibleChannels: React.Dispatch<React.SetStateAction<ReadonlyArray<Channel>>>;
 	private readonly unreadChannels: ReadonlyArray<Channel>;
-	private readonly unreadIdsRef: React.MutableRefObject<ReadonlySet<string>>;
+	private readonly unreadIdsRef: React.RefObject<ReadonlySet<string>>;
 
 	public constructor({
 		removalDelayMs,
@@ -669,9 +668,10 @@ function resolveGuildTargetBounds({
 function getDMScrollIndicatorSeverity(channelId: string): ScrollIndicatorSeverity | null {
 	const mentionCount = ReadStates.getPrivateChannelMentionCount(channelId);
 	const unreadState = getChannelUnreadState({
+		hasUnread: ReadStates.hasUnreadPrivateChannel(channelId),
 		unreadCount: ReadStates.getPrivateChannelUnreadCount(channelId),
 		mentionCount,
-		isMuted: UserGuildSettings.isChannelMuted(null, channelId),
+		isMuted: UserGuildSettings.isChannelDirectlyMuted(null, channelId),
 		showFadedUnreadOnMutedChannels: Accessibility.showFadedUnreadOnMutedChannels,
 	});
 	if (mentionCount > 0) return 'mention';
@@ -680,8 +680,8 @@ function getDMScrollIndicatorSeverity(channelId: string): ScrollIndicatorSeverit
 }
 
 function getGuildScrollIndicatorSeverity(guildId: string): ScrollIndicatorSeverity | null {
-	if (GuildReadState.getMentionCount(guildId) > 0) return 'mention';
-	if (GuildReadState.hasUnread(guildId)) return 'unread';
+	if (GuildReadState.mentionCountForGuild(guildId) > 0) return 'mention';
+	if (GuildReadState.guildIsUnread(guildId)) return 'unread';
 	return null;
 }
 
@@ -1276,19 +1276,23 @@ const SKELETON_NAGBAR_ROW_SHAPES: Record<NagbarType, SkeletonNagbarRowShape> = {
 	[NagbarType.SCHEDULED_MAINTENANCE]: {tone: SkeletonNagbarTone.MAINTENANCE_SCHEDULED, hasActions: true},
 	[NagbarType.UNCLAIMED_ACCOUNT]: {tone: SkeletonNagbarTone.ALERT, hasActions: true},
 	[NagbarType.EMAIL_VERIFICATION]: {tone: SkeletonNagbarTone.ALERT, hasActions: true},
+	[NagbarType.ACCOUNT_LIMITED]: {tone: SkeletonNagbarTone.NEUTRAL, hasActions: false},
 	[NagbarType.DESKTOP_NOTIFICATION]: {tone: SkeletonNagbarTone.BRAND, hasActions: true},
 	[NagbarType.PREMIUM_GRACE_PERIOD]: {tone: SkeletonNagbarTone.PREMIUM, hasActions: true},
 	[NagbarType.PREMIUM_EXPIRED]: {tone: SkeletonNagbarTone.DANGER, hasActions: true},
 	[NagbarType.PREMIUM_ONBOARDING]: {tone: SkeletonNagbarTone.BRAND, hasActions: true},
+	[NagbarType.PRICE_ANNOUNCEMENT]: {tone: SkeletonNagbarTone.BRAND, hasActions: true},
+	[NagbarType.LEGACY_PRICE_OPT_IN]: {tone: SkeletonNagbarTone.BRAND, hasActions: true},
 	[NagbarType.GIFT_INVENTORY]: {tone: SkeletonNagbarTone.BRAND, hasActions: true},
 	[NagbarType.DESKTOP_DOWNLOAD]: {tone: SkeletonNagbarTone.BRAND, hasActions: true},
 	[NagbarType.GUILD_MEMBERSHIP_CTA]: {tone: SkeletonNagbarTone.BRAND, hasActions: true},
 	[NagbarType.VISIONARY_MFA]: {tone: SkeletonNagbarTone.BRAND, hasActions: true},
 	[NagbarType.VOICE_SESSION_RESTORE]: {tone: SkeletonNagbarTone.VOICE, hasActions: true},
 	[NagbarType.TERMS_ACCEPTANCE]: {tone: SkeletonNagbarTone.LEGAL, hasActions: true},
-	[NagbarType.LINUX_INPUT_ACCESS]: {tone: SkeletonNagbarTone.BRAND, hasActions: true},
 	[NagbarType.SOFTWARE_ENCODER]: {tone: SkeletonNagbarTone.ENCODER, hasActions: true},
 	[NagbarType.STREAMER_MODE]: {tone: SkeletonNagbarTone.STREAMER, hasActions: true},
+	[NagbarType.DOMAIN_MOVED]: {tone: SkeletonNagbarTone.BRAND, hasActions: true},
+	[NagbarType.WINDOWS_FONT]: {tone: SkeletonNagbarTone.BRAND, hasActions: true},
 };
 
 const CONNECTION_SKELETON_NAGBAR_TONES: Record<ConnectionNoticeTone, SkeletonNagbarTone> = {
@@ -1333,10 +1337,10 @@ const GUILD_RAIL_INDICATORS_BY_TOKEN: Record<string, SkeletonGuildRailItemIndica
 function resolveGuildRailIndicator(guildIds: ReadonlyArray<string>): SkeletonGuildRailItemIndicator {
 	let hasUnread = false;
 	for (const guildId of guildIds) {
-		if (GuildReadState.getMentionCount(guildId) > 0) {
+		if (GuildReadState.mentionCountForGuild(guildId) > 0) {
 			return SkeletonGuildRailItemIndicator.MENTION;
 		}
-		if (GuildReadState.hasUnread(guildId)) {
+		if (GuildReadState.guildIsUnread(guildId)) {
 			hasUnread = true;
 		}
 	}
@@ -1589,7 +1593,7 @@ const GuildList = observer(() => {
 	const visibleDMListRows = useFrameBatchedDMListRows(targetDMListRows);
 	const shouldRenderGuildListItems = hasUnavailableGuilds || organizedItems.length > 0;
 	const initialGuildListScrollTop = useMemo(() => {
-		const liveScrollTop = untracked(() => Dimension.getGuildListDimensions().scrollTop);
+		const liveScrollTop = untracked(() => Dimension.currentGuildListDimensions().scrollTop);
 		if (liveScrollTop > 0) {
 			return liveScrollTop;
 		}
@@ -1865,7 +1869,7 @@ const GuildList = observer(() => {
 				const node = scrollTargetRegistry.getTargetNode(targetId);
 				const scroller = scrollRef.current;
 				if (node == null || scroller == null) return false;
-				scroller.scrollIntoViewNode({
+				scroller.revealElement({
 					node,
 					alignment,
 					animate: Accessibility.useSmoothScrolling,
@@ -2172,7 +2176,7 @@ export const GuildsLayout = observer(({children}: {children: React.ReactNode}) =
 	useEffect(() => {
 		if (prevNagbarCount.current !== activeNagbars.length) {
 			prevNagbarCount.current = activeNagbars.length;
-			ComponentDispatch.dispatch('LAYOUT_RESIZED');
+			ComponentBus.dispatch('LAYOUT_RESIZED');
 		}
 	}, [activeNagbars.length]);
 	useEffect(() => {
@@ -2241,32 +2245,10 @@ export const GuildsLayout = observer(({children}: {children: React.ReactNode}) =
 		openWhatsNewModal();
 	}, [isReady, user]);
 	useEffect(() => {
-		if (!isReady) return;
-		if (!user) return;
-		if (!MacPermissions.shouldShowOnboarding) return;
-		if (MacPermissions.onboardingOpenedThisSession) return;
-		MacPermissions.markOnboardingOpenedThisSession();
-		openMacPermissionsModal();
-	}, [isReady, user]);
+		preloadMacPermissionsModal();
+	}, []);
 	const hasModalOpen = ModalState.hasModalOpen();
-	useEffect(() => {
-		if (!isReady || !user || !user.isClaimed() || !UserSettings.isHydrated()) return;
-		if (hasModalOpen) return;
-		const config = RuntimeConfig.onboarding;
-		const sessionKey = `${user.id}:${config.version}`;
-		if (pilotOnboardingOpenedThisSession.has(sessionKey)) return;
-		if (
-			!shouldAutoOpenPilotOnboarding({
-				config,
-				progress: getPilotOnboardingProgress(),
-				userCreatedAt: user.createdAt,
-			})
-		) {
-			return;
-		}
-		pilotOnboardingOpenedThisSession.add(sessionKey);
-		ModalCommands.push(ModalCommands.modal(() => <UserSettingsModal initialTab="getting_started" />));
-	}, [hasModalOpen, isReady, user]);
+	usePilotOnboardingAutoOpen({isReady, user, hasModalOpen, onOpen: openPilotOnboarding});
 	const shouldShowSidebarDivider = !mobileLayout.enabled;
 	return (
 		<div

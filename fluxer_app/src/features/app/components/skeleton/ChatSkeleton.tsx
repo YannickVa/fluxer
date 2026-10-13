@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import styles from '@app/features/app/components/skeleton/ChatSkeleton.module.css';
-import {usePlaceholderSpecs} from '@app/features/app/components/skeleton/PlaceholderSpecs';
+import {useMessageListPlaceholderSpecs} from '@app/features/app/components/skeleton/PlaceholderSpecs';
 import {
 	ChatSkeletonChannelKind,
 	type ChatSkeletonPresentation,
@@ -17,12 +17,12 @@ import {
 	SKELETON_UNMEASURED_WIDTH_PX,
 } from '@app/features/app/components/skeleton/SkeletonLayoutMemory';
 import {SkeletonLine} from '@app/features/app/components/skeleton/SkeletonLine';
+import {skeletonGifEnabled} from '@app/features/app/components/skeleton/SkeletonRuntimeConfig';
 import {SkeletonEmphasis, SkeletonRadius} from '@app/features/app/components/skeleton/SkeletonStyle';
 import {
 	type SkeletonInjectedToken,
 	skeletonSurfaceVar,
 } from '@app/features/app/components/skeleton/SkeletonSurfaceContract';
-import RuntimeConfig from '@app/features/app/state/RuntimeConfig';
 import {CHANNEL_HEADER_DM_AVATAR_SIZE_PX} from '@app/features/channel/components/ChannelHeaderMetrics';
 import {MemberListSkeleton, MemberListSkeletonVariant} from '@app/features/channel/components/MemberListSkeleton';
 import composerWrapperStyles from '@app/features/channel/components/textarea/InputWrapper.module.css';
@@ -33,8 +33,6 @@ import {flxElementClassName} from '@app/lib/react';
 import {observer} from 'mobx-react-lite';
 import type React from 'react';
 import {Fragment, useState} from 'react';
-
-const MESSAGE_LIST_SEED_KEY = 'chat-skeleton-message-list';
 
 const HEADER_BACK_ICON_SIZE = skeletonSurfaceVar('--channel-header-back-icon-size');
 const HEADER_ICON_SIZE = skeletonSurfaceVar('--channel-header-icon-size');
@@ -165,7 +163,7 @@ export const ChatSkeleton = observer(function ChatSkeleton({presentation}: ChatS
 	const [rememberedChatState] = useState(() =>
 		Object.freeze({
 			composerLayout:
-				getRememberedSkeletonComposerLayout() ?? resolveDefaultSkeletonComposerLayout(RuntimeConfig.gifEnabled),
+				getRememberedSkeletonComposerLayout() ?? resolveDefaultSkeletonComposerLayout(skeletonGifEnabled()),
 			messagePresentation: getRememberedSkeletonMessagePresentation() ?? resolveDefaultSkeletonMessagePresentation(),
 		}),
 	);
@@ -176,12 +174,11 @@ export const ChatSkeleton = observer(function ChatSkeleton({presentation}: ChatS
 		composerActionCount = composerLayout.mobileActionCount;
 		composerDividerVisible = false;
 	}
-	const messageSpecs = usePlaceholderSpecs({
+	const messageSpecs = useMessageListPlaceholderSpecs({
+		channelId: presentation.channelId,
 		compact: messagePresentation.compact,
 		compactAvatarsVisible: messagePresentation.compactAvatarsVisible,
 		groupSpacing: messagePresentation.groupSpacingPx,
-		viewportHeightPx: messagePresentation.viewportHeightPx,
-		seedKey: MESSAGE_LIST_SEED_KEY,
 	});
 	const rootStyle: ChatSkeletonRootStyle = {
 		'--chat-horizontal-padding': remFromPx(messagePresentation.messageGutterPx),

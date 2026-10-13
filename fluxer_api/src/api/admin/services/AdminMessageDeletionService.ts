@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import type {AdminAuditService} from '@app/api/admin/services/AdminAuditService';
+import type {AdminMessageShredService} from '@app/api/admin/services/AdminMessageShredService';
+import type {ChannelID, MessageID, UserID} from '@app/api/BrandedTypes';
+import {createUserID} from '@app/api/BrandedTypes';
+import type {ChannelRepository} from '@app/api/channel/ChannelRepository';
+import {Logger} from '@app/api/Logger';
 import type {
 	DeleteAllUserMessagesRequest,
 	DeleteAllUserMessagesResponse,
 } from '@fluxer/schema/src/domains/admin/AdminMessageSchemas';
-import type {ChannelID, MessageID, UserID} from '../../BrandedTypes';
-import {createUserID} from '../../BrandedTypes';
-import type {IChannelRepository} from '../../channel/IChannelRepository';
-import {Logger} from '../../Logger';
-import type {AdminAuditService} from './AdminAuditService';
-import type {AdminMessageShredService} from './AdminMessageShredService';
 
 interface AdminMessageDeletionServiceDeps {
-	channelRepository: IChannelRepository;
+	channelRepository: ChannelRepository;
 	messageShredService: AdminMessageShredService;
 	auditService: AdminAuditService;
 }
@@ -78,7 +78,7 @@ export class AdminMessageDeletionService {
 		let messageCount = 0;
 		let channelCount = 0;
 		while (true) {
-			const messageRefs = await this.deps.channelRepository.listMessagesByAuthor(
+			const messageRefs = await this.deps.channelRepository.messages.listMessagesByAuthor(
 				authorId,
 				FETCH_CHUNK_SIZE,
 				lastMessageId,

@@ -3,6 +3,7 @@
 import {Routes} from '@app/app/Routes';
 import {tryInterceptChannelNavigationPath} from '@app/features/navigation/utils/ChannelNavigationGuard';
 import * as RouterUtils from '@app/features/navigation/utils/RouterUtils';
+import {resolveDocumentURLFromRoot} from '@app/features/platform/URLOriginUtils';
 
 export interface Navigator {
 	replace: (path: string) => void;
@@ -37,17 +38,17 @@ const defaultNavigator: Navigator = {
 };
 
 let inProgress = false;
-let pendingTarget: string | null = null;
 
 function computeBasePath(url: string): string | null {
-	const pathname = new URL(url, window.location.origin).pathname;
+	const pathname = resolveDocumentURLFromRoot(url).pathname;
 	if (Routes.isDMRoute(pathname) && pathname !== Routes.ME) {
 		return Routes.ME;
 	}
-	if (Routes.isGuildChannelRoute(pathname) && pathname.split('/').length === 4) {
+	if (Routes.isGuildChannelRoute(pathname)) {
 		const parts = pathname.split('/');
-		const guildId = parts[2];
-		return Routes.guildChannel(guildId);
+		if (parts.length === 4) {
+			return Routes.guildChannel(parts[2]);
+		}
 	}
 	return null;
 }
@@ -55,11 +56,10 @@ function computeBasePath(url: string): string | null {
 export function navigateToWithMobileHistory(url: string, isMobile: boolean, nav: Navigator = defaultNavigator): void {
 	if (!isMobile) {
 		inProgress = false;
-		pendingTarget = null;
 		nav.replace(url);
 		return;
 	}
-	if (inProgress && (pendingTarget === url || pendingTarget !== null)) {
+	if (inProgress) {
 		return;
 	}
 	const current = nav.getPath();
@@ -74,22 +74,11 @@ export function navigateToWithMobileHistory(url: string, isMobile: boolean, nav:
 		nav.replace(url);
 		return;
 	}
-	if (current === base) {
-		inProgress = true;
-		pendingTarget = url;
-		nav.replaceSilent(base);
-		nav.push(url);
-		inProgress = false;
-		pendingTarget = null;
-		return;
-	}
 	inProgress = true;
-	pendingTarget = url;
 	try {
 		nav.replaceSilent(base);
 		nav.push(url);
 	} finally {
 		inProgress = false;
-		pendingTarget = null;
 	}
 }
