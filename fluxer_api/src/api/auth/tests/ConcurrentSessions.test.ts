@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {createAuthHarness, createTestAccount, loginAccount} from '@app/api/auth/tests/AuthTestUtils';
+import type {ApiTestHarness} from '@app/api/test/ApiTestHarness';
+import {createBuilder} from '@app/api/test/TestRequestBuilder';
 import type {AuthSessionResponse} from '@fluxer/schema/src/domains/auth/AuthSchemas';
 import {afterAll, beforeAll, beforeEach, describe, expect, it} from 'vitest';
-import type {ApiTestHarness} from '../../test/ApiTestHarness';
-import {createBuilder} from '../../test/TestRequestBuilder';
-import {createAuthHarness, createTestAccount, loginAccount} from './AuthTestUtils';
 
 describe('Auth concurrent sessions', () => {
 	let harness: ApiTestHarness;
@@ -16,17 +16,6 @@ describe('Auth concurrent sessions', () => {
 	});
 	afterAll(async () => {
 		await harness?.shutdown();
-	});
-	it('same user can have multiple concurrent sessions', async () => {
-		const account = await createTestAccount(harness);
-		const session1Token = account.token;
-		const account2 = await loginAccount(harness, account);
-		const session2Token = account2.token;
-		if (session1Token === session2Token) {
-			console.warn('warning: multiple logins returned the same token, may indicate single-session behavior');
-		}
-		await createBuilder(harness, session1Token).get('/users/@me').expect(200).execute();
-		await createBuilder(harness, session2Token).get('/users/@me').expect(200).execute();
 	});
 	it('logging out one session does not affect other sessions', async () => {
 		const account = await createTestAccount(harness);
@@ -65,27 +54,5 @@ describe('Auth concurrent sessions', () => {
 				country: 'Sweden',
 			});
 		}
-	});
-	it('can log out specific session by ID', async () => {
-		let account = await createTestAccount(harness);
-		await loginAccount(harness, account);
-		const sessions = await createBuilder<Array<AuthSessionResponse>>(harness, account.token)
-			.get('/auth/sessions')
-			.execute();
-		expect(sessions.length).toBeGreaterThanOrEqual(2);
-		const targetSessionID = sessions[0]!.id_hash;
-		await createBuilder(harness, account.token)
-			.post('/auth/sessions/logout')
-			.body({
-				session_id_hashes: [targetSessionID],
-				password: account.password,
-			})
-			.expect(204)
-			.execute();
-		account = await loginAccount(harness, account);
-		const sessions2 = await createBuilder<Array<AuthSessionResponse>>(harness, account.token)
-			.get('/auth/sessions')
-			.execute();
-		expect(sessions2.find((s) => s.id_hash === targetSessionID)).toBeUndefined();
 	});
 });

@@ -1,5 +1,18 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import type {GuildID, UserID} from '@app/api/BrandedTypes';
+import type {ConnectionRepository} from '@app/api/connection/ConnectionRepository';
+import type {UserConnectionRow} from '@app/api/database/types/ConnectionTypes';
+import type {GuildRepository} from '@app/api/guild/repositories/GuildRepository';
+import type {GuildService} from '@app/api/guild/services/GuildService';
+import type {IDiscriminatorService} from '@app/api/infrastructure/DiscriminatorService';
+import type {RequestCache} from '@app/api/middleware/RequestCacheMiddleware';
+import type {GuildMember} from '@app/api/models/GuildMember';
+import type {User} from '@app/api/models/User';
+import type {UserRepository} from '@app/api/user/repositories/UserRepository';
+import {isUsernameTaken} from '@app/api/user/UniqueUsernames';
+import {getBadgePremiumType} from '@app/api/user/UserHelpers';
+import {hasFixedDiscriminator} from '@app/api/user/UserTag';
 import {ChannelTypes} from '@fluxer/constants/src/ChannelConstants';
 import {
 	PremiumFlags,
@@ -13,20 +26,6 @@ import {
 import {MissingAccessError} from '@fluxer/errors/src/domains/core/MissingAccessError';
 import {UnknownUserError} from '@fluxer/errors/src/domains/user/UnknownUserError';
 import type {GuildMemberResponse} from '@fluxer/schema/src/domains/guild/GuildMemberSchemas';
-import type {GuildID, UserID} from '../../BrandedTypes';
-import type {IConnectionRepository} from '../../connection/IConnectionRepository';
-import type {UserConnectionRow} from '../../database/types/ConnectionTypes';
-import type {IGuildRepositoryAggregate} from '../../guild/repositories/IGuildRepositoryAggregate';
-import type {GuildService} from '../../guild/services/GuildService';
-import type {IDiscriminatorService} from '../../infrastructure/DiscriminatorService';
-import type {RequestCache} from '../../middleware/RequestCacheMiddleware';
-import type {GuildMember} from '../../models/GuildMember';
-import type {User} from '../../models/User';
-import type {IUserAccountRepository} from '../repositories/IUserAccountRepository';
-import type {IUserChannelRepository} from '../repositories/IUserChannelRepository';
-import type {IUserRelationshipRepository} from '../repositories/IUserRelationshipRepository';
-import type {IUserSettingsRepository} from '../repositories/IUserSettingsRepository';
-import {canUseProfileTimezone} from '../UserHelpers';
 
 interface ProfileFieldPrivacyContext {
 	isOwner: boolean;
@@ -35,14 +34,14 @@ interface ProfileFieldPrivacyContext {
 }
 
 interface UserAccountLookupServiceDeps {
-	userAccountRepository: IUserAccountRepository;
-	userChannelRepository: IUserChannelRepository;
-	userRelationshipRepository: IUserRelationshipRepository;
-	userSettingsRepository: IUserSettingsRepository;
-	guildRepository: IGuildRepositoryAggregate;
+	userAccountRepository: UserRepository;
+	userChannelRepository: UserRepository;
+	userRelationshipRepository: UserRepository;
+	userSettingsRepository: UserRepository;
+	guildRepository: GuildRepository;
 	guildService: GuildService;
 	discriminatorService: IDiscriminatorService;
-	connectionRepository: IConnectionRepository;
+	connectionRepository: ConnectionRepository;
 }
 
 export class UserAccountLookupService {
@@ -89,17 +88,20 @@ export class UserAccountLookupService {
 		let guildMember: GuildMemberResponse | null = null;
 		let guildMemberDomain: GuildMember | null = null;
 		if (guildId != null) {
-			guildMemberDomain = await this.deps.guildRepository.getMember(guildId, targetId);
-			if (guildMemberDomain) {
-				guildMember = await this.deps.guildService.members.getMember({
-					userId,
-					targetId,
-					guildId,
-					requestCache,
-				});
+			const viewerMember = await this.deps.guildRepository.getMember(guildId, userId);
+			if (viewerMember) {
+				guildMemberDomain = await this.deps.guildRepository.getMember(guildId, targetId);
+				if (guildMemberDomain) {
+					guildMember = await this.deps.guildService.members.getMember({
+						userId,
+						targetId,
+						guildId,
+						requestCache,
+					});
+				}
 			}
 		}
-		let premiumType = user.premiumType ?? undefined;
+		let premiumType = getBadgePremiumType(user);
 		let premiumSince = user.premiumSince ?? undefined;
 		let premiumLifetimeSequence = user.premiumLifetimeSequence ?? undefined;
 		if (restrictProfile || user.premiumFlags & PremiumFlags.BADGE_HIDDEN) {
@@ -124,7 +126,6 @@ export class UserAccountLookupService {
 			: await this.getProfileFieldPrivacyContext(userId, targetId);
 		const timezoneVisible =
 			!restrictProfile &&
-			canUseProfileTimezone(user) &&
 			user.timezone != null &&
 			profileFieldPrivacyContext != null &&
 			this.canViewProfileField(user.timezonePrivacyFlags, profileFieldPrivacyContext);
@@ -278,16 +279,15 @@ export class UserAccountLookupService {
 		}));
 	}
 
-	async generateUniqueDiscriminator(username: string): Promise<number> {
-		const usedDiscriminators = await this.deps.userAccountRepository.findDiscriminatorsByUsername(username);
-		for (let i = 1; i <= 9999; i++) {
-			if (!usedDiscriminators.has(i)) return i;
+	async checkUsernameDiscriminatorAvailability(params: {
+		username: string;
+		discriminator: number;
+		currentUser: User;
+	}): Promise<boolean> {
+		const {username, discriminator, currentUser} = params;
+		if (hasFixedDiscriminator(currentUser)) {
+			return await isUsernameTaken(this.deps.userAccountRepository, username, currentUser.id);
 		}
-		throw new Error('No available discriminators for this username');
-	}
-
-	async checkUsernameDiscriminatorAvailability(params: {username: string; discriminator: number}): Promise<boolean> {
-		const {username, discriminator} = params;
 		const isAvailable = await this.deps.discriminatorService.isDiscriminatorAvailableForUsername(
 			username,
 			discriminator,

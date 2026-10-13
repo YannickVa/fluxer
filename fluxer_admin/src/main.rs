@@ -8,13 +8,11 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::registry()
-        .with(
-            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()),
-        )
+        .with(fluxer_common::config::env_filter("info"))
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let config = AdminConfig::from_env();
+    let config = AdminConfig::from_env()?;
     let addr = format!("{}:{}", config.host, config.port);
     let router = build_router(config);
 

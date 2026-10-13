@@ -13,8 +13,9 @@ import Drafts from '@app/features/messaging/state/MessagingDrafts';
 import {focusChannelTextareaAfterNavigation} from '@app/features/messaging/utils/ChannelTextareaFocusUtils';
 import * as NavigationCommands from '@app/features/navigation/commands/NavigationCommands';
 import MediaPermission from '@app/features/permissions/system/state/MediaPermission';
+import SessionManager from '@app/features/platform/state/AuthSession';
 import {type ClientInfo, getClientInfo} from '@app/features/platform/utils/ClientInfo';
-import {ComponentDispatch} from '@app/features/platform/utils/ComponentBus';
+import {ComponentBus} from '@app/features/platform/utils/ComponentBus';
 import {downloadTextFile} from '@app/features/platform/utils/DownloadFile';
 import {
 	formatSupportDeviceSummary,
@@ -106,13 +107,31 @@ interface SupportResourceLinkProps {
 }
 
 const SupportResourceLink: React.FC<SupportResourceLinkProps> = ({icon, title, description, url}) => (
-	<button type="button" className={styles.resourceLink} onClick={() => void openExternalUrl(url)}>
-		<span className={styles.resourceIcon}>{icon}</span>
-		<span className={styles.resourceCopy}>
-			<strong>{title}</strong>
-			<span>{description}</span>
+	<button
+		type="button"
+		className={styles.resourceLink}
+		onClick={() => void openExternalUrl(url)}
+		data-flx="user.support-center-tab.support-center-tab.support-resource-link.resource-link.button"
+	>
+		<span
+			className={styles.resourceIcon}
+			data-flx="user.support-center-tab.support-center-tab.support-resource-link.resource-icon"
+		>
+			{icon}
 		</span>
-		<ArrowRightIcon className={styles.resourceArrow} size={ACTION_ICON_SIZE} weight="bold" />
+		<span
+			className={styles.resourceCopy}
+			data-flx="user.support-center-tab.support-center-tab.support-resource-link.resource-copy"
+		>
+			<strong data-flx="user.support-center-tab.support-center-tab.support-resource-link.strong">{title}</strong>
+			<span data-flx="user.support-center-tab.support-center-tab.support-resource-link.span">{description}</span>
+		</span>
+		<ArrowRightIcon
+			className={styles.resourceArrow}
+			size={ACTION_ICON_SIZE}
+			weight="bold"
+			data-flx="user.support-center-tab.support-center-tab.support-resource-link.resource-arrow"
+		/>
 	</button>
 );
 
@@ -421,7 +440,7 @@ const SupportCenterTab: React.FC = observer(() => {
 	const overallPresentation = getStatusPresentation(overallStatus);
 
 	const openSettings = useCallback((tab: string, section?: string) => {
-		ComponentDispatch.dispatch('USER_SETTINGS_TAB_SELECT', {tab, section});
+		ComponentBus.dispatch('USER_SETTINGS_TAB_SELECT', {tab, section});
 	}, []);
 
 	const createDiagnostics = useCallback((): SupportDiagnosticsSnapshot => {
@@ -474,13 +493,19 @@ const SupportCenterTab: React.FC = observer(() => {
 				latencyMs: MediaEngineFacade.connected ? MediaEngineFacade.currentLatency : null,
 			},
 			update: {
-				state: Updater.state,
+				state: Updater.isChecking
+					? 'checking'
+					: Updater.desktopUpdateInProgress
+						? 'updating'
+						: Updater.hasUpdate
+							? 'available'
+							: 'idle',
 				currentVersion: Updater.currentVersion ?? Config.PUBLIC_BUILD_VERSION ?? null,
 				availableVersion: Updater.displayVersion,
 				channel: Updater.channel ?? Config.PUBLIC_RELEASE_CHANNEL,
 				lastCheckedAt: Updater.lastCheckedAt ? new Date(Updater.lastCheckedAt).toISOString() : null,
 				updateAvailable: Updater.hasUpdate,
-				downloadReady: Updater.nativeUpdateReady,
+				downloadReady: Updater.isUpdateReady,
 				unsupportedReason: Updater.nativeUnsupported?.reason ?? null,
 			},
 		});
@@ -573,11 +598,17 @@ const SupportCenterTab: React.FC = observer(() => {
 	const openPrivateSupport = useCallback(
 		async (errorLocation: DestinationErrorLocation, draft?: string) => {
 			if (!supportUserId) return;
+			const owner = SessionManager.currentAccountKey;
 			setDestinationError(null);
 			try {
 				const channelId = await PrivateChannelCommands.ensureDMChannel(supportUserId);
+				if (SessionManager.currentAccountKey !== owner) return;
 				if (draft) {
-					DraftCommands.createDraft(channelId, appendSupportProblemReportToDraft(Drafts.getDraft(channelId), draft));
+					DraftCommands.createDraft(
+						owner,
+						channelId,
+						appendSupportProblemReportToDraft(Drafts.getDraft(channelId), draft),
+					);
 				}
 				ModalCommands.pop();
 				NavigationCommands.selectChannel(ME, channelId);
@@ -603,6 +634,7 @@ const SupportCenterTab: React.FC = observer(() => {
 		if (!report || !feedbackChannel?.guildId) return;
 		setDestinationError(null);
 		DraftCommands.createDraft(
+			SessionManager.currentAccountKey,
 			feedbackChannel.id,
 			appendSupportProblemReportToDraft(Drafts.getDraft(feedbackChannel.id), report),
 		);
@@ -880,14 +912,22 @@ const SupportCenterTab: React.FC = observer(() => {
 				id="help-status"
 				title={<Trans>Help & service information</Trans>}
 				description={<Trans>Check current information first, or ask the operator privately.</Trans>}
+				data-flx="user.support-center-tab.support-center-tab.help-status"
 			>
-				<div className={styles.resourceGrid}>
+				<div className={styles.resourceGrid} data-flx="user.support-center-tab.support-center-tab.resource-grid">
 					{RuntimeConfig.support.status_url ? (
 						<SupportResourceLink
-							icon={<CloudCheckIcon size={remFromPx(20)} weight="duotone" />}
+							icon={
+								<CloudCheckIcon
+									size={remFromPx(20)}
+									weight="duotone"
+									data-flx="user.support-center-tab.support-center-tab.cloud-check-icon"
+								/>
+							}
 							title={<Trans>Service status</Trans>}
 							description={<Trans>See whether a service is unavailable or recovering.</Trans>}
 							url={RuntimeConfig.support.status_url}
+							data-flx="user.support-center-tab.support-center-tab.support-resource-link"
 						/>
 					) : null}
 					{serviceUpdatesChannel?.guildId ? (
@@ -895,28 +935,38 @@ const SupportCenterTab: React.FC = observer(() => {
 							type="button"
 							className={styles.resourceLink}
 							onClick={() => openCommunityChannel(serviceUpdatesChannel.id)}
+							data-flx="user.support-center-tab.support-center-tab.resource-link.open-community-channel.button"
 						>
-							<span className={styles.resourceIcon}>
-								<ArticleIcon size={remFromPx(20)} weight="duotone" />
+							<span className={styles.resourceIcon} data-flx="user.support-center-tab.support-center-tab.resource-icon">
+								<ArticleIcon
+									size={remFromPx(20)}
+									weight="duotone"
+									data-flx="user.support-center-tab.support-center-tab.article-icon"
+								/>
 							</span>
-							<span className={styles.resourceCopy}>
-								<strong>
+							<span className={styles.resourceCopy} data-flx="user.support-center-tab.support-center-tab.resource-copy">
+								<strong data-flx="user.support-center-tab.support-center-tab.strong">
 									<Trans>Service updates</Trans>
 								</strong>
-								<span>
+								<span data-flx="user.support-center-tab.support-center-tab.span">
 									<Trans>Review known issues, recovery progress, and planned maintenance.</Trans>
 								</span>
 							</span>
-							<ArrowRightIcon className={styles.resourceArrow} size={ACTION_ICON_SIZE} weight="bold" />
+							<ArrowRightIcon
+								className={styles.resourceArrow}
+								size={ACTION_ICON_SIZE}
+								weight="bold"
+								data-flx="user.support-center-tab.support-center-tab.resource-arrow"
+							/>
 						</button>
 					) : null}
 				</div>
-				<div className={styles.helpPanel}>
-					<div>
-						<strong>
+				<div className={styles.helpPanel} data-flx="user.support-center-tab.support-center-tab.help-panel">
+					<div data-flx="user.support-center-tab.support-center-tab.div">
+						<strong data-flx="user.support-center-tab.support-center-tab.strong--2">
 							<Trans>Need a person?</Trans>
 						</strong>
-						<p>
+						<p data-flx="user.support-center-tab.support-center-tab.p">
 							<Trans>Start a direct message with the operator. Nothing is sent automatically.</Trans>
 						</p>
 					</div>
@@ -924,13 +974,14 @@ const SupportCenterTab: React.FC = observer(() => {
 						variant="secondary"
 						disabled={!supportUserId}
 						onClick={() => void openPrivateSupport('help')}
-						rightIcon={<ArrowRightIcon />}
+						rightIcon={<ArrowRightIcon data-flx="user.support-center-tab.support-center-tab.arrow-right-icon" />}
+						data-flx="user.support-center-tab.support-center-tab.button"
 					>
 						<Trans>Message {RuntimeConfig.onboarding.operator_name ?? RuntimeConfig.productName}</Trans>
 					</Button>
 				</div>
 				{destinationError?.location === 'help' ? (
-					<p className={styles.error} role="alert">
+					<p className={styles.error} role="alert" data-flx="user.support-center-tab.support-center-tab.error">
 						{destinationError.message}
 					</p>
 				) : null}
@@ -940,21 +991,33 @@ const SupportCenterTab: React.FC = observer(() => {
 				id="report-problem"
 				title={<Trans>Report a problem or share feedback</Trans>}
 				description={<Trans>Prepare a clear report. You review it before anything is posted.</Trans>}
+				data-flx="user.support-center-tab.support-center-tab.report-problem"
 			>
-				<div className={styles.reportPanel}>
-					<label className={styles.reportField}>
-						<span>
+				<div className={styles.reportPanel} data-flx="user.support-center-tab.support-center-tab.report-panel">
+					<label className={styles.reportField} data-flx="user.support-center-tab.support-center-tab.report-field">
+						<span data-flx="user.support-center-tab.support-center-tab.span--2">
 							<Trans>Category</Trans>
 						</span>
 						<select
 							value={problemCategory}
 							onChange={(event) => setProblemCategory(event.target.value as ProblemCategory)}
+							data-flx="user.support-center-tab.support-center-tab.select.set-problem-category"
 						>
-							<option value="technical">{categoryLabels.technical}</option>
-							<option value="voice_video">{categoryLabels.voice_video}</option>
-							<option value="account_access">{categoryLabels.account_access}</option>
-							<option value="feedback">{categoryLabels.feedback}</option>
-							<option value="other">{categoryLabels.other}</option>
+							<option value="technical" data-flx="user.support-center-tab.support-center-tab.option">
+								{categoryLabels.technical}
+							</option>
+							<option value="voice_video" data-flx="user.support-center-tab.support-center-tab.option--2">
+								{categoryLabels.voice_video}
+							</option>
+							<option value="account_access" data-flx="user.support-center-tab.support-center-tab.option--3">
+								{categoryLabels.account_access}
+							</option>
+							<option value="feedback" data-flx="user.support-center-tab.support-center-tab.option--4">
+								{categoryLabels.feedback}
+							</option>
+							<option value="other" data-flx="user.support-center-tab.support-center-tab.option--5">
+								{categoryLabels.other}
+							</option>
 						</select>
 					</label>
 					<Textarea
@@ -966,6 +1029,7 @@ const SupportCenterTab: React.FC = observer(() => {
 						showCharacterCount
 						minRows={4}
 						error={reportError ?? undefined}
+						data-flx="user.support-center-tab.support-center-tab.textarea.set-problem-description"
 					/>
 					<Textarea
 						label={<Trans>What did you expect? (optional)</Trans>}
@@ -974,33 +1038,58 @@ const SupportCenterTab: React.FC = observer(() => {
 						maxLength={1000}
 						showCharacterCount
 						minRows={2}
+						data-flx="user.support-center-tab.support-center-tab.textarea.set-expected-behavior"
 					/>
-					<div className={styles.reportChoices}>
-						<Checkbox checked={includeDiagnostics} onChange={setIncludeDiagnostics}>
+					<div className={styles.reportChoices} data-flx="user.support-center-tab.support-center-tab.report-choices">
+						<Checkbox
+							checked={includeDiagnostics}
+							onChange={setIncludeDiagnostics}
+							data-flx="user.support-center-tab.support-center-tab.checkbox.set-include-diagnostics"
+						>
 							<Trans>Include the privacy-safe support summary shown below</Trans>
 						</Checkbox>
-						<Checkbox checked={willAttachScreenshot} onChange={setWillAttachScreenshot}>
+						<Checkbox
+							checked={willAttachScreenshot}
+							onChange={setWillAttachScreenshot}
+							data-flx="user.support-center-tab.support-center-tab.checkbox.set-will-attach-screenshot"
+						>
 							<Trans>Remind me to attach a screenshot before sending</Trans>
 						</Checkbox>
 					</div>
-					<p className={styles.reportPrivacy}>
-						<InfoIcon size={ACTION_ICON_SIZE} weight="fill" />
+					<p className={styles.reportPrivacy} data-flx="user.support-center-tab.support-center-tab.report-privacy">
+						<InfoIcon
+							size={ACTION_ICON_SIZE}
+							weight="fill"
+							data-flx="user.support-center-tab.support-center-tab.info-icon"
+						/>
 						<Trans>
 							Nothing is sent automatically. Private support opens a DM; shared feedback is visible to pilot members.
 						</Trans>
 					</p>
-					<div className={styles.buttonRow}>
+					<div className={styles.buttonRow} data-flx="user.support-center-tab.support-center-tab.button-row">
 						<Button
 							variant="secondary"
 							onClick={() => void copyProblemReport()}
-							leftIcon={<ClipboardTextIcon size={ACTION_ICON_SIZE} />}
+							leftIcon={
+								<ClipboardTextIcon
+									size={ACTION_ICON_SIZE}
+									data-flx="user.support-center-tab.support-center-tab.clipboard-text-icon"
+								/>
+							}
+							data-flx="user.support-center-tab.support-center-tab.button--2"
 						>
 							{reportCopied ? i18n._(REPORT_COPIED_DESCRIPTOR) : <Trans>Copy report</Trans>}
 						</Button>
 						<Button
 							disabled={!supportUserId}
 							onClick={() => void continuePrivateProblemReport()}
-							leftIcon={<PaperPlaneTiltIcon size={ACTION_ICON_SIZE} />}
+							leftIcon={
+								<PaperPlaneTiltIcon
+									size={ACTION_ICON_SIZE}
+									data-flx="user.support-center-tab.support-center-tab.paper-plane-tilt-icon"
+								/>
+							}
+							data-flx="user.support-center-tab.support-center-tab.button--3"
 						>
 							<Trans>Continue privately</Trans>
 						</Button>
@@ -1008,13 +1097,19 @@ const SupportCenterTab: React.FC = observer(() => {
 							variant="secondary"
 							disabled={!feedbackChannel?.guildId}
 							onClick={continueSharedProblemReport}
-							leftIcon={<UsersThreeIcon size={ACTION_ICON_SIZE} />}
+							leftIcon={
+								<UsersThreeIcon
+									size={ACTION_ICON_SIZE}
+									data-flx="user.support-center-tab.support-center-tab.users-three-icon"
+								/>
+							}
+							data-flx="user.support-center-tab.support-center-tab.button.continue-shared-problem-report"
 						>
 							<Trans>Prepare shared feedback</Trans>
 						</Button>
 					</div>
 					{destinationError?.location === 'report' ? (
-						<p className={styles.error} role="alert">
+						<p className={styles.error} role="alert" data-flx="user.support-center-tab.support-center-tab.error--2">
 							{destinationError.message}
 						</p>
 					) : null}

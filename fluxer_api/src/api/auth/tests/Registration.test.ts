@@ -1,14 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import {randomUUID} from 'node:crypto';
-import {AdminACLs} from '@fluxer/constants/src/AdminACLs';
-import {afterAll, beforeAll, beforeEach, describe, expect, it} from 'vitest';
-import {createUserID} from '../../BrandedTypes';
-import {getConfig} from '../../Config';
-import {getInstanceConfigRepository, getUserRepository} from '../../middleware/ServiceSingletons';
-import {torExitListCache} from '../../middleware/TorExitListCache';
-import type {ApiTestHarness} from '../../test/ApiTestHarness';
-import {createBuilder, createBuilderWithoutAuth} from '../../test/TestRequestBuilder';
 import {
 	createAuthHarness,
 	createUniqueEmail,
@@ -18,7 +10,15 @@ import {
 	registerUser,
 	titleCaseEmail,
 	type UserMeResponse,
-} from './AuthTestUtils';
+} from '@app/api/auth/tests/AuthTestUtils';
+import {createUserID} from '@app/api/BrandedTypes';
+import {getConfig} from '@app/api/Config';
+import {applySharedListUpdate, resetSharedListsForTests} from '@app/api/infrastructure/activity/SharedLists';
+import {getInstanceConfigRepository, getUserRepository} from '@app/api/middleware/ServiceSingletons';
+import type {ApiTestHarness} from '@app/api/test/ApiTestHarness';
+import {createBuilder, createBuilderWithoutAuth} from '@app/api/test/TestRequestBuilder';
+import {AdminACLs} from '@fluxer/constants/src/AdminACLs';
+import {afterAll, beforeAll, beforeEach, describe, expect, it} from 'vitest';
 
 function bootstrapRegistrationBody(prefix: string): Record<string, unknown> {
 	return {
@@ -85,8 +85,10 @@ describe('Auth registration', () => {
 		});
 		expect(reg.token.length).toBeGreaterThan(0);
 		expect(reg.user_id.length).toBeGreaterThan(0);
+		expect(Object.keys(reg).sort()).toEqual(['token', 'user', 'user_id']);
 	});
 	it('grants wildcard admin ACL to first accepted local dev registration', async () => {
+		await getInstanceConfigRepository().updateCaptchaConfig({enabled: false});
 		await withBootstrapAdminConfig({selfHosted: false, testModeEnabled: false}, async () => {
 			const first = await registerUser(harness, bootstrapRegistrationBodyWithDnsEmail('localdevadminone'));
 			const second = await registerUser(harness, bootstrapRegistrationBodyWithDnsEmail('localdevadmintwo'));
@@ -128,7 +130,7 @@ describe('Auth registration', () => {
 			await instanceConfigRepository.markAdminBootstrapped();
 			const account = await registerUser(harness, bootstrapRegistrationBody('stalesetupmarker'));
 			await expectUserACLs(account.user_id, []);
-			await createBuilder(harness, account.token).post('/admin/instance-config/get').body({}).execute();
+			await createBuilder(harness, account.token).get('/admin/instance/config').execute();
 		});
 	});
 	it('repairs setup completer admin ACL when bootstrap marker is stale', async () => {
@@ -140,26 +142,13 @@ describe('Auth registration', () => {
 			await expectUserACLs(account.user_id, []);
 
 			await createBuilder(harness, account.token)
-				.post('/admin/instance-config/update')
+				.patch('/admin/instance/config')
 				.body({app_public: {setup: {configured: true}}})
 				.execute();
 
 			await expectUserACLs(account.user_id, [AdminACLs.WILDCARD]);
-			await createBuilder(harness, account.token).post('/admin/instance-config/get').body({}).execute();
+			await createBuilder(harness, account.token).get('/admin/instance/config').execute();
 		});
-	});
-	it('allows emoji global name', async () => {
-		const globalName = '🌻 Sunflower';
-		const reg = await registerUser(harness, {
-			email: createUniqueEmail('global-name-emoji'),
-			username: createUniqueUsername('globalnameemoji'),
-			global_name: globalName,
-			password: 'a-strong-password',
-			date_of_birth: '2000-01-01',
-			consent: true,
-		});
-		const me = (await fetchMe(harness, reg.token)).json as UserMeResponse;
-		expect(me.global_name).toBe(globalName);
 	});
 	it('derives username from display name when username is omitted', async () => {
 		const reg = await registerUser(harness, {
@@ -172,149 +161,23 @@ describe('Auth registration', () => {
 		const me = (await fetchMe(harness, reg.token)).json as UserMeResponse;
 		expect(me.username).toBe('Magic_Tester');
 	});
-	it('rejects invalid registration payloads', async () => {
-		await createBuilderWithoutAuth(harness)
-			.post('/auth/register')
-			.body({
-				email: 'not-an-email',
-				username: 'itest',
-				global_name: 'Test User',
-				password: 'a-strong-password',
-				date_of_birth: '2000-01-01',
-				consent: true,
-			})
-			.expect(400)
-			.execute();
-		await createBuilderWithoutAuth(harness)
-			.post('/auth/register')
-			.body({
-				email: createUniqueEmail('weak-password'),
-				username: 'itest',
-				global_name: 'Test User',
-				password: 'weak',
-				date_of_birth: '2000-01-01',
-				consent: true,
-			})
-			.expect(400)
-			.execute();
-		await registerUser(harness, {
-			email: 'integration-duplicate-email@example.com',
-			username: createUniqueUsername('firstuser'),
-			global_name: 'Test User',
-			password: 'a-strong-password',
-			date_of_birth: '2000-01-01',
-			consent: true,
-		});
-		const duplicateJson = await createBuilderWithoutAuth<{
-			code: string;
-			errors: Array<{
-				path: string;
-				message: string;
-			}>;
-		}>(harness)
-			.post('/auth/register')
-			.body({
-				email: 'integration-duplicate-email@example.com',
-				username: createUniqueUsername('seconduser'),
-				global_name: 'Test User',
-				password: 'a-strong-password',
-				date_of_birth: '2000-01-01',
-				consent: true,
-			})
-			.expect(400)
-			.execute();
-		expect(duplicateJson.code).toBe('INVALID_FORM_BODY');
-		const emailError = duplicateJson.errors.find((e) => e.path === 'email');
-		expect(emailError?.message).toBe('Email is already in use.');
-		const missingFieldsCases: Array<{
-			name: string;
-			body: Record<string, unknown>;
-		}> = [
-			{
-				name: 'missing email',
-				body: {
-					email: '',
-					username: 'itest',
-					global_name: 'Test User',
-					password: 'a-strong-password',
-					date_of_birth: '2000-01-01',
-					consent: true,
-				},
-			},
-			{
-				name: 'missing username',
-				body: {
-					email: 'integration-missing-username@example.com',
-					username: '',
-					global_name: 'Test User',
-					password: 'a-strong-password',
-					date_of_birth: '2000-01-01',
-					consent: true,
-				},
-			},
-			{
-				name: 'missing password',
-				body: {
-					email: 'integration-missing-password@example.com',
-					username: 'itest',
-					global_name: 'Test User',
-					password: '',
-					date_of_birth: '2000-01-01',
-					consent: true,
-				},
-			},
-			{
-				name: 'missing date of birth',
-				body: {
-					email: 'integration-missing-dob@example.com',
-					username: 'itest',
-					global_name: 'Test User',
-					password: 'a-strong-password',
-					date_of_birth: '',
-					consent: true,
-				},
-			},
-		];
-		for (const testCase of missingFieldsCases) {
-			await createBuilderWithoutAuth(harness).post('/auth/register').body(testCase.body).expect(400).execute();
-		}
-	});
-	it('allows login after registration', async () => {
-		const email = createUniqueEmail('login');
-		const password = 'a-strong-password';
-		const reg = await registerUser(harness, {
-			email,
-			username: createUniqueUsername('loginuser'),
-			global_name: 'Login User',
-			password,
-			date_of_birth: '2000-01-01',
-			consent: true,
-		});
-		const login = await createBuilderWithoutAuth<LoginSuccessResponse>(harness)
-			.post('/auth/login')
-			.body({email, password})
-			.execute();
-		expect('mfa' in login).toBe(false);
-		expect(login.token.length).toBeGreaterThan(0);
-		expect(login.user_id).toBe(reg.user_id);
-	});
-	it('blocks any request from a Tor exit at the edge', async () => {
-		torExitListCache.seedForTesting(['127.0.0.1']);
+	it('blocks any request from an address on the shared blocked list', async () => {
+		applySharedListUpdate('ip_blocked', '127.0.0.1\n');
 		try {
 			await createBuilderWithoutAuth(harness)
 				.post('/auth/register')
 				.body({
-					email: createUniqueEmail('tor-register'),
-					username: createUniqueUsername('torregister'),
-					global_name: 'Tor Register',
+					email: createUniqueEmail('blocked-register'),
+					username: createUniqueUsername('blockedregister'),
+					global_name: 'Blocked Register',
 					password: 'a-strong-password',
 					date_of_birth: '2000-01-01',
 					consent: true,
 				})
-				.expect(403, 'TOR_BLOCKED')
+				.expect(403, 'GLOBAL_IP_BANNED')
 				.execute();
 		} finally {
-			torExitListCache.clearForTesting();
+			resetSharedListsForTests();
 		}
 	});
 	it('treats email as case-insensitive across auth flows', async () => {

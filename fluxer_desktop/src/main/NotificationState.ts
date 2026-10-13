@@ -16,15 +16,9 @@ const execFileAsync = promisify(execFile);
 const POLICY_CACHE_TTL_MS = 1_000;
 const COMMAND_TIMEOUT_MS = 1_000;
 const MACOS_FOCUS_DB_DIR = path.join(os.homedir(), 'Library', 'DoNotDisturb', 'DB');
-const WINDOWS_SUPPRESSING_STATES = new Set([
-	'not-present',
-	'busy',
-	'running-d3d-full-screen',
-	'presentation-mode',
-	'quiet-time',
-]);
+const WINDOWS_SUPPRESSING_STATES = new Set(['not-present', 'presentation-mode', 'quiet-time']);
 
-export interface NotificationSoundPolicy {
+interface NotificationSoundPolicy {
 	shouldPlaySound: boolean;
 	reason: string | null;
 }
@@ -288,7 +282,7 @@ async function computeNotificationSoundPolicy(): Promise<NotificationSoundPolicy
 	return {shouldPlaySound: true, reason: null};
 }
 
-export async function getNotificationSoundPolicy(): Promise<NotificationSoundPolicy> {
+async function getNotificationSoundPolicy(): Promise<NotificationSoundPolicy> {
 	const now = Date.now();
 	if (cachedPolicy && cachedPolicy.expiresAt > now) {
 		return cachedPolicy.promise;

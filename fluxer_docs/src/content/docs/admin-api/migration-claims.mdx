@@ -1,0 +1,62 @@
+---
+# SPDX-License-Identifier: AGPL-3.0-or-later
+title: Admin migration claims
+description: Restricted administrator operations to issue and revoke migration ownership credentials.
+---
+
+import RouteHeader from '@/components/RouteHeader.astro';
+
+Both operations require `migration_claim:manage`, local authentication, sudo verification, explicit confirmation and human administrator MFA. Password-only confirmation and service actors are refused. Requests use JSON POST with no query string. Responses are private and use `Cache-Control: no-store` and `Referrer-Policy: no-referrer`. Keep ownership credentials and MFA assertions out of logs and analytics.
+
+## Issue an ownership credential
+
+<RouteHeader method="POST" path="/v1/admin/migration/claims/issue" mfa />
+
+Requires an enabled migration with active verified readiness and a verified account-to-Discord binding. Issuance is separate from private delivery; deliver the credential only to the exact verified Discord user ID. Returns one ownership credential, never a login session.
+
+### JSON body
+
+| Field | Type | Description |
+| --- | --- | --- |
+| user_id | snowflake | Bound migrated account |
+| discord_user_id | snowflake | Exact privately verified Discord recipient |
+| confirm | boolean | Must be true |
+| mfa_method? | string | Administrator MFA verification method |
+| mfa_code? | string | Administrator MFA verification code |
+| webauthn_response? | [WebAuthn assertion](/http-api/users/mfa/#webauthn-assertion-object) object | Assertion when selected |
+| webauthn_challenge? | string | Challenge associated with the WebAuthn assertion |
+
+### Response body
+
+| Field | Type | Description |
+| --- | --- | --- |
+| token | string | One-time ownership credential for private delivery |
+| expires_at | ISO8601 timestamp | Ownership deadline |
+| discord_user_id | snowflake | Verified recipient |
+
+## Revoke outstanding credentials
+
+<RouteHeader method="POST" path="/v1/admin/migration/claims/revoke" mfa />
+
+Invalidates outstanding tickets and restricted proofs for the configured migration account, including while issuance is stopped. Does not undo completed accounts or normal sessions.
+
+### JSON body
+
+| Field | Type | Description |
+| --- | --- | --- |
+| user_id | snowflake | Migrated account whose credentials are revoked |
+| confirm | boolean | Must be true |
+| mfa_method? | string | Administrator MFA verification method |
+| mfa_code? | string | Administrator MFA verification code |
+| webauthn_response? | [WebAuthn assertion](/http-api/users/mfa/#webauthn-assertion-object) object | Assertion when selected |
+| webauthn_challenge? | string | Challenge associated with the WebAuthn assertion |
+
+### Response body
+
+| Field | Type | Description |
+| --- | --- | --- |
+| revoked | boolean | Always true |
+
+## Errors and limits
+
+Each operation has a dedicated route bucket and the global HTTP limit. Validation failures return 400; an operator without enrolled MFA receives 400 `TWO_FACTOR_REQUIRED`. Missing authentication or an invalid migration account or recipient binding returns 401. Authorization or policy rejection returns 403; rate limits return 429; unavailable configuration or provider operations return 503. See [Admin API](/admin-api/) for authentication and ACL rules and [migration claims](/http-api/migration-claims/) for the recipient workflow.

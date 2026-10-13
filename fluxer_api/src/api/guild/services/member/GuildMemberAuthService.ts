@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import type {GuildID, RoleID, UserID} from '@app/api/BrandedTypes';
+import type {IGatewayService} from '@app/api/infrastructure/IGatewayService';
+import type {UserRepository} from '@app/api/user/repositories/UserRepository';
 import {Permissions} from '@fluxer/constants/src/ChannelConstants';
 import {MissingAccessError} from '@fluxer/errors/src/domains/core/MissingAccessError';
 import {MissingPermissionsError} from '@fluxer/errors/src/domains/core/MissingPermissionsError';
 import type {GuildResponse} from '@fluxer/schema/src/domains/guild/GuildResponseSchemas';
-import type {GuildID, RoleID, UserID} from '../../../BrandedTypes';
-import type {IGatewayService} from '../../../infrastructure/IGatewayService';
-import type {IUserRepository} from '../../../user/IUserRepository';
 import {enforceGuildMfa, getGuildMfaFilteredPermissions, hasRequiredGuildMfa} from '../GuildMfaGuard';
 
 interface GuildAuth {
@@ -21,7 +21,7 @@ interface GuildAuth {
 export class GuildMemberAuthService {
 	constructor(
 		private readonly gatewayService: IGatewayService,
-		private readonly userRepository: IUserRepository,
+		private readonly userRepository: UserRepository,
 	) {}
 
 	async getGuildAuthenticated({userId, guildId}: {userId: UserID; guildId: GuildID}): Promise<GuildAuth> {

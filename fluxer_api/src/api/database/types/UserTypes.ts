@@ -1,8 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import type {LocaleCode} from '@fluxer/constants/src/Locales';
-import type {GuildFolderIcon, MentionReplyPreference} from '@fluxer/constants/src/UserConstants';
-import type {types} from 'cassandra-driver';
 import type {
 	AttachmentID,
 	ChannelID,
@@ -12,10 +9,18 @@ import type {
 	MemeID,
 	MessageID,
 	UserID,
-} from '../../BrandedTypes';
+} from '@app/api/BrandedTypes';
+import type {LocaleCode} from '@fluxer/constants/src/Locales';
+import type {GuildFolderIcon, MentionReplyPreference} from '@fluxer/constants/src/UserConstants';
+import type {types} from 'cassandra-driver';
 
 type Nullish<T> = T | null;
-export type PushSubscriptionPlatform = 'web_push' | 'android_fcm' | 'ios_apns' | 'android_unified_push';
+export type PushSubscriptionPlatform =
+	| 'web_push'
+	| 'android_fcm'
+	| 'ios_apns'
+	| 'ios_apns_voip'
+	| 'android_unified_push';
 
 export interface UserRow {
 	user_id: UserID;
@@ -27,11 +32,13 @@ export interface UserRow {
 	email: Nullish<string>;
 	email_verified: Nullish<boolean>;
 	email_bounced: Nullish<boolean>;
-	has_verified_phone?: Nullish<boolean>;
 	password_hash: Nullish<string>;
 	password_last_changed_at: Nullish<Date>;
 	totp_secret: Nullish<string>;
 	authenticator_types: Nullish<Set<number>>;
+	/** Retained for claim eligibility on rows written before upstream removed these fields. */
+	has_verified_phone?: Nullish<boolean>;
+	suspicious_activity_flags?: Nullish<number>;
 	avatar_hash: Nullish<string>;
 	avatar_color: Nullish<number>;
 	banner_hash: Nullish<string>;
@@ -56,7 +63,6 @@ export interface UserRow {
 	stripe_subscription_id: Nullish<string>;
 	stripe_customer_id: Nullish<string>;
 	has_ever_purchased: Nullish<boolean>;
-	suspicious_activity_flags: Nullish<number>;
 	terms_agreed_at: Nullish<Date>;
 	privacy_agreed_at: Nullish<Date>;
 	last_active_at: Nullish<Date>;
@@ -66,9 +72,13 @@ export interface UserRow {
 	pending_bulk_message_deletion_channel_count: Nullish<number>;
 	pending_bulk_message_deletion_message_count: Nullish<number>;
 	pending_deletion_at: Nullish<Date>;
+	deletion_started_at?: Nullish<Date>;
 	deletion_reason_code: Nullish<number>;
 	deletion_public_reason: Nullish<string>;
 	deletion_audit_log_reason: Nullish<string>;
+	deletion_scheduled_by?: Nullish<UserID>;
+	deletion_scheduled_at?: Nullish<Date>;
+	content_hidden_since?: Nullish<Date>;
 	acls: Nullish<Set<string>>;
 	traits: Nullish<Set<string>>;
 	first_refund_at: Nullish<Date>;
@@ -90,11 +100,12 @@ export const USER_COLUMNS = [
 	'email',
 	'email_verified',
 	'email_bounced',
-	'has_verified_phone',
 	'password_hash',
 	'password_last_changed_at',
 	'totp_secret',
 	'authenticator_types',
+	'has_verified_phone',
+	'suspicious_activity_flags',
 	'avatar_hash',
 	'avatar_color',
 	'banner_hash',
@@ -119,7 +130,6 @@ export const USER_COLUMNS = [
 	'stripe_subscription_id',
 	'stripe_customer_id',
 	'has_ever_purchased',
-	'suspicious_activity_flags',
 	'terms_agreed_at',
 	'privacy_agreed_at',
 	'last_active_at',
@@ -129,9 +139,13 @@ export const USER_COLUMNS = [
 	'pending_bulk_message_deletion_channel_count',
 	'pending_bulk_message_deletion_message_count',
 	'pending_deletion_at',
+	'deletion_started_at',
 	'deletion_reason_code',
 	'deletion_public_reason',
 	'deletion_audit_log_reason',
+	'deletion_scheduled_by',
+	'deletion_scheduled_at',
+	'content_hidden_since',
 	'acls',
 	'traits',
 	'first_refund_at',
@@ -152,7 +166,6 @@ export const EMPTY_USER_ROW: UserRow = {
 	email: null,
 	email_verified: null,
 	email_bounced: null,
-	has_verified_phone: null,
 	password_hash: null,
 	password_last_changed_at: null,
 	totp_secret: null,
@@ -181,7 +194,6 @@ export const EMPTY_USER_ROW: UserRow = {
 	stripe_subscription_id: null,
 	stripe_customer_id: null,
 	has_ever_purchased: null,
-	suspicious_activity_flags: null,
 	terms_agreed_at: null,
 	privacy_agreed_at: null,
 	last_active_at: null,
@@ -191,9 +203,13 @@ export const EMPTY_USER_ROW: UserRow = {
 	pending_bulk_message_deletion_channel_count: null,
 	pending_bulk_message_deletion_message_count: null,
 	pending_deletion_at: null,
+	deletion_started_at: null,
 	deletion_reason_code: null,
 	deletion_public_reason: null,
 	deletion_audit_log_reason: null,
+	deletion_scheduled_by: null,
+	deletion_scheduled_at: null,
+	content_hidden_since: null,
 	acls: null,
 	traits: null,
 	first_refund_at: null,
@@ -263,6 +279,8 @@ export interface UserSettingsRow {
 	synced_preferences: Nullish<string>;
 	profile_privacy: Nullish<number>;
 	default_share_voice_activity: Nullish<boolean>;
+	privacy_setup_version: Nullish<number>;
+	privacy_setup_completed_at: Nullish<Date>;
 	version: number;
 }
 
@@ -294,6 +312,7 @@ export interface ChannelOverride {
 	muted: boolean;
 	mute_config: Nullish<MuteConfig>;
 	unread_badges: Nullish<number>;
+	flags?: Nullish<number>;
 }
 
 export interface UserGuildSettingsRow {
@@ -311,24 +330,6 @@ export interface UserGuildSettingsRow {
 	version: number;
 }
 
-export interface ExpressionPackRow {
-	pack_id: GuildID;
-	pack_type: string;
-	creator_id: UserID;
-	name: string;
-	description: Nullish<string>;
-	created_at: Date;
-	updated_at: Date;
-	version: number;
-}
-
-export interface PackInstallationRow {
-	user_id: UserID;
-	pack_id: GuildID;
-	pack_type: string;
-	installed_at: Date;
-}
-
 export interface SavedMessageRow {
 	user_id: UserID;
 	channel_id: ChannelID;
@@ -342,34 +343,6 @@ export const SAVED_MESSAGE_COLUMNS = [
 	'message_id',
 	'saved_at',
 ] as const satisfies ReadonlyArray<keyof SavedMessageRow>;
-
-export interface ScheduledMessageRow {
-	user_id: UserID;
-	scheduled_message_id: MessageID;
-	channel_id: ChannelID;
-	payload: string;
-	scheduled_at: Date;
-	scheduled_local_at: string;
-	timezone: string;
-	status: string;
-	status_reason: string | null;
-	created_at: Date;
-	invalidated_at: Date | null;
-}
-
-export const SCHEDULED_MESSAGE_COLUMNS = [
-	'user_id',
-	'scheduled_message_id',
-	'channel_id',
-	'payload',
-	'scheduled_at',
-	'scheduled_local_at',
-	'timezone',
-	'status',
-	'status_reason',
-	'created_at',
-	'invalidated_at',
-] as const satisfies ReadonlyArray<keyof ScheduledMessageRow>;
 
 export interface FavoriteMemeRow {
 	user_id: UserID;
@@ -437,9 +410,11 @@ export interface UserHarvestRow {
 	user_id: UserID;
 	harvest_id: bigint;
 	requested_at: Date;
+	attempt_id?: string | null;
 	started_at: Nullish<Date>;
 	completed_at: Nullish<Date>;
 	failed_at: Nullish<Date>;
+	terminal_failed_at?: Date | null;
 	storage_key: Nullish<string>;
 	file_size: Nullish<bigint>;
 	progress_percent: number;
@@ -452,9 +427,11 @@ export const USER_HARVEST_COLUMNS = [
 	'user_id',
 	'harvest_id',
 	'requested_at',
+	'attempt_id',
 	'started_at',
 	'completed_at',
 	'failed_at',
+	'terminal_failed_at',
 	'storage_key',
 	'file_size',
 	'progress_percent',
@@ -474,6 +451,7 @@ export interface PushSubscriptionRow {
 	platform?: Nullish<PushSubscriptionPlatform>;
 	app_id?: Nullish<string>;
 	provider_environment?: Nullish<string>;
+	thread_channels?: Nullish<boolean>;
 }
 
 export const PUSH_SUBSCRIPTION_COLUMNS = [
@@ -487,6 +465,7 @@ export const PUSH_SUBSCRIPTION_COLUMNS = [
 	'platform',
 	'app_id',
 	'provider_environment',
+	'thread_channels',
 ] as const satisfies ReadonlyArray<keyof PushSubscriptionRow>;
 
 export interface UserContactChangeLogRow {
@@ -541,18 +520,10 @@ export const USER_SETTINGS_COLUMNS = [
 	'synced_preferences',
 	'profile_privacy',
 	'default_share_voice_activity',
+	'privacy_setup_version',
+	'privacy_setup_completed_at',
 	'version',
 ] as const satisfies ReadonlyArray<keyof UserSettingsRow>;
-export const EXPRESSION_PACK_COLUMNS = [
-	'pack_id',
-	'pack_type',
-	'creator_id',
-	'name',
-	'description',
-	'created_at',
-	'updated_at',
-	'version',
-] as const satisfies ReadonlyArray<keyof ExpressionPackRow>;
 export const USER_GUILD_SETTINGS_COLUMNS = [
 	'user_id',
 	'guild_id',

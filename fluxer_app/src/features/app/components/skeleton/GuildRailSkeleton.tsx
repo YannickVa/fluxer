@@ -8,13 +8,17 @@ import {SkeletonCircle} from '@app/features/app/components/skeleton/SkeletonCirc
 import {
 	getRememberedSkeletonGuildRailLayout,
 	type RememberedSkeletonGuildRailItem,
+	SKELETON_GUILD_RAIL_FALLBACK_ITEMS,
 	SKELETON_NO_SELECTED_RAIL_ITEM_INDEX,
 	SkeletonGuildRailItemIndicator,
 	SkeletonGuildRailItemKind,
 } from '@app/features/app/components/skeleton/SkeletonLayoutMemory';
+import {
+	skeletonDirectMessagesDisabled,
+	skeletonSingleCommunityEnabled,
+} from '@app/features/app/components/skeleton/SkeletonRuntimeConfig';
 import {SkeletonEmphasis, SkeletonRadius} from '@app/features/app/components/skeleton/SkeletonStyle';
 import {skeletonSurfaceVar} from '@app/features/app/components/skeleton/SkeletonSurfaceContract';
-import RuntimeConfig from '@app/features/app/state/RuntimeConfig';
 import {Platform} from '@app/features/platform/types/Platform';
 import {getRemScaleForDocument} from '@app/features/theme/layout/RemFromPx';
 import Dimension from '@app/features/ui/state/Dimension';
@@ -34,14 +38,7 @@ import {useState} from 'react';
 
 const GUILD_ICON_SIZE = skeletonSurfaceVar('--guild-icon-size');
 const FOLDER_ICON_SIZE = skeletonSurfaceVar('--guild-list-item-box-size');
-const MENTION_BADGE_SIZE = 'var(--guild-rail-skeleton-badge-size)';
-const GUILD_PLACEHOLDER_COUNT = 6;
 const SHOWS_DOWNLOAD_ACTION = !Platform.isElectron && !Platform.isPWA;
-const FALLBACK_ORGANIZED_ITEMS: ReadonlyArray<RememberedSkeletonGuildRailItem> = Object.freeze(
-	Array.from({length: GUILD_PLACEHOLDER_COUNT}, () =>
-		Object.freeze({kind: SkeletonGuildRailItemKind.GUILD, indicator: SkeletonGuildRailItemIndicator.NONE} as const),
-	),
-);
 const RAIL_ROW_PITCH_REM = 3.375;
 const RAIL_DIVIDER_SLOT_REM = 0.8125;
 const EMPTY_INLINE_DM_UNREAD_FLAGS: ReadonlyArray<boolean> = Object.freeze([]);
@@ -190,17 +187,6 @@ function showsSkeletonIndicator({indicator, selected}: SkeletonIndicatorVisibili
 	return indicator !== SkeletonGuildRailItemIndicator.NONE;
 }
 
-const MentionBadgePlaceholder = () => (
-	<SkeletonBlock
-		width={MENTION_BADGE_SIZE}
-		height={MENTION_BADGE_SIZE}
-		radius={SkeletonRadius.MEDIUM}
-		emphasis={SkeletonEmphasis.MUTED}
-		className={styles.mentionBadge}
-		data-flx="app.skeleton.guild-rail-skeleton.mention-badge-placeholder.mention-badge"
-	/>
-);
-
 const GuildPlaceholder = ({
 	indicator,
 	selected,
@@ -223,9 +209,6 @@ const GuildPlaceholder = ({
 			size={GUILD_ICON_SIZE}
 			data-flx="app.skeleton.guild-rail-skeleton.guild-placeholder.skeleton-circle"
 		/>
-		{indicator === SkeletonGuildRailItemIndicator.MENTION && (
-			<MentionBadgePlaceholder data-flx="app.skeleton.guild-rail-skeleton.guild-placeholder.mention-badge-placeholder" />
-		)}
 	</flx-app-guild-rail-skeleton-item-slot>
 );
 
@@ -326,9 +309,6 @@ const CollapsedFolderPlaceholder = ({
 				</flx-app-guild-rail-skeleton-collapsed-folder-grid>
 			)}
 		</flx-app-guild-rail-skeleton-collapsed-folder>
-		{indicator === SkeletonGuildRailItemIndicator.MENTION && (
-			<MentionBadgePlaceholder data-flx="app.skeleton.guild-rail-skeleton.collapsed-folder-placeholder.mention-badge-placeholder" />
-		)}
 	</flx-app-guild-rail-skeleton-item-slot>
 );
 
@@ -354,9 +334,6 @@ const ExpandedFolderGuildPlaceholder = ({
 			size={GUILD_ICON_SIZE}
 			data-flx="app.skeleton.guild-rail-skeleton.expanded-folder-guild-placeholder.skeleton-circle"
 		/>
-		{indicator === SkeletonGuildRailItemIndicator.MENTION && (
-			<MentionBadgePlaceholder data-flx="app.skeleton.guild-rail-skeleton.expanded-folder-guild-placeholder.mention-badge-placeholder" />
-		)}
 	</flx-app-guild-rail-skeleton-expanded-folder-guild>
 );
 
@@ -467,7 +444,7 @@ export const GuildRailSkeleton: React.FC<GuildRailSkeletonProps> = ({
 	const [mountState] = useState(() => {
 		const rememberedLayout = getRememberedSkeletonGuildRailLayout();
 		const remScale = getRemScaleForDocument(document);
-		const liveScrollTop = Math.max(0, Dimension.getGuildListDimensions().scrollTop);
+		const liveScrollTop = Math.max(0, Dimension.currentGuildListDimensions().scrollTop);
 		let scrollTop = liveScrollTop;
 		if (liveScrollTop === 0 && rememberedLayout != null) {
 			scrollTop = rememberedLayout.scrollTopPx * remScale;
@@ -480,15 +457,15 @@ export const GuildRailSkeleton: React.FC<GuildRailSkeletonProps> = ({
 		});
 	});
 	const {rememberedLayout} = mountState;
-	const communityActionsAvailable = !RuntimeConfig.singleCommunityEnabled;
+	const communityActionsAvailable = !skeletonSingleCommunityEnabled();
 	const inlineDmRowCount = rememberedLayout?.inlineDmRowCount ?? 0;
 	const inlineDmUnreadFlags = rememberedLayout?.inlineDmUnreadFlags ?? EMPTY_INLINE_DM_UNREAD_FLAGS;
 	const selectedInlineDmRowIndex = rememberedLayout?.selectedInlineDmRowIndex ?? SKELETON_NO_SELECTED_RAIL_ITEM_INDEX;
 	const inlineDmPlaceholders = Array.from({length: inlineDmRowCount}, (_, index) => index);
 	const outageVisible = rememberedLayout?.outageVisible ?? false;
-	const organizedItems = rememberedLayout?.organizedItems ?? FALLBACK_ORGANIZED_ITEMS;
+	const organizedItems = rememberedLayout?.organizedItems ?? SKELETON_GUILD_RAIL_FALLBACK_ITEMS;
 	const selectedItemIndex = rememberedLayout?.selectedItemIndex ?? SKELETON_NO_SELECTED_RAIL_ITEM_INDEX;
-	const fluxerVisible = rememberedLayout?.fluxerVisible ?? !RuntimeConfig.directMessagesDisabled;
+	const fluxerVisible = rememberedLayout?.fluxerVisible ?? !skeletonDirectMessagesDisabled();
 	const favoritesVisible = rememberedLayout?.favoritesVisible ?? true;
 	const discoveryVisible = rememberedLayout?.discoveryVisible ?? communityActionsAvailable;
 	const addGuildVisible = rememberedLayout?.addGuildVisible ?? communityActionsAvailable;

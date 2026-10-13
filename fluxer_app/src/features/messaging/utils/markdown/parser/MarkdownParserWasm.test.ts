@@ -4,6 +4,28 @@ import {ParserFlags} from '@app/features/messaging/utils/markdown/parser/Enums';
 import {parseMarkdownAstWithWasm} from '@app/features/messaging/utils/markdown/parser/MarkdownParserWasm';
 import {describe, expect, it} from 'vitest';
 
+describe('migrated historical mention text', () => {
+	const flags =
+		ParserFlags.ALLOW_USER_MENTIONS |
+		ParserFlags.ALLOW_ROLE_MENTIONS |
+		ParserFlags.ALLOW_CHANNEL_MENTIONS |
+		ParserFlags.ALLOW_MASKED_LINKS;
+	it('parses destination identity tokens without treating explicit unknown labels as links or mentions', () => {
+		const {nodes} = parseMarkdownAstWithWasm(
+			'<@700> <@701> <@&800> <#200> [unmapped Discord user: 999] [unmapped Discord role: 998] [unmapped Discord channel: 997]',
+			flags,
+		);
+		expect(nodes.filter((node) => node.type === 'Mention')).toEqual([
+			{type: 'Mention', kind: {kind: 'User', id: '700'}},
+			{type: 'Mention', kind: {kind: 'User', id: '701'}},
+			{type: 'Mention', kind: {kind: 'Role', id: '800'}},
+			{type: 'Mention', kind: {kind: 'Channel', id: '200'}},
+		]);
+		expect(nodes.some((node) => node.type === 'Link')).toBe(false);
+		expect(JSON.stringify(nodes)).toContain('unmapped Discord user: 999');
+	});
+});
+
 describe('markdown parser wasm blockquotes', () => {
 	it('preserves consecutive empty blockquote lines', () => {
 		expect(parseMarkdownAstWithWasm('> \n>  \nsome text', ParserFlags.ALLOW_BLOCKQUOTES)).toEqual({

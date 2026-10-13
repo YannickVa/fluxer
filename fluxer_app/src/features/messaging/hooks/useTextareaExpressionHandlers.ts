@@ -10,7 +10,8 @@ import {
 	type PrepareTextareaTextChange,
 } from '@app/features/messaging/utils/TextareaNativeEditUtils';
 import {type MentionSegment, TextareaSegmentManager} from '@app/features/messaging/utils/TextareaSegmentManager';
-import {ComponentDispatch} from '@app/features/platform/utils/ComponentBus';
+import {ComponentBus} from '@app/features/platform/utils/ComponentBus';
+import ActiveComposer from '@app/features/threads/state/ActiveComposer';
 import Users from '@app/features/user/state/Users';
 import * as NicknameUtils from '@app/features/user/utils/NicknameUtils';
 import type {MessageAttachment, MessageStickerItem} from '@fluxer/schema/src/domains/message/MessageResponseSchemas';
@@ -31,9 +32,9 @@ interface UseTextareaExpressionHandlersOptions {
 		newText: string;
 		newSegments: Array<MentionSegment>;
 	};
-	previousValueRef: React.MutableRefObject<string>;
+	previousValueRef: React.RefObject<string>;
 	prepareTextChange: PrepareTextareaTextChange;
-	segmentManagerRef: React.MutableRefObject<TextareaSegmentManager>;
+	segmentManagerRef: React.RefObject<TextareaSegmentManager>;
 	sendOptimisticMessage: (
 		messageData: {
 			content: string;
@@ -46,6 +47,7 @@ interface UseTextareaExpressionHandlersOptions {
 		},
 	) => void;
 	enabled?: boolean;
+	channelId?: string;
 }
 
 export const useTextareaExpressionHandlers = ({
@@ -58,10 +60,11 @@ export const useTextareaExpressionHandlers = ({
 	segmentManagerRef,
 	sendOptimisticMessage,
 	enabled = true,
+	channelId,
 }: UseTextareaExpressionHandlersOptions) => {
 	const appendText = useCallback(
 		(text: string) => {
-			if (!enabled) return;
+			if (!enabled || (channelId != null && !ActiveComposer.accepts(channelId))) return;
 			const prevValue = textareaRef.current?.value ?? previousValueRef.current;
 			const prefix = prevValue.length === 0 ? '' : ' ';
 			const nextValue = `${prevValue}${prefix}${text} `;
@@ -76,11 +79,11 @@ export const useTextareaExpressionHandlers = ({
 				selectionStart: nextValue.length,
 			});
 		},
-		[enabled, prepareTextChange, previousValueRef, segmentManagerRef, setValue, textareaRef],
+		[enabled, channelId, prepareTextChange, previousValueRef, segmentManagerRef, setValue, textareaRef],
 	);
 	useEffect(() => {
 		const handleGifSelect = (payload?: unknown) => {
-			if (!enabled) return;
+			if (!enabled || (channelId != null && !ActiveComposer.accepts(channelId))) return;
 			const {gif, autoSend} = (payload ?? {}) as {
 				gif?: Gif;
 				autoSend?: boolean;
@@ -93,22 +96,22 @@ export const useTextareaExpressionHandlers = ({
 				appendText(gifUrl);
 			}
 		};
-		return ComponentDispatch.subscribe('GIF_SELECT', handleGifSelect);
-	}, [appendText, sendOptimisticMessage, enabled]);
+		return ComponentBus.subscribe('GIF_SELECT', handleGifSelect);
+	}, [appendText, sendOptimisticMessage, enabled, channelId]);
 	useEffect(() => {
 		const handleStickerSelect = (payload?: unknown) => {
-			if (!enabled) return;
+			if (!enabled || (channelId != null && !ActiveComposer.accepts(channelId))) return;
 			const {sticker} = (payload ?? {}) as {
 				sticker?: GuildSticker;
 			};
 			if (!sticker) return;
 			sendOptimisticMessage({content: '', stickers: [sticker.toJSON()]}, {hasAttachments: false});
 		};
-		return ComponentDispatch.subscribe('STICKER_SELECT', handleStickerSelect);
-	}, [sendOptimisticMessage, enabled]);
+		return ComponentBus.subscribe('STICKER_SELECT', handleStickerSelect);
+	}, [sendOptimisticMessage, enabled, channelId]);
 	useEffect(() => {
 		const handleFavoriteMemeSelect = (payload?: unknown) => {
-			if (!enabled) return;
+			if (!enabled || (channelId != null && !ActiveComposer.accepts(channelId))) return;
 			const {meme, autoSend} = (payload ?? {}) as {
 				meme?: FavoriteMeme;
 				autoSend?: boolean;
@@ -144,11 +147,11 @@ export const useTextareaExpressionHandlers = ({
 				}
 			}
 		};
-		return ComponentDispatch.subscribe('FAVORITE_MEME_SELECT', handleFavoriteMemeSelect);
-	}, [appendText, canSendFavoriteMemeId, sendOptimisticMessage, enabled]);
+		return ComponentBus.subscribe('FAVORITE_MEME_SELECT', handleFavoriteMemeSelect);
+	}, [appendText, canSendFavoriteMemeId, sendOptimisticMessage, enabled, channelId]);
 	useEffect(() => {
 		const handleInsertMention = (payload?: unknown) => {
-			if (!enabled) return;
+			if (!enabled || (channelId != null && !ActiveComposer.accepts(channelId))) return;
 			const {userId} = (payload ?? {}) as {
 				userId?: string;
 			};
@@ -184,6 +187,15 @@ export const useTextareaExpressionHandlers = ({
 				selectionStart: newText.length,
 			});
 		};
-		return ComponentDispatch.subscribe('INSERT_MENTION', handleInsertMention);
-	}, [insertSegment, previousValueRef, setValue, textareaRef, segmentManagerRef, prepareTextChange, enabled]);
+		return ComponentBus.subscribe('INSERT_MENTION', handleInsertMention);
+	}, [
+		insertSegment,
+		previousValueRef,
+		setValue,
+		textareaRef,
+		segmentManagerRef,
+		prepareTextChange,
+		enabled,
+		channelId,
+	]);
 };

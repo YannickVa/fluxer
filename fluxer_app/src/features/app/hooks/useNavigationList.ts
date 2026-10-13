@@ -38,16 +38,16 @@ export interface NavigationRowBounds {
 	readonly bottom: number;
 }
 
-export interface NavigationListPosition {
+interface NavigationListPosition {
 	readonly position: number;
 	readonly setSize: number;
 }
 
-export interface ResolveMissingNavigationActiveKeyRequest {
+interface ResolveMissingNavigationActiveKeyRequest {
 	readonly missingActiveKey: string;
 }
 
-export type MissingNavigationActiveKeyResolver = (request: ResolveMissingNavigationActiveKeyRequest) => string | null;
+type MissingNavigationActiveKeyResolver = (request: ResolveMissingNavigationActiveKeyRequest) => string | null;
 
 interface NavigationListOptions {
 	readonly scrollerRef: React.RefObject<ScrollerHandle | null>;
@@ -265,7 +265,7 @@ function resolveScrollNode(scrollerRef: React.RefObject<ScrollerHandle | null>):
 	if (scroller == null) {
 		return null;
 	}
-	return scroller.getScrollerNode();
+	return scroller.getViewportElement();
 }
 
 interface ResolveNavigationRowNodeQuery {
@@ -311,7 +311,7 @@ function scrollNavigationRowIntoView({
 	if (node == null) {
 		return false;
 	}
-	scroller.scrollIntoViewNode({node, alignment: resolveNavigationScrollerAlignment(align)});
+	scroller.revealElement({node, alignment: resolveNavigationScrollerAlignment(align)});
 	return true;
 }
 

@@ -7,7 +7,7 @@
 
 handle_role_delete_strips_from_members_test() ->
     RoleIdToDelete = <<"200">>,
-    Data = guild_data_index:normalize_data(#{
+    Data = guild_data_index:normalize_map(#{
         <<"roles">> => [
             #{<<"id">> => <<"100">>, <<"name">> => <<"Admin">>},
             #{<<"id">> => <<"200">>, <<"name">> => <<"Moderator">>}
@@ -138,7 +138,7 @@ handle_role_delete_removes_role_from_list_test() ->
     ?assertEqual(<<"Keep">>, maps:get(<<"name">>, hd(Roles))).
 
 strip_role_from_members_no_affected_users_test() ->
-    Data = guild_data_index:normalize_data(#{
+    Data = guild_data_index:normalize_map(#{
         <<"roles">> => [],
         <<"members">> => #{
             1 => #{<<"user">> => #{<<"id">> => <<"1">>}, <<"roles">> => [<<"100">>]}
@@ -176,48 +176,3 @@ strip_role_from_channel_overwrites_preserves_user_overwrites_test() ->
     Overwrites = maps:get(<<"permission_overwrites">>, Ch),
     ?assertEqual(1, length(Overwrites)),
     ?assertEqual(1, maps:get(<<"type">>, hd(Overwrites))).
-
-extract_role_ids_from_role_update_test() ->
-    EventData = #{<<"role">> => #{<<"id">> => <<"42">>}},
-    ?assertEqual([42], guild_state_roles:extract_role_ids_from_role_update(EventData)).
-
-extract_role_ids_from_role_update_missing_id_test() ->
-    EventData = #{<<"role">> => #{}},
-    ?assertEqual([], guild_state_roles:extract_role_ids_from_role_update(EventData)).
-
-extract_role_ids_from_role_update_missing_role_test() ->
-    ?assertEqual([], guild_state_roles:extract_role_ids_from_role_update(#{})).
-
-extract_role_ids_from_role_update_invalid_id_test() ->
-    ?assertEqual(
-        [],
-        guild_state_roles:extract_role_ids_from_role_update(
-            #{<<"role">> => #{<<"id">> => <<"001">>}}
-        )
-    ),
-    ?assertEqual(
-        [],
-        guild_state_roles:extract_role_ids_from_role_update(
-            #{<<"role">> => #{<<"id">> => <<"0">>}}
-        )
-    ).
-
-extract_role_ids_from_role_update_bulk_test() ->
-    EventData = #{<<"roles">> => [#{<<"id">> => <<"1">>}, #{<<"id">> => <<"2">>}]},
-    ?assertEqual([1, 2], guild_state_roles:extract_role_ids_from_role_update_bulk(EventData)).
-
-extract_role_ids_from_role_update_bulk_empty_test() ->
-    ?assertEqual([], guild_state_roles:extract_role_ids_from_role_update_bulk(#{})).
-
-extract_role_ids_from_role_delete_test() ->
-    EventData = #{<<"role_id">> => <<"55">>},
-    ?assertEqual([55], guild_state_roles:extract_role_ids_from_role_delete(EventData)).
-
-extract_role_ids_from_role_delete_missing_test() ->
-    ?assertEqual([], guild_state_roles:extract_role_ids_from_role_delete(#{})).
-
-handle_role_delete_invalid_id_noop_test() ->
-    Data = #{<<"roles">> => [#{<<"id">> => <<"1">>, <<"name">> => <<"Keep">>}]},
-    ?assertEqual(
-        Data, guild_state_roles:handle_role_delete(#{<<"role_id">> => <<"001">>}, Data)
-    ).

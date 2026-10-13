@@ -18,8 +18,8 @@ function report(result: WorkerResult): void {
 }
 
 async function run(): Promise<void> {
-	const {initializeWindowsVulkanGameCaptureLayer} = await import('@electron/main/WindowsVulkanGameCaptureLayer');
-	initializeWindowsVulkanGameCaptureLayer();
+	const {removeFluxerVulkanLayerRegistrations} = await import('@electron/main/WindowsVulkanLayerCleanup');
+	removeFluxerVulkanLayerRegistrations();
 }
 
 function exitAfterReport(code: number): void {

@@ -2,22 +2,27 @@
 
 import type {Message} from '@app/features/messaging/models/MessagingMessage';
 import {getEmbedMediaDimensions} from '@app/features/messaging/utils/MediaDimensionConfig';
-import {buildMediaProxyURL, resolvePreferredImageFormat} from '@app/features/messaging/utils/MediaProxyUtils';
+import {
+	buildAnimatedImageProxyURL,
+	buildMediaProxyURL,
+	mediaDevicePixelRatio,
+	resolvePreferredImageFormat,
+	stripMediaProxyParams,
+} from '@app/features/messaging/utils/MediaProxyUtils';
 import {Logger} from '@app/features/platform/utils/AppLogger';
 import * as ColorUtils from '@app/features/theme/utils/ColorUtils';
 import {createCalculator, type MediaDimensionCalculator} from '@app/features/ui/utils/DimensionUtils';
 import {MessageAttachmentFlags} from '@fluxer/constants/src/ChannelConstants';
 import type {EmbedMedia, MessageEmbed} from '@fluxer/schema/src/domains/message/EmbedSchemas';
 import type {MessageAttachment} from '@fluxer/schema/src/domains/message/MessageResponseSchemas';
-import {msg} from '@lingui/core/macro';
 import type React from 'react';
 
 export const logger = new Logger('Embed');
 export const THUMBNAIL_SIZE = 80;
-export const MAX_GALLERY_MEDIA = 10;
-export const EMBED_PADDING_X = 12;
-export const EMBED_LEFT_BORDER_WIDTH = 4;
-export const EMBED_RIGHT_BORDER_WIDTH = 1;
+const MAX_GALLERY_MEDIA = 10;
+const EMBED_PADDING_X = 12;
+const EMBED_LEFT_BORDER_WIDTH = 4;
+const EMBED_RIGHT_BORDER_WIDTH = 1;
 export const EMBED_MEDIA_CHROME_WIDTH = EMBED_PADDING_X * 2 + EMBED_LEFT_BORDER_WIDTH + EMBED_RIGHT_BORDER_WIDTH;
 export const EMBED_MEDIA_MAX_WIDTH = 432;
 
@@ -27,6 +32,7 @@ export interface EmbedProps {
 	embedIndex?: number;
 	onDelete?: (bypassConfirm?: boolean) => void;
 	contextualEmbeds?: ReadonlyArray<MessageEmbed>;
+	contextualContent?: string;
 	isPreview?: boolean;
 }
 
@@ -49,40 +55,6 @@ export interface EmbedMediaRendererProps {
 	isPreview?: boolean;
 }
 
-export const REPOST_DESCRIPTOR = msg({
-	message: 'repost',
-	comment:
-		'Singular external-post stat label on a social post embed (e.g. Twitter/X). Lowercase to appear after the count.',
-});
-export const REPOSTS_DESCRIPTOR = msg({
-	message: 'reposts',
-	comment:
-		'Plural external-post stat label on a social post embed (e.g. Twitter/X). Lowercase to appear after the count.',
-});
-export const QUOTE_DESCRIPTOR = msg({
-	message: 'quote',
-	comment: 'Singular external-post stat label on a social post embed. Lowercase to appear after the count.',
-});
-export const QUOTES_DESCRIPTOR = msg({
-	message: 'quotes',
-	comment: 'Plural external-post stat label on a social post embed. Lowercase to appear after the count.',
-});
-export const LIKE_DESCRIPTOR = msg({
-	message: 'like',
-	comment: 'Singular external-post stat label on a social post embed. Lowercase to appear after the count.',
-});
-export const LIKES_DESCRIPTOR = msg({
-	message: 'likes',
-	comment: 'Plural external-post stat label on a social post embed. Lowercase to appear after the count.',
-});
-export const SAVE_DESCRIPTOR = msg({
-	message: 'save',
-	comment: 'Singular external-post stat label on a social post embed. Lowercase to appear after the count.',
-});
-export const SAVES_DESCRIPTOR = msg({
-	message: 'saves',
-	comment: 'Plural external-post stat label on a social post embed. Lowercase to appear after the count.',
-});
 const URL_CACHE_CAPACITY = 4096;
 const normalizedUrlCache = new Map<string, string | null>();
 const hostnameCache = new Map<string, string | null>();
@@ -128,16 +100,41 @@ export const calculateMediaDimensions = (media: Required<EmbedMedia>): MediaDime
 	const {dimensions} = mediaCalculator.calculate({width: media.width, height: media.height});
 	return dimensions;
 };
+const toEmbedMediaPixels = (layoutWidth: number, layoutHeight: number): MediaDimensions => {
+	const ratio = mediaDevicePixelRatio();
+	return {width: Math.round(layoutWidth * ratio), height: Math.round(layoutHeight * ratio)};
+};
 export const getOptimizedMediaURL = (proxyURL: string, width: number, height: number, contentType?: string): string => {
-	const targetWidth = Math.round(width * 2);
-	const targetHeight = Math.round(height * 2);
+	const target = toEmbedMediaPixels(width, height);
 	return buildMediaProxyURL(proxyURL, {
 		format: resolvePreferredImageFormat(contentType),
-		width: targetWidth,
-		height: targetHeight,
+		width: target.width,
+		height: target.height,
 	});
 };
-export const mediaIdentityKey = (media?: EmbedMedia): string => {
+const getOptimizedAnimatedMediaURL = (proxyURL: string, width: number, height: number): string => {
+	if (!proxyURL) return proxyURL;
+	const target = toEmbedMediaPixels(width, height);
+	return buildAnimatedImageProxyURL(stripMediaProxyParams(proxyURL), target.width, target.height);
+};
+const isAnimatedEmbedMedia = (media: Pick<EmbedMedia, 'content_type' | 'flags'>): boolean => {
+	if (media.content_type === 'image/gif') return true;
+	return ((media.flags ?? 0) & MessageAttachmentFlags.IS_ANIMATED) === MessageAttachmentFlags.IS_ANIMATED;
+};
+export const resolveEmbedImageSource = (
+	media: Pick<EmbedMedia, 'content_type' | 'flags'> & {proxy_url: string},
+	width: number,
+	height: number,
+): {src: string; animated: boolean} => {
+	const animated = isAnimatedEmbedMedia(media);
+	return {
+		src: animated
+			? getOptimizedAnimatedMediaURL(media.proxy_url, width, height)
+			: getOptimizedMediaURL(media.proxy_url, width, height, media.content_type),
+		animated,
+	};
+};
+const mediaIdentityKey = (media?: EmbedMedia): string => {
 	if (!media) return '';
 	return [
 		media.url ?? '',
@@ -153,7 +150,7 @@ export const mediaIdentityKey = (media?: EmbedMedia): string => {
 		media.description ?? '',
 	].join('|');
 };
-export const embedMediaSignature = (embed: MessageEmbed): string => {
+const embedMediaSignature = (embed: MessageEmbed): string => {
 	return [
 		embed.url ?? '',
 		embed.provider?.url ?? '',
@@ -180,7 +177,7 @@ export const isMediaMatureContent = (media?: EmbedMedia): boolean => {
 	if (!media) return false;
 	return Boolean(media.nsfw || ((media.flags ?? 0) & MessageAttachmentFlags.CONTAINS_EXPLICIT_MEDIA) !== 0);
 };
-export const normalizeUrl = (url?: string): string | null => {
+const normalizeUrl = (url?: string): string | null => {
 	if (!url) return null;
 	if (normalizedUrlCache.has(url)) {
 		return normalizedUrlCache.get(url) ?? null;

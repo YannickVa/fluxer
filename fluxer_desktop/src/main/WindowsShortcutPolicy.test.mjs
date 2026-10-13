@@ -24,7 +24,10 @@ const current = `${root}\\current\\Fluxer Canary.exe`;
 const legacy = ['com.fluxer.desktop'];
 
 test('leaves a current shortcut with the current identity unchanged', () => {
-	assert.equal(shouldRepairWindowsShortcut({target: current, appUserModelId: 'com.matskos.fluxer'}, current, root, legacy), false);
+	assert.equal(
+		shouldRepairWindowsShortcut({target: current, appUserModelId: 'com.matskos.fluxer'}, current, root, legacy),
+		false,
+	);
 });
 
 test('repairs an older executable under the same installation root', () => {
@@ -38,8 +41,7 @@ test('repairs an installer shortcut accidentally written for another user profil
 	assert.equal(
 		shouldRepairWindowsShortcut(
 			{
-				target:
-					'C:\\Users\\CodexSandboxOffline\\AppData\\Local\\fluxer_desktop_canary\\current\\Fluxer Canary.exe',
+				target: 'C:\\Users\\CodexSandboxOffline\\AppData\\Local\\fluxer_desktop_canary\\current\\Fluxer Canary.exe',
 			},
 			current,
 			root,
@@ -50,7 +52,10 @@ test('repairs an installer shortcut accidentally written for another user profil
 });
 
 test('repairs a shortcut carrying a legacy application identity', () => {
-	assert.equal(shouldRepairWindowsShortcut({target: current, appUserModelId: 'COM.FLUXER.DESKTOP'}, current, root, legacy), true);
+	assert.equal(
+		shouldRepairWindowsShortcut({target: current, appUserModelId: 'COM.FLUXER.DESKTOP'}, current, root, legacy),
+		true,
+	);
 });
 
 test('never rewrites an unrelated shortcut', () => {

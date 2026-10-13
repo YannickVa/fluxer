@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import type {ChannelID, GuildID} from '../BrandedTypes';
+import type {ChannelID, GuildID} from '@app/api/BrandedTypes';
 
 export abstract class IVoiceRoomStore {
 	abstract pinRoomServer(
@@ -21,12 +21,4 @@ export abstract class IVoiceRoomStore {
 	} | null>;
 
 	abstract deleteRoomServer(guildId: GuildID | undefined, channelId: ChannelID): Promise<void>;
-
-	abstract getRegionOccupancy(regionId: string): Promise<Array<string>>;
-
-	abstract getServerOccupancy(regionId: string, serverId: string): Promise<Array<string>>;
-
-	async listPinnedRooms(): Promise<Array<{guildId?: GuildID; channelId: ChannelID}>> {
-		return [];
-	}
 }

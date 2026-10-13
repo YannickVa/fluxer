@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import type {ReportID} from '@app/api/BrandedTypes';
+import type {IARSubmission} from '@app/api/report/ReportModels';
+import type {IReportSearchService} from '@app/api/search/IReportSearchService';
+import {convertToSearchableReport} from '@app/api/search/report/ReportSearchSerializer';
+import {SearchAdapterServiceBase} from '@app/api/search/SearchAdapterServiceBase';
 import type {SearchResult as SchemaSearchResult} from '@fluxer/schema/src/contracts/search/SearchAdapterTypes';
 import type {ReportSearchFilters, SearchableReport} from '@fluxer/schema/src/contracts/search/SearchDocumentTypes';
 import {
 	ElasticsearchReportAdapter,
 	type ElasticsearchReportAdapterOptions,
 } from '@pkgs/elasticsearch_search/src/adapters/ElasticsearchReportAdapter';
-import type {GuildID, MessageID, ReportID, UserID} from '../../BrandedTypes';
-import type {IARSubmission} from '../../report/IReportRepository';
-import type {IReportSearchService} from '../IReportSearchService';
-import {convertToSearchableReport} from '../report/ReportSearchSerializer';
-import {SearchAdapterServiceBase} from '../SearchAdapterServiceBase';
 
 interface ElasticsearchReportSearchServiceOptions extends ElasticsearchReportAdapterOptions {}
 
@@ -39,10 +39,6 @@ export class ElasticsearchReportSearchService
 		await this.deleteDocument(reportId.toString());
 	}
 
-	async deleteReports(reportIds: Array<ReportID>): Promise<void> {
-		await this.deleteDocuments(reportIds.map((id) => id.toString()));
-	}
-
 	searchReports(
 		query: string,
 		filters: ReportSearchFilters,
@@ -54,47 +50,7 @@ export class ElasticsearchReportSearchService
 		return this.search(query, filters, options);
 	}
 
-	listReportsByReporter(
-		reporterId: UserID,
-		limit?: number,
-		offset?: number,
-	): Promise<SchemaSearchResult<SearchableReport>> {
-		return this.searchReports('', {reporterId: reporterId.toString()}, {limit, offset});
-	}
-
 	listReportsByStatus(status: number, limit?: number, offset?: number): Promise<SchemaSearchResult<SearchableReport>> {
 		return this.searchReports('', {status}, {limit, offset});
-	}
-
-	listReportsByType(
-		reportType: number,
-		limit?: number,
-		offset?: number,
-	): Promise<SchemaSearchResult<SearchableReport>> {
-		return this.searchReports('', {reportType}, {limit, offset});
-	}
-
-	listReportsByReportedUser(
-		reportedUserId: UserID,
-		limit?: number,
-		offset?: number,
-	): Promise<SchemaSearchResult<SearchableReport>> {
-		return this.searchReports('', {reportedUserId: reportedUserId.toString()}, {limit, offset});
-	}
-
-	listReportsByReportedGuild(
-		reportedGuildId: GuildID,
-		limit?: number,
-		offset?: number,
-	): Promise<SchemaSearchResult<SearchableReport>> {
-		return this.searchReports('', {reportedGuildId: reportedGuildId.toString()}, {limit, offset});
-	}
-
-	listReportsByReportedMessage(
-		reportedMessageId: MessageID,
-		limit?: number,
-		offset?: number,
-	): Promise<SchemaSearchResult<SearchableReport>> {
-		return this.searchReports('', {reportedMessageId: reportedMessageId.toString()}, {limit, offset});
 	}
 }

@@ -31,7 +31,7 @@ import {
 	SEARCH_SETTINGS_PLACEHOLDER_DESCRIPTOR,
 	SIGN_OUT_DESCRIPTOR,
 } from '@app/features/i18n/utils/CommonMessageDescriptors';
-import {ComponentDispatch} from '@app/features/platform/utils/ComponentBus';
+import {ComponentBus} from '@app/features/platform/utils/ComponentBus';
 import {remFromPx} from '@app/features/theme/layout/RemFromPx';
 import {Button} from '@app/features/ui/button/Button';
 import * as ModalCommands from '@app/features/ui/commands/ModalCommands';
@@ -54,6 +54,7 @@ import {
 	getSectionIdsForTab,
 	getSectionsForTab,
 	getUserSettingsTabLabel,
+	PRIVACY_REVIEW_NEEDED_DESCRIPTOR,
 	tabHasMultipleLinkableSections,
 	USER_SETTINGS_LABEL_DESCRIPTOR,
 } from '@app/features/user/components/settings_utils/SettingsConstants';
@@ -79,6 +80,7 @@ import {buildUserSettingsDeepLink} from '@app/features/user/components/settings_
 import {useSettingsContentKey} from '@app/features/user/hooks/useSettingsContentKey';
 import {useUnsavedChangesFlash} from '@app/features/user/hooks/useUnsavedChangesFlash';
 import {ScrollSpyProvider, useScrollSpyContext} from '@app/features/user/state/ScrollSpyContext';
+import UserSettings from '@app/features/user/state/UserSettings';
 import Users from '@app/features/user/state/Users';
 import {
 	collapseSettingsTreeTab,
@@ -223,7 +225,7 @@ const SidebarSections: React.FC<SidebarSectionsProps> = observer(
 				scrollSpyContext.scrollToSection(sectionId);
 				return;
 			}
-			ComponentDispatch.dispatch('USER_SETTINGS_TAB_SELECT', {tab: tabType, section: sectionId});
+			ComponentBus.dispatch('USER_SETTINGS_TAB_SELECT', {tab: tabType, section: sectionId});
 		};
 		return (
 			<SettingsModalSidebarSubItems
@@ -380,6 +382,7 @@ export const DesktopSettingsView: React.FC<DesktopSettingsViewProps> = observer(
 		const activeTabPanelId = selectedTab ? `settings-tabpanel-${selectedTab}` : undefined;
 		const activeTabId = selectedTab ? `settings-tab-${selectedTab}` : undefined;
 		const shouldShowWhatsNew = hasWhatsNewEntries();
+		const privacySetupPending = UserSettings.isPrivacySetupPending();
 		const scrollKey = useMemo(() => {
 			const subtabKey = contentKey ?? initialSubtab ?? 'root';
 			if (isSearchActive) {
@@ -585,6 +588,11 @@ export const DesktopSettingsView: React.FC<DesktopSettingsViewProps> = observer(
 																		</div>
 																	}
 																	selected={isSelected}
+																	attentionLabel={
+																		tab.type === 'privacy_safety' && privacySetupPending
+																			? i18n._(PRIVACY_REVIEW_NEEDED_DESCRIPTOR)
+																			: undefined
+																	}
 																	onClick={() => handleTabSelect(tab.type)}
 																	onRequestContentFocus={focusContentPanel}
 																	id={tabId}

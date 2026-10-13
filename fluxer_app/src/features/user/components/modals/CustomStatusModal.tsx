@@ -14,6 +14,7 @@ import DeveloperMode from '@app/features/devtools/state/DeveloperMode';
 import Emoji from '@app/features/emoji/state/Emoji';
 import type {FlatEmoji} from '@app/features/emoji/types/EmojiTypes';
 import {ExpressionPickerPopout} from '@app/features/expressions/components/popouts/ExpressionPickerPopout';
+import {buildCustomEmojiURL} from '@app/features/expressions/utils/CustomEmojiImageUrl';
 import {getEmojiURL} from '@app/features/expressions/utils/EmojiUtils';
 import {getSkinTonedSurrogate} from '@app/features/expressions/utils/SkinToneUtils';
 import {Button} from '@app/features/ui/button/Button';
@@ -27,10 +28,10 @@ import {getRelativeDayLabelLower} from '@app/features/ui/utils/RelativeDayLabels
 import * as UserSettingsCommands from '@app/features/user/commands/UserSettingsCommands';
 import styles from '@app/features/user/components/modals/CustomStatusModal.module.css';
 import {ProfilePreview} from '@app/features/user/components/profile/ProfilePreview';
-import {type CustomStatus, normalizeCustomStatus} from '@app/features/user/state/CustomStatus';
+import {buildDraftStatus, type CustomStatus, normalizeCustomStatus} from '@app/features/user/state/CustomStatus';
 import UserSettings from '@app/features/user/state/UserSettings';
 import Users from '@app/features/user/state/Users';
-import * as AvatarUtils from '@app/features/user/utils/AvatarUtils';
+import {handleAccountLimitedError} from '@app/features/user/utils/AccountLimitUtils';
 import {getCurrentLocale} from '@app/features/user/utils/LocaleUtils';
 import {getDaysBetween} from '@fluxer/date_utils/src/DateComparison';
 import {getFormattedShortDate, getFormattedTime} from '@fluxer/date_utils/src/DateFormatting';
@@ -128,19 +129,6 @@ const formatRelativeDayTimeLabel = (reference: Date, target: Date): TimeLabel =>
 	const dayLabel = getFormattedShortDate(target, getCurrentLocale());
 	return {dayLabel, timeString};
 };
-const buildDraftStatus = (params: {
-	text: string;
-	emojiId: string | null;
-	emojiName: string | null;
-	expiresAt: string | null;
-}): CustomStatus | null => {
-	return normalizeCustomStatus({
-		text: params.text || null,
-		emojiId: params.emojiId,
-		emojiName: params.emojiName,
-		expiresAt: params.expiresAt,
-	});
-};
 export const CustomStatusModal = observer(() => {
 	const {i18n} = useLingui();
 	const initialStatus = normalizeCustomStatus(UserSettings.customStatus);
@@ -233,6 +221,8 @@ export const CustomStatusModal = observer(() => {
 			});
 			await UserSettingsCommands.update({customStatus: statusToSave});
 			ModalCommands.pop();
+		} catch (error) {
+			if (!handleAccountLimitedError(error)) throw error;
 		} finally {
 			setIsSaving(false);
 		}
@@ -249,7 +239,7 @@ export const CustomStatusModal = observer(() => {
 			if (emoji) {
 				return (
 					<img
-						src={AvatarUtils.getEmojiURL({
+						src={buildCustomEmojiURL({
 							id: draftStatus.emojiId,
 							animated: Boolean(emoji.animated) && shouldAnimateEmojiPreview,
 						})}

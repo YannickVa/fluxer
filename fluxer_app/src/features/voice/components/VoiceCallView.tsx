@@ -19,7 +19,7 @@ import {BottomSheet} from '@app/features/ui/bottom_sheet/BottomSheet';
 import * as ToastCommands from '@app/features/ui/commands/ToastCommands';
 import FocusRing from '@app/features/ui/focus_ring/FocusRing';
 import {usePopout} from '@app/features/ui/hooks/usePopout';
-import {PortalHostContext, setActivePortalHost} from '@app/features/ui/overlay/PortalHostContext';
+import {PortalHostContext} from '@app/features/ui/overlay/PortalHostContext';
 import {Popout as PopoverPopout} from '@app/features/ui/popover/PopoverPopout';
 import ContextMenu, {isContextMenuNodeTarget} from '@app/features/ui/state/ContextMenu';
 import KeyboardMode from '@app/features/ui/state/KeyboardMode';
@@ -28,7 +28,7 @@ import Popout from '@app/features/ui/state/Popout';
 import Users from '@app/features/user/state/Users';
 import * as NicknameUtils from '@app/features/user/utils/NicknameUtils';
 import {CompactVoiceCallView} from '@app/features/voice/components/CompactVoiceCallView';
-import {MediaVerticalVolumeControl} from '@app/features/voice/components/media_player/components/MediaVerticalVolumeControl';
+import {FocusedStreamVolumeControl} from '@app/features/voice/components/FocusedStreamVolumeControl';
 import {PoppedOutOverlay} from '@app/features/voice/components/popout/PoppedOutOverlay';
 import {
 	selectPoppedOutOverlayTransition,
@@ -39,7 +39,10 @@ import {StreamFocusHeaderInfo} from '@app/features/voice/components/StreamFocusH
 import {getStreamKey} from '@app/features/voice/components/StreamKeys';
 import {useStreamSpectators} from '@app/features/voice/components/useStreamSpectators';
 import {useStreamTrackInfo} from '@app/features/voice/components/useStreamTrackInfo';
-import {useVoiceCallAppFullscreen} from '@app/features/voice/components/useVoiceCallAppFullscreen';
+import {
+	useVoiceCallAppFullscreen,
+	useVoiceCallFullscreenPortalHost,
+} from '@app/features/voice/components/useVoiceCallAppFullscreen';
 import {useVoiceCallTracksAndLayout} from '@app/features/voice/components/useVoiceCallTracksAndLayout';
 import {useVoiceEngineConnectionState} from '@app/features/voice/components/useVoiceEngineConnectionState';
 import {VoiceCallCornerControls} from '@app/features/voice/components/VoiceCallCornerControls';
@@ -53,7 +56,7 @@ import {
 import {VoiceRegionTeleportOverlay} from '@app/features/voice/components/VoiceRegionTeleportOverlay';
 import {VoiceDetailsPopout} from '@app/features/voice/components/voice_connection_status/VoiceDetailsPopout';
 import {VoiceDebugStatsForwarder} from '@app/features/voice/diagnostics/VoiceDebugStatsForwarder';
-import MediaEngine, {useMediaEngineVersion} from '@app/features/voice/engine/MediaEngineFacade';
+import {useMediaEngineVersion} from '@app/features/voice/engine/MediaEngineFacade';
 import {
 	asVoiceEngineConnectionState,
 	VoiceEngineConnectionState,
@@ -63,7 +66,6 @@ import PopoutWindowManager, {
 	getVoiceCallPopoutKey,
 	isVoicePopoutSupported,
 } from '@app/features/voice/state/PopoutWindowManager';
-import StreamAudioPrefs from '@app/features/voice/state/StreamAudioPrefs';
 import VoiceCallLayout from '@app/features/voice/state/VoiceCallLayout';
 import {hasValidRoomForVoiceCallContext} from '@app/features/voice/utils/VoiceCallContext';
 import {VOICE_CALL_DESCRIPTOR} from '@app/features/voice/utils/VoiceMessageDescriptors';
@@ -281,21 +283,6 @@ const VoiceCallViewInner = observer(
 			focusedStreamKey,
 			focusedStreamInfo?.userId,
 		);
-		const focusedStreamVolume = StreamAudioPrefs.getVolume(focusedStreamKey);
-		const isFocusedStreamMuted = StreamAudioPrefs.isMuted(focusedStreamKey);
-		const handleFocusedStreamToggleMute = useCallback(() => {
-			if (!focusedStreamKey || !focusedStreamInfo) return;
-			StreamAudioPrefs.setMuted(focusedStreamKey, !isFocusedStreamMuted);
-			MediaEngine.applyLocalAudioPreferencesForUser(focusedStreamInfo.userId);
-		}, [focusedStreamKey, isFocusedStreamMuted, focusedStreamInfo]);
-		const handleFocusedStreamVolumeChange = useCallback(
-			(newVolume: number) => {
-				if (!focusedStreamKey || !focusedStreamInfo) return;
-				StreamAudioPrefs.setVolume(focusedStreamKey, Math.round(newVolume * 100));
-				MediaEngine.applyLocalAudioPreferencesForUser(focusedStreamInfo.userId);
-			},
-			[focusedStreamKey, focusedStreamInfo],
-		);
 		const handleSpectatorsPopoutOpenChange = useCallback((open: boolean) => {
 			setIsSpectatorsPopoutOpen(open);
 		}, []);
@@ -381,16 +368,14 @@ const VoiceCallViewInner = observer(
 			void toggleVoiceCallAppFullscreen();
 		}, [toggleVoiceCallAppFullscreen]);
 		const handlePopOutCall = useCallback(() => {
-			void (async () => {
-				if (isVoiceCallAppFullscreen) {
-					await exitVoiceCallAppFullscreen();
-				}
-				PopoutWindowManager.openCallPopout({
-					channelId: channel.id,
-					guildId: channel.guildId ?? null,
-					title: channel.name ?? i18n._(VOICE_CALL_DESCRIPTOR),
-				});
-			})();
+			const didOpen = PopoutWindowManager.openCallPopout({
+				channelId: channel.id,
+				guildId: channel.guildId ?? null,
+				title: channel.name ?? i18n._(VOICE_CALL_DESCRIPTOR),
+			});
+			if (didOpen && isVoiceCallAppFullscreen) {
+				void exitVoiceCallAppFullscreen();
+			}
 		}, [channel.guildId, channel.id, channel.name, exitVoiceCallAppFullscreen, i18n, isVoiceCallAppFullscreen]);
 		const fullscreenButtonLabel = isVoiceCallAppFullscreen
 			? i18n._(EXIT_FULLSCREEN_DESCRIPTOR)
@@ -411,14 +396,7 @@ const VoiceCallViewInner = observer(
 		}, [enterVoiceCallAppFullscreen, fullscreenRequestNonce]);
 		const inheritedPortalHost = useContext(PortalHostContext);
 		const effectivePortalHost = isVoiceCallAppFullscreen || inPopout ? portalHost : null;
-		useEffect(() => {
-			if (!isVoiceCallAppFullscreen) return;
-			if (!effectivePortalHost) return;
-			setActivePortalHost(effectivePortalHost);
-			return () => {
-				setActivePortalHost(null);
-			};
-		}, [isVoiceCallAppFullscreen, effectivePortalHost]);
+		useVoiceCallFullscreenPortalHost(isVoiceCallAppFullscreen, effectivePortalHost);
 		const FavoriteIcon = useMemo(() => {
 			const Icon = forwardRef<SVGSVGElement, React.ComponentProps<typeof StarIcon>>((props, ref) => (
 				<StarIcon
@@ -616,18 +594,6 @@ const VoiceCallViewInner = observer(
 									{connectionStateText}
 								</div>
 							)}
-							{isFocusedOnScreenShare && focusedStreamKey && (
-								<MediaVerticalVolumeControl
-									volume={focusedStreamVolume / 100}
-									isMuted={isFocusedStreamMuted}
-									onVolumeChange={handleFocusedStreamVolumeChange}
-									onToggleMute={handleFocusedStreamToggleMute}
-									iconSize={18}
-									className={styles.voiceHeaderIconButton}
-									position="below"
-									data-flx="voice.voice-call-view.voice-call-view-inner.hud-stream-volume-control"
-								/>
-							)}
 							{statsButton}
 							{isMobile && (
 								<ChannelHeaderIcon
@@ -699,6 +665,15 @@ const VoiceCallViewInner = observer(
 						fullscreenLabel={fullscreenButtonLabel}
 						fullscreenIcon={FullscreenButtonIcon}
 						onToggleFullscreen={handleToggleVoiceCallAppFullscreen}
+						volumeControl={
+							<FocusedStreamVolumeControl
+								track={isFocusedOnScreenShare ? effectiveFocusMainTrack : null}
+								guildId={channel.guildId}
+								channelId={channel.id}
+								className={styles.voiceHeaderIconButton}
+								data-flx="voice.voice-call-view.voice-call-view-inner.focused-stream-volume-control"
+							/>
+						}
 						data-flx="voice.voice-call-view.voice-call-view-inner.voice-call-corner-controls"
 					/>
 					{isMobile && (

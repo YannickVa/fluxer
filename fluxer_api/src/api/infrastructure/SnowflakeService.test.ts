@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {SnowflakeService} from '@app/api/infrastructure/SnowflakeService';
+import type {NatsConnection} from '@nats-io/transport-node';
 import type {INatsConnectionManager} from '@pkgs/nats/src/INatsConnectionManager';
-import {type NatsConnection, StringCodec} from 'nats';
 import {afterEach, describe, expect, it} from 'vitest';
-import {SnowflakeService} from './SnowflakeService';
 
 interface FakeRequest {
 	subject: string;
@@ -18,7 +18,6 @@ interface FakeRequest {
 type FakeBatch = Array<string> | {error: string};
 
 class FakeNatsConnectionManager implements INatsConnectionManager {
-	private readonly codec = StringCodec();
 	private closed = true;
 	private readonly batches: Array<FakeBatch>;
 	readonly requests: Array<FakeRequest> = [];
@@ -38,12 +37,12 @@ class FakeNatsConnectionManager implements INatsConnectionManager {
 		}
 		return {
 			request: async (subject: string, data: Uint8Array, options?: {timeout?: number}) => {
-				const body = JSON.parse(this.codec.decode(data)) as FakeRequest['body'];
+				const body = JSON.parse(new TextDecoder().decode(data)) as FakeRequest['body'];
 				this.requests.push({subject, body, timeout: options?.timeout});
 				const batch = this.batches.shift() ?? [];
 				const response = Array.isArray(batch) ? {ids: batch} : batch;
 				return {
-					data: this.codec.encode(JSON.stringify(response)),
+					data: new TextEncoder().encode(JSON.stringify(response)),
 				};
 			},
 		} as unknown as NatsConnection;
@@ -116,7 +115,7 @@ describe('SnowflakeService', () => {
 				count: 1,
 				routing_key: 'channel:1510189013330296832',
 			},
-			timeout: 5000,
+			timeout: 6000,
 		});
 		expect(await service.generate()).toBe(201n);
 		expect(manager.requests).toHaveLength(2);

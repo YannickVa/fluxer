@@ -3,7 +3,8 @@
 import {ConfirmModal} from '@app/features/app/components/dialogs/ConfirmModal';
 import {SettingsSection} from '@app/features/app/components/dialogs/shared/SettingsSection';
 import {SettingsTabContainer} from '@app/features/app/components/dialogs/shared/SettingsTabLayout';
-import {PRODUCT_NAME} from '@app/features/app/config/I18nDisplayConstants';
+import RuntimeConfig from '@app/features/app/state/RuntimeConfig';
+import {MacPermissionsSettingsRow} from '@app/features/permissions/system/components/MacPermissionsSettingsRow';
 import {
 	getAutostartStatus,
 	getCachedAutostartStatus,
@@ -19,7 +20,7 @@ import {
 	relaunchDesktopApp,
 	setDesktopWindowBehaviorSettings,
 } from '@app/features/ui/utils/DesktopWindowBehaviorUtils';
-import {guessPlatform, isDesktop, isNativeLinux, isNativeMacOS} from '@app/features/ui/utils/NativeUtils';
+import {getNativePlatformSync, isDesktop, isNativeLinux, isNativeMacOS} from '@app/features/ui/utils/NativeUtils';
 import type {DesktopWindowBehaviorSettings} from '@app/types/electron.d';
 import {msg} from '@lingui/core/macro';
 import {Trans, useLingui} from '@lingui/react/macro';
@@ -59,7 +60,7 @@ const DesktopSettingsTab: React.FC = observer(() => {
 	);
 	const [desktopWindowBehaviorBusy, setDesktopWindowBehaviorBusy] = useState(cachedWindowBehavior === null);
 	const [trayChangePendingRestart, setTrayChangePendingRestart] = useState(false);
-	const platform = guessPlatform();
+	const platform = getNativePlatformSync();
 	const isMac = isNativeMacOS(platform);
 	const isLinux = isNativeLinux(platform);
 	useLayoutEffect(() => {
@@ -124,7 +125,7 @@ const DesktopSettingsTab: React.FC = observer(() => {
 			ModalCommands.push(
 				modal(() => (
 					<ConfirmModal
-						title={i18n._(RESTART_DESCRIPTOR, {productName: PRODUCT_NAME})}
+						title={i18n._(RESTART_DESCRIPTOR, {productName: RuntimeConfig.productName})}
 						description={
 							<Trans>
 								Tray icon changes only apply after a restart on Linux because the system tray protocol doesn't reliably
@@ -152,11 +153,27 @@ const DesktopSettingsTab: React.FC = observer(() => {
 			>
 				{isDesktop() && (
 					<Switch
-						label={i18n._(LAUNCH_PRODUCT_AT_LOGIN_DESCRIPTOR, {productName: PRODUCT_NAME})}
+						label={i18n._(LAUNCH_PRODUCT_AT_LOGIN_DESCRIPTOR, {productName: RuntimeConfig.productName})}
 						value={autostartEnabled}
 						disabled={autostartBusy}
 						onChange={handleAutostartChange}
 						data-flx="user.desktop-settings-tab.switch.autostart-change"
+					/>
+				)}
+				{isDesktop() && desktopWindowBehavior?.startMinimized !== undefined && (
+					<Switch
+						label={<Trans>Start minimized</Trans>}
+						description={
+							isMac ? (
+								<Trans>When launched at login, start in the menu bar instead of opening the window</Trans>
+							) : (
+								<Trans>When launched at login, start in the system tray instead of opening the window</Trans>
+							)
+						}
+						value={desktopWindowBehavior.startMinimized}
+						disabled={desktopWindowBehaviorBusy || !autostartEnabled || !desktopWindowBehavior.showTrayIcon}
+						onChange={(value) => handleDesktopWindowBehaviorChange({startMinimized: value})}
+						data-flx="user.desktop-settings-tab.switch.start-minimized-change"
 					/>
 				)}
 				{isDesktop() && desktopWindowBehavior && (
@@ -172,7 +189,7 @@ const DesktopSettingsTab: React.FC = observer(() => {
 							label={isMac ? <Trans>Show menu bar icon</Trans> : <Trans>Show system tray icon</Trans>}
 							description={
 								trayChangePendingRestart && isLinux
-									? i18n._(RESTART_PRODUCT_FOR_TRAY_CHANGE_DESCRIPTOR, {productName: PRODUCT_NAME})
+									? i18n._(RESTART_PRODUCT_FOR_TRAY_CHANGE_DESCRIPTOR, {productName: RuntimeConfig.productName})
 									: undefined
 							}
 							value={desktopWindowBehavior.showTrayIcon}
@@ -197,6 +214,15 @@ const DesktopSettingsTab: React.FC = observer(() => {
 					</>
 				)}
 			</SettingsSection>
+			{isMac && (
+				<SettingsSection
+					id="macos-permissions"
+					title={<Trans>macOS permissions</Trans>}
+					data-flx="user.desktop-settings-tab.macos-permissions-section"
+				>
+					<MacPermissionsSettingsRow data-flx="user.desktop-settings-tab.macos-permissions-row" />
+				</SettingsSection>
+			)}
 		</SettingsTabContainer>
 	);
 });

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+use crate::utils::timestamps::format_admin_timestamp;
 use crate::{
     api::types::{
         AuditLogChannelSummary, AuditLogEntry, AuditLogGuildSummary, AuditLogUserSummary,
@@ -9,28 +10,21 @@ use crate::{
         resource_link::{ResourceType, resource_link},
         table::{table_body, table_cell, table_head, table_header_cell, table_row},
     },
-    utils::bigint::format_discriminator,
+    utils::{bigint::format_discriminator, user_tag::user_tag},
 };
 use maud::{Markup, html};
 
 pub fn format_action(action: &str) -> String {
-    let replaced = action.replace('_', " ");
-    let mut chars = replaced.chars();
-    match chars.next() {
-        None => String::new(),
-        Some(c) => c.to_uppercase().to_string() + chars.as_str(),
-    }
+    capitalise(&action.replace('_', " "))
 }
 
 pub fn action_badge_variant(action: &str) -> BadgeVariant {
     match action {
-        "temp_ban"
-        | "disable_suspicious_activity"
-        | "schedule_deletion"
-        | "ban_ip"
-        | "ban_email" => BadgeVariant::Danger,
+        "temp_ban" | "schedule_deletion" | "ban_ip" | "ban_email" => BadgeVariant::Danger,
         "unban" | "cancel_deletion" | "unban_ip" | "unban_email" => BadgeVariant::Success,
-        "update_flags" | "update_features" | "set_acls" | "update_settings" => BadgeVariant::Info,
+        "update_flags" | "update_features" | "set_acls" | "update_settings" | "annotate_ban" => {
+            BadgeVariant::Info
+        }
         "delete_message" => BadgeVariant::Warning,
         _ => BadgeVariant::Default,
     }
@@ -49,10 +43,10 @@ fn type_label(target_type: &str) -> String {
 }
 
 fn user_label(user: &AuditLogUserSummary) -> String {
-    let tag = format!(
-        "{}#{}",
-        user.username,
-        format_discriminator(&user.discriminator)
+    let tag = user_tag(
+        &user.username,
+        &format_discriminator(&user.discriminator),
+        false,
     );
     match user
         .global_name
@@ -92,10 +86,8 @@ pub fn admin_user_cell(base: &str, entry: &AuditLogEntry) -> Markup {
     }
 }
 
-fn target_guild_label(guild: Option<&AuditLogGuildSummary>) -> String {
-    guild
-        .map(|guild| guild.name.clone())
-        .unwrap_or_else(|| "Guild".to_owned())
+fn target_guild_label(guild: Option<&AuditLogGuildSummary>) -> &str {
+    guild.map(|guild| guild.name.as_str()).unwrap_or("Guild")
 }
 
 pub fn target_cell(base: &str, entry: &AuditLogEntry) -> Markup {
@@ -133,6 +125,14 @@ pub fn target_cell(base: &str, entry: &AuditLogEntry) -> Markup {
                 }
             }))
         },
+        "bulk_job" => html! {
+            (job_link(base, &entry.target_id, html! {
+                div class="flex flex-col" {
+                    span class="text-sm font-medium" { "Bulk job" }
+                    span class="text-xs text-neutral-500 break-all" { "ID: " (&entry.target_id) }
+                }
+            }))
+        },
         "message" => html! {
             div class="flex flex-col" {
                 span class="text-sm font-medium" { "Message" }
@@ -151,6 +151,15 @@ pub fn target_cell(base: &str, entry: &AuditLogEntry) -> Markup {
                 span class="text-xs text-neutral-500 break-all" { (&entry.target_id) }
             }
         },
+    }
+}
+
+fn job_link(base: &str, job_id: &str, display: Markup) -> Markup {
+    html! {
+        a href={(base) "/jobs/" (job_id)} title={"Job " (job_id)}
+            class="text-neutral-900 underline decoration-neutral-300 hover:text-neutral-600 hover:decoration-neutral-500 text-sm" {
+            (display)
+        }
     }
 }
 
@@ -265,7 +274,7 @@ pub fn log_row(base: &str, entry: &AuditLogEntry, index: usize) -> Markup {
         (table_row(html! {
             (table_cell(true, html! {
                 span class="text-sm whitespace-nowrap" {
-                    (entry.created_at)
+                    (format_admin_timestamp(&entry.created_at))
                 }
             }))
             (table_cell(false, badge(&format_action(&entry.action), action_badge_variant(&entry.action))))

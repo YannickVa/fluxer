@@ -67,6 +67,13 @@ import type {ConnectableElement} from 'react-dnd';
 import {useDrag, useDragLayer, useDrop} from 'react-dnd';
 import {getEmptyImage} from 'react-dnd-html5-backend';
 
+const DIRECT_MESSAGE_ABBREVIATION_DESCRIPTOR = msg({
+	message: 'DM',
+	context: 'channel-badge',
+	comment:
+		'Very short badge shown in place of an avatar on a favorited direct-message row. Must fit about 2-3 characters; abbreviate rather than translate in full.',
+});
+
 const EMPTY_FAVORITES_DESCRIPTOR = msg({
 	message: 'Empty favorites',
 	comment: 'Short label in the app layout favorites channel list content.',
@@ -197,6 +204,7 @@ const FavoriteChannelResolvedItem = observer(
 		);
 		const refs = useMergeRefs([dragConnectorRef, dropConnectorRef, elementRef]);
 		const unreadCount = ReadStates.getUnreadCount(channel.id);
+		const hasUnread = ReadStates.hasUnread(channel.id);
 		const mentionCount = ReadStates.getMentionCount(channel.id);
 		const isGroupDM = channel.isGroupDM();
 		const isDM = channel.isDM();
@@ -206,11 +214,11 @@ const FavoriteChannelResolvedItem = observer(
 		const channelDisplayName = channel.isPrivate() ? ChannelUtils.getDMDisplayName(channel) : channel.name;
 		const displayName = favoriteChannel.nickname || channelDisplayName || i18n._(UNKNOWN_CHANNEL_DESCRIPTOR);
 		const isChannelDirectlyMuted = channel.guildId
-			? UserGuildSettings.isChannelMuted(channel.guildId, channel.id)
+			? UserGuildSettings.isChannelDirectlyMuted(channel.guildId, channel.id)
 			: false;
 		const isMuted =
 			isChannelDirectlyMuted ||
-			(channel.guildId ? UserGuildSettings.isCategoryMuted(channel.guildId, channel.id) : false);
+			(channel.guildId ? UserGuildSettings.isParentCategoryMuted(channel.guildId, channel.id) : false);
 		const unreadBadgesLevel = channel.guildId
 			? UserGuildSettings.resolvedUnreadBadgesLevel({
 					id: channel.id,
@@ -220,6 +228,7 @@ const FavoriteChannelResolvedItem = observer(
 				})
 			: null;
 		const unreadState = getChannelUnreadState({
+			hasUnread,
 			unreadCount,
 			mentionCount,
 			isMuted,
@@ -339,7 +348,7 @@ const FavoriteChannelResolvedItem = observer(
 							aria-hidden
 							data-flx="app.favorites-channel-list-content.favorite-channel-item.div--4"
 						>
-							DM
+							{i18n._(DIRECT_MESSAGE_ABBREVIATION_DESCRIPTOR)}
 						</div>
 					)}
 					{!channel.isPrivate() && (
@@ -651,7 +660,7 @@ export const FavoritesChannelListContent = observer(() => {
 	const getScrollElement = useCallback(() => {
 		const scroller = scrollerRef.current;
 		if (scroller == null) return null;
-		return scroller.getScrollerNode();
+		return scroller.getViewportElement();
 	}, []);
 	useDragAutoScroll({active: isDraggingFavorite, getScrollElement});
 	const favorites = Favorites.sortedChannels;

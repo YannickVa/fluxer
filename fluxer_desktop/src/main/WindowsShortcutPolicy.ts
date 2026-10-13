@@ -8,7 +8,10 @@ export interface WindowsShortcutSnapshot {
 }
 
 function normalizeWindowsPath(candidate: string): string {
-	return path.resolve(candidate).replace(/[\\/]+$/, '').toLowerCase();
+	return path
+		.resolve(candidate)
+		.replace(/[\\/]+$/, '')
+		.toLowerCase();
 }
 
 function isPathWithinRoot(candidate: string, rootDir: string): boolean {
@@ -36,16 +39,21 @@ function matchesInstallLayout(candidate: string, currentExe: string, rootAppDir:
 	}
 }
 
+export function isWindowsShortcutForInstall(
+	shortcut: WindowsShortcutSnapshot,
+	currentExe: string,
+	rootAppDir: string,
+): boolean {
+	return isPathWithinRoot(shortcut.target, rootAppDir) || matchesInstallLayout(shortcut.target, currentExe, rootAppDir);
+}
+
 export function shouldRepairWindowsShortcut(
 	shortcut: WindowsShortcutSnapshot,
 	currentExe: string,
 	rootAppDir: string,
 	legacyAppUserModelIds: ReadonlyArray<string>,
 ): boolean {
-	if (
-		!isPathWithinRoot(shortcut.target, rootAppDir) &&
-		!matchesInstallLayout(shortcut.target, currentExe, rootAppDir)
-	) {
+	if (!isWindowsShortcutForInstall(shortcut, currentExe, rootAppDir)) {
 		return false;
 	}
 	const targetIsCurrent = normalizeWindowsPath(shortcut.target) === normalizeWindowsPath(currentExe);

@@ -236,7 +236,7 @@ export const ScrollFillerSkeleton = ({
 }: PlaceholderSpecs) => (
 	<flx-message-list-skeleton
 		className={flxElementClassName(styles.wrapper, compact && styles.wrapperCompact)}
-		style={{minHeight: remFromPx(totalHeight)}}
+		style={{height: remFromPx(totalHeight)}}
 		data-flx="app.skeleton.scroll-filler-skeleton.wrapper"
 	>
 		{groups.map((group, groupIndex) => {

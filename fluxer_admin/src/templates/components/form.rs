@@ -152,7 +152,7 @@ pub fn danger_button(label: &str) -> Markup {
 }
 
 pub fn secondary_button(label: &str) -> Markup {
-    button_markup(label, "button", SECONDARY_BUTTON_CLASS)
+    button_markup(label, "submit", SECONDARY_BUTTON_CLASS)
 }
 
 pub fn form_field_group(
@@ -222,8 +222,15 @@ pub fn checkbox(name: &str, value: &str, label: &str, checked: bool, enabled: bo
             div class="checkbox-custom" {
                 (PreEscaped(CHECKMARK_SVG))
             }
-            span class="min-w-0 break-all text-sm leading-5 text-neutral-900" { (label) }
+            span class="min-w-0 [overflow-wrap:anywhere] text-sm leading-5 text-neutral-900" { (label) }
         }
+    }
+}
+
+pub fn opt_out_checkbox(name: &str, label: &str) -> Markup {
+    html! {
+        input type="hidden" name={(name) "_present"} value="1";
+        (checkbox(name, "true", label, true, true))
     }
 }
 

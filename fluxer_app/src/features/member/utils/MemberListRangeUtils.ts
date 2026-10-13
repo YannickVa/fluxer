@@ -70,13 +70,6 @@ function resolveVisibleRowBounds(options: MemberListRangeWindowOptions): Visible
 	return {startIndex, unclampedEnd};
 }
 
-export function areMemberListRangesEqual(left: MemberListRanges, right: MemberListRanges): boolean {
-	if (left === right) {
-		return true;
-	}
-	return areNormalizedMemberListRangesEqual(normalizeMemberListRanges(left), normalizeMemberListRanges(right));
-}
-
 export function areNormalizedMemberListRangesEqual(
 	left: NormalizedMemberListRanges,
 	right: NormalizedMemberListRanges,
@@ -95,13 +88,6 @@ export function areNormalizedMemberListRangesEqual(
 		}
 	}
 	return true;
-}
-
-export function areMemberListRangesCovered(innerRanges: MemberListRanges, outerRanges: MemberListRanges): boolean {
-	return areNormalizedMemberListRangesCovered(
-		normalizeMemberListRanges(innerRanges),
-		normalizeMemberListRanges(outerRanges),
-	);
 }
 
 export function areNormalizedMemberListRangesCovered(
@@ -188,11 +174,12 @@ export function buildMemberListRangeWindow(options: MemberListRangeWindowOptions
 		lastPage = Math.min(lastPage, maxPage);
 	}
 	const ranges: MemberListRanges = [];
+	if (firstPage > 0) {
+		ranges.push([0, MEMBER_LIST_RANGE_MAX_SPAN]);
+	}
 	for (let page = firstPage; page <= lastPage; page += 1) {
 		const pageStart = page * MEMBER_LIST_RANGE_PAGE_SIZE;
-		const maxPageEnd = pageStart + MEMBER_LIST_RANGE_MAX_SPAN;
-		const pageEnd = safeTotalRows != null ? Math.min(maxPageEnd, safeTotalRows - 1) : maxPageEnd;
-		ranges.push([pageStart, pageEnd]);
+		ranges.push([pageStart, pageStart + MEMBER_LIST_RANGE_MAX_SPAN]);
 	}
 	return normalizeMemberListRanges(ranges);
 }

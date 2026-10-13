@@ -42,6 +42,12 @@ function createRateLimitResult(result: KVRateLimitResult, global?: boolean): Rat
 	};
 }
 
+function peekRetryAfterMs(result: KVRateLimitResult, windowMs: number): number {
+	const capacity = result.limit;
+	const leakWindowMs = Math.max(1, Math.floor(windowMs));
+	return Math.max(1, Math.ceil(result.resetAfterMs - ((capacity - 1) * leakWindowMs) / capacity));
+}
+
 export class RateLimitService implements IRateLimitService {
 	private static readonly DEFAULT_GLOBAL_WINDOW_MS = 1000;
 	private readonly keyFactory = new RateLimitKeyFactory();
@@ -64,7 +70,15 @@ export class RateLimitService implements IRateLimitService {
 	async peekLimit(config: RateLimitConfig): Promise<RateLimitResult> {
 		const key = this.keyFactory.getIdentifierKey(config.identifier);
 		const result = await this.store.checkLeakyBucketLimit(key, config.maxAttempts, config.windowMs, 0);
-		return createRateLimitResult(result);
+		if (result.remaining >= 1) {
+			return createRateLimitResult(result);
+		}
+		return createRateLimitResult({
+			...result,
+			allowed: false,
+			remaining: 0,
+			retryAfterMs: peekRetryAfterMs(result, config.windowMs),
+		});
 	}
 
 	async checkBucketLimit(bucket: string, config: BucketConfig): Promise<RateLimitResult> {
@@ -88,9 +102,8 @@ export class RateLimitService implements IRateLimitService {
 		if (identifierPrefix.length === 0) {
 			throw new Error('identifierPrefix must be non-empty');
 		}
-		const sentinelKey = this.keyFactory.getIdentifierKey(`${identifierPrefix}\x00`);
-		const keyPrefix = sentinelKey.slice(0, -1);
-		const pattern = `${keyPrefix}*`;
+		const keyPrefix = this.keyFactory.getIdentifierKey(identifierPrefix);
+		const pattern = `${keyPrefix.replace(/[\\*?[\]]/g, '\\$&')}*`;
 		let totalDeleted = 0;
 		const batchSize = 256;
 		while (true) {

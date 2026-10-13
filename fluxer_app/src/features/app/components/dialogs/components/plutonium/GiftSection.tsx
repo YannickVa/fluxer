@@ -5,9 +5,7 @@ import gridStyles from '@app/features/app/components/dialogs/components/PricingG
 import {PurchaseDisclaimer} from '@app/features/app/components/dialogs/components/PurchaseDisclaimer';
 import styles from '@app/features/app/components/dialogs/components/plutonium/GiftSection.module.css';
 import {SectionHeader} from '@app/features/app/components/dialogs/components/plutonium/PlutoniumSectionHeader';
-import {PricingContextPanel} from '@app/features/app/components/dialogs/components/plutonium/PricingContextPanel';
 import {PurchaseDisabledWrapper} from '@app/features/app/components/dialogs/components/plutonium/PurchaseDisabledWrapper';
-import {PREMIUM_PRODUCT_FULL_NAME, PREMIUM_PRODUCT_NAME} from '@app/features/app/config/I18nDisplayConstants';
 import {
 	BUY_GIFT_DESCRIPTOR,
 	CLAIM_ACCOUNT_TO_PURCHASE_PREMIUM_DESCRIPTOR,
@@ -16,7 +14,7 @@ import {
 	SHARE_PREMIUM_EXPERIENCE_DESCRIPTOR,
 	VIEW_PREMIUM_PERKS_DESCRIPTOR,
 } from '@app/features/premium/utils/PremiumMessageDescriptors';
-import type {PricingMode} from '@app/features/premium/utils/PricingUtils';
+import {getPremiumProductFullName, getPremiumProductName} from '@app/features/premium/utils/PremiumUtils';
 import {msg} from '@lingui/core/macro';
 import {useLingui} from '@lingui/react/macro';
 import {ArrowDownIcon} from '@phosphor-icons/react';
@@ -24,7 +22,7 @@ import {observer} from 'mobx-react-lite';
 import type React from 'react';
 
 const MESSAGE_1_YEAR_GIFT_DESCRIPTOR = msg({
-	message: '1 year gift',
+	message: '1-year gift',
 	comment: 'Short label in the Plutonium gift section. Keep the tone plain and specific.',
 });
 const SAVE_17_DESCRIPTOR = msg({
@@ -32,18 +30,12 @@ const SAVE_17_DESCRIPTOR = msg({
 	comment: 'Short label in the Plutonium gift section. Keep the tone plain and specific.',
 });
 const MESSAGE_1_MONTH_GIFT_DESCRIPTOR = msg({
-	message: '1 month gift',
+	message: '1-month gift',
 	comment: 'Short label in the Plutonium gift section. Keep the tone plain and specific.',
 });
 
 interface GiftSectionProps {
 	giftSectionRef: React.RefObject<HTMLDivElement | null>;
-	countryCode: string | null;
-	pricingMode: PricingMode;
-	setPricingMode: (value: PricingMode) => void;
-	hasPricingChoice: boolean;
-	localizedCurrency: string | null;
-	baseCurrency: string | null;
 	giftMonthlyPrice: string;
 	giftYearlyPrice: string;
 	loadingCheckout: boolean;
@@ -55,12 +47,6 @@ interface GiftSectionProps {
 export const GiftSection: React.FC<GiftSectionProps> = observer(
 	({
 		giftSectionRef,
-		countryCode,
-		pricingMode,
-		setPricingMode,
-		hasPricingChoice,
-		localizedCurrency,
-		baseCurrency,
 		giftMonthlyPrice,
 		giftYearlyPrice,
 		loadingCheckout,
@@ -71,26 +57,16 @@ export const GiftSection: React.FC<GiftSectionProps> = observer(
 		const {i18n} = useLingui();
 		const tooltipText: React.ReactNode =
 			purchaseDisabledTooltip ??
-			i18n._(CLAIM_ACCOUNT_TO_PURCHASE_PREMIUM_DESCRIPTOR, {premiumProductFullName: PREMIUM_PRODUCT_FULL_NAME});
+			i18n._(CLAIM_ACCOUNT_TO_PURCHASE_PREMIUM_DESCRIPTOR, {premiumProductFullName: getPremiumProductFullName()});
 		return (
 			<div ref={giftSectionRef} data-flx="app.plutonium.gift-section.div">
 				<section className={styles.section} data-flx="app.plutonium.gift-section.section">
 					<SectionHeader
-						title={i18n._(GIFT_PREMIUM_DESCRIPTOR, {premiumProductName: PREMIUM_PRODUCT_NAME})}
+						title={i18n._(GIFT_PREMIUM_DESCRIPTOR, {premiumProductName: getPremiumProductName()})}
 						description={i18n._(SHARE_PREMIUM_EXPERIENCE_DESCRIPTOR, {
-							premiumProductName: PREMIUM_PRODUCT_NAME,
+							premiumProductName: getPremiumProductName(),
 						})}
 						data-flx="app.plutonium.gift-section.section-header"
-					/>
-					<PricingContextPanel
-						countryCode={countryCode}
-						pricingMode={pricingMode}
-						setPricingMode={setPricingMode}
-						hasPricingChoice={hasPricingChoice}
-						localizedCurrency={localizedCurrency}
-						baseCurrency={baseCurrency}
-						isGiftMode
-						data-flx="app.plutonium.gift-section.pricing-context-panel"
 					/>
 					<div className={gridStyles.gridWrapper} data-flx="app.plutonium.gift-section.div--2">
 						<div className={gridStyles.gridTwoColumns} data-flx="app.plutonium.gift-section.div--3">
@@ -134,7 +110,7 @@ export const GiftSection: React.FC<GiftSectionProps> = observer(
 						<PurchaseDisclaimer data-flx="app.plutonium.gift-section.purchase-disclaimer" />
 						<div className={styles.scrollPromptContainer} data-flx="app.plutonium.gift-section.scroll-prompt-container">
 							<p className={styles.scrollPromptText} data-flx="app.plutonium.gift-section.scroll-prompt-text">
-								{i18n._(VIEW_PREMIUM_PERKS_DESCRIPTOR, {premiumProductName: PREMIUM_PRODUCT_NAME})}
+								{i18n._(VIEW_PREMIUM_PERKS_DESCRIPTOR, {premiumProductName: getPremiumProductName()})}
 							</p>
 							<ArrowDownIcon
 								className={styles.scrollPromptIcon}

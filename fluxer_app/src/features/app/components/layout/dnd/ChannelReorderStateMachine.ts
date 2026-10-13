@@ -3,7 +3,7 @@
 import {type DragItem, DragItemType, type DropResult} from '@app/features/app/components/layout/types/DndTypes';
 import {getVerticalDropTargetHeight, resolveVerticalDropEdge} from '@app/features/ui/dnd/DropGeometry';
 import {ChannelTypes} from '@fluxer/constants/src/ChannelConstants';
-import {assign, getInitialSnapshot, type SnapshotFrom, setup, transition} from 'xstate';
+import {assign, initialTransition, type SnapshotFrom, setup, transition} from 'xstate';
 
 export interface ChannelReorderPoint {
 	x: number;
@@ -24,17 +24,17 @@ export interface ChannelReorderTarget {
 	guildId: string;
 }
 
-export interface ChannelReorderIndicator {
+interface ChannelReorderIndicator {
 	position: 'top' | 'bottom';
 	isValid: boolean;
 }
 
-export interface ChannelReorderIntent {
+interface ChannelReorderIntent {
 	indicator: ChannelReorderIndicator;
 	result: DropResult;
 }
 
-export type ChannelReorderBlockedReason =
+type ChannelReorderBlockedReason =
 	| 'same-source-and-target'
 	| 'incompatible-channel-kind'
 	| 'category-into-child-channel'
@@ -48,9 +48,9 @@ export interface ChannelReorderResolution {
 	isVoiceParticipantTransfer: boolean;
 }
 
-export interface ChannelReorderMachineContext extends ChannelReorderResolution {}
+interface ChannelReorderMachineContext extends ChannelReorderResolution {}
 
-export type ChannelReorderEvent =
+type ChannelReorderEvent =
 	| {
 			type: 'drag.hover';
 			item: DragItem;
@@ -77,7 +77,13 @@ function isVoiceType(channelType: number): boolean {
 }
 
 function isTextType(channelType: number): boolean {
-	return channelType === ChannelTypes.GUILD_TEXT || channelType === ChannelTypes.GUILD_LINK;
+	return (
+		channelType === ChannelTypes.GUILD_TEXT ||
+		channelType === ChannelTypes.GUILD_ANNOUNCEMENT ||
+		channelType === ChannelTypes.GUILD_LINK ||
+		channelType === ChannelTypes.GUILD_FORUM ||
+		channelType === ChannelTypes.GUILD_MEDIA
+	);
 }
 
 function createIndicator(
@@ -95,10 +101,7 @@ function isReorderDragItem(item: DragItem): boolean {
 	return item.type === DragItemType.CHANNEL || item.type === DragItemType.CATEGORY;
 }
 
-export function getChannelDropBlockedReason(
-	item: DragItem,
-	target: ChannelReorderTarget,
-): ChannelReorderBlockedReason | null {
+function getChannelDropBlockedReason(item: DragItem, target: ChannelReorderTarget): ChannelReorderBlockedReason | null {
 	if (item.id === target.id) return 'same-source-and-target';
 	if (item.type === DragItemType.VOICE_PARTICIPANT) {
 		return isVoiceType(target.channelType) ? null : 'incompatible-channel-kind';
@@ -124,7 +127,7 @@ export function canChannelDropOnTarget(item: DragItem, target: ChannelReorderTar
 	return getChannelDropBlockedReason(item, target) === null;
 }
 
-export function resolveChannelReorderHover(
+function resolveChannelReorderHover(
 	item: DragItem,
 	target: ChannelReorderTarget,
 	clientOffset: ChannelReorderPoint,
@@ -181,7 +184,7 @@ export function resolveChannelReorderHover(
 	};
 }
 
-export const channelReorderStateMachine = setup({
+const channelReorderStateMachine = setup({
 	types: {} as {
 		context: ChannelReorderMachineContext;
 		events: ChannelReorderEvent;
@@ -240,22 +243,17 @@ export const channelReorderStateMachine = setup({
 	},
 });
 
-export type ChannelReorderSnapshot = SnapshotFrom<typeof channelReorderStateMachine>;
-export type ChannelReorderStateValue = 'idle' | 'resolving' | 'targeting' | 'voiceParticipantTransfer' | 'blocked';
+type ChannelReorderSnapshot = SnapshotFrom<typeof channelReorderStateMachine>;
 
-export function createChannelReorderSnapshot(): ChannelReorderSnapshot {
-	return getInitialSnapshot(channelReorderStateMachine);
+function createChannelReorderSnapshot(): ChannelReorderSnapshot {
+	return initialTransition(channelReorderStateMachine)[0];
 }
 
-export function transitionChannelReorderSnapshot(
+function transitionChannelReorderSnapshot(
 	snapshot: ChannelReorderSnapshot,
 	event: ChannelReorderEvent,
 ): ChannelReorderSnapshot {
 	return transition(channelReorderStateMachine, snapshot, event)[0] as ChannelReorderSnapshot;
-}
-
-export function getChannelReorderStateValue(snapshot: ChannelReorderSnapshot): ChannelReorderStateValue {
-	return snapshot.value as ChannelReorderStateValue;
 }
 
 export function selectChannelReorderResolution(
@@ -272,13 +270,4 @@ export function selectChannelReorderResolution(
 		targetRect,
 	});
 	return snapshot.context;
-}
-
-export function selectChannelReorderIntent(
-	item: DragItem,
-	target: ChannelReorderTarget,
-	clientOffset: ChannelReorderPoint,
-	targetRect: ChannelReorderRect,
-): ChannelReorderIntent | null {
-	return selectChannelReorderResolution(item, target, clientOffset, targetRect).intent;
 }

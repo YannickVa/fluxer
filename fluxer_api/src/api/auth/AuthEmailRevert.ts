@@ -1,17 +1,16 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import type {ApiContext} from '@app/api/ApiContext';
+import * as AuthPassword from '@app/api/auth/AuthPassword';
+import * as AuthSession from '@app/api/auth/AuthSession';
+import * as AuthUtility from '@app/api/auth/AuthUtility';
+import {createEmailRevertToken} from '@app/api/BrandedTypes';
+import type {User} from '@app/api/models/User';
+import {enqueueStripeCustomerEmailSync} from '@app/api/stripe/StripeCustomer';
+import {mapUserToPrivateResponse} from '@app/api/user/UserMappers';
+import {requireConfiguredClientIp} from '@app/api/utils/RequestClientIp';
 import {ValidationErrorCodes} from '@fluxer/constants/src/ValidationErrorCodes';
 import {InputValidationError} from '@fluxer/errors/src/domains/core/InputValidationError';
-import {requireClientIp} from '@fluxer/ip_utils/src/ClientIp';
-import type {ApiContext} from '../ApiContext';
-import {createEmailRevertToken} from '../BrandedTypes';
-import {Logger} from '../Logger';
-import type {User} from '../models/User';
-import {getUserSearchService} from '../SearchFactory';
-import {mapUserToPrivateResponse} from '../user/UserMappers';
-import * as AuthPassword from './AuthPassword';
-import * as AuthSession from './AuthSession';
-import * as AuthUtility from './AuthUtility';
 
 interface IssueEmailRevertTokenParams {
 	user: User;
@@ -46,7 +45,7 @@ export async function revertEmailChange(
 	user_id: string;
 	token: string;
 }> {
-	const {users, gateway, contactChangeLog, config} = ctx.services;
+	const {users, gateway, contactChangeLog, config, worker} = ctx.services;
 	const {token, password, request} = params;
 	const tokenData = await users.getEmailRevertToken(token);
 	if (!tokenData) {
@@ -75,37 +74,28 @@ export async function revertEmailChange(
 		},
 		user.toRow(),
 	);
+	await users.deleteAllPasswordResetTokens(user.id);
 	await users.deleteEmailRevertToken(token);
 	await users.deleteAllMfaBackupCodes(user.id);
 	await users.deleteAllWebAuthnCredentials(user.id);
 	await users.deleteAllAuthorizedIps(user.id);
 	await AuthSession.terminateAllUserSessions(ctx, user.id);
-	await users.createAuthorizedIp(
-		user.id,
-		requireClientIp(request, {
-			trustClientIpHeader: config.proxy.trust_client_ip_header,
-			clientIpHeaderName: config.proxy.client_ip_header,
-		}),
-	);
-	const userSearchService = getUserSearchService();
-	if (userSearchService && updatedUser && 'updateUser' in userSearchService) {
-		await userSearchService
-			.updateUser(updatedUser)
-			.catch((error) =>
-				Logger.debug({error, userId: updatedUser.id}, 'Failed to update search index after email revert'),
-			);
-	}
+	await users.createAuthorizedIp(user.id, requireConfiguredClientIp(request, config.proxy));
 	await gateway.dispatchPresence({
 		userId: updatedUser.id,
 		event: 'USER_UPDATE',
 		data: mapUserToPrivateResponse(updatedUser),
 	});
-	const [authToken] = await AuthSession.createAuthSession(ctx, {user: updatedUser, request});
+	const [authToken] = await AuthSession.createAuthSession(ctx, {
+		user: updatedUser,
+		origin: AuthSession.resolveSessionOrigin(ctx, request),
+	});
 	await contactChangeLog.recordDiff({
 		oldUser: user,
 		newUser: updatedUser,
 		reason: 'user_requested',
 		actorUserId: user.id,
 	});
+	await enqueueStripeCustomerEmailSync(worker, user, updatedUser);
 	return {user_id: updatedUser.id.toString(), token: authToken};
 }

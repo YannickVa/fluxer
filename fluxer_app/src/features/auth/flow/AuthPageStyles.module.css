@@ -79,24 +79,9 @@
 	gap: 0.5rem;
 }
 
-.packBadge {
-	background: var(--background-modifier-accent);
-	border-radius: 62.4375rem;
-	padding: 0.15rem 0.6rem;
-	font-size: 0.75rem;
-	color: var(--text-primary);
-	font-weight: 600;
-}
-
 .entityTitle {
 	font-weight: 700;
 	font-size: 1.25rem;
-	color: var(--text-primary);
-}
-
-.verifiedIcon {
-	height: 1.5rem;
-	width: 1.5rem;
 	color: var(--text-primary);
 }
 
@@ -105,24 +90,6 @@
 	align-items: center;
 	justify-content: center;
 	gap: 1rem;
-}
-
-.packDescription {
-	font-size: 0.95rem;
-	color: var(--text-secondary);
-	line-height: 1.4;
-	margin: 0.25rem 0;
-}
-
-.packMeta {
-	display: flex;
-	flex-direction: column;
-	gap: 0.25rem;
-}
-
-.packMetaText {
-	font-size: 0.78rem;
-	color: var(--text-tertiary);
 }
 
 .entityStat {
@@ -172,6 +139,11 @@
 	object-fit: cover;
 }
 
+img.entityIcon {
+	width: 100%;
+	height: 100%;
+}
+
 .themeIconSpot {
 	display: flex;
 	height: 5rem;
@@ -207,23 +179,9 @@
 	text-align: center;
 }
 
-.loginForm {
-	margin-top: 2rem;
-	display: flex;
-	flex-direction: column;
-	gap: 1.5rem;
-}
-
 .bottomLink {
 	margin-top: 1rem;
 	text-align: left;
-}
-
-.bottomLinks {
-	margin-top: 1.25rem;
-	display: flex;
-	flex-direction: column;
-	gap: 0.75rem;
 }
 
 .bottomLinkText {
@@ -242,45 +200,6 @@
 
 .bottomLinkAnchor:hover {
 	color: var(--text-link);
-	text-decoration: underline;
-}
-
-.divider {
-	margin-top: 1.5rem;
-	margin-bottom: 1.5rem;
-	display: flex;
-	align-items: center;
-	gap: 1rem;
-}
-
-.dividerLine {
-	flex: 1 1 0%;
-	border-top: 0.0625rem solid var(--background-modifier-accent);
-}
-
-.dividerText {
-	font-size: 0.875rem;
-	color: var(--text-tertiary);
-}
-
-.forgotPasswordLink {
-	text-align: left;
-	display: flex;
-	flex-direction: column;
-	gap: 0.5rem;
-}
-
-.forgotPasswordLinkText {
-	font-size: 0.875rem;
-	color: var(--text-tertiary);
-	transition-property: color;
-	transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-	transition-duration: 150ms;
-	cursor: pointer;
-}
-
-.forgotPasswordLinkText:hover {
-	color: var(--text-primary);
 	text-decoration: underline;
 }
 
@@ -326,6 +245,23 @@
 	color: var(--text-primary);
 }
 
+/* Legal text must wrap inside narrow auth cards, not overflow a fixed-height checkbox. */
+.consentRow .consentControl {
+	min-width: 0;
+	flex: 1 1 auto;
+	align-items: flex-start;
+	height: auto !important;
+}
+
+.consentControl > :global([role='checkbox']:not(button)) {
+	min-width: 0;
+	flex: 1;
+}
+
+.consentControl > :global(button) {
+	flex-shrink: 0;
+}
+
 .policyLink {
 	color: var(--text-link);
 	text-decoration: none;
@@ -336,10 +272,6 @@
 
 .policyLink:hover {
 	text-decoration: underline;
-}
-
-.submitSpacer {
-	height: 0.25rem;
 }
 
 .disabledContainer {
@@ -411,18 +343,4 @@
 	font-size: 0.875rem;
 	line-height: 1.5;
 	color: var(--text-tertiary);
-}
-
-.secondaryInlineAction {
-	padding: 0;
-	background: none;
-	border: none;
-	text-align: left;
-	font-size: 0.875rem;
-	color: var(--text-link);
-	cursor: pointer;
-}
-
-.secondaryInlineAction:hover {
-	text-decoration: underline;
 }

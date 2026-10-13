@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import {Routes} from '@app/app/Routes';
-import {PRODUCT_NAME} from '@app/features/app/config/I18nDisplayConstants';
+import {getActiveInstanceProductName} from '@app/features/app/state/ActiveInstanceProductName';
 import RuntimeConfig from '@app/features/app/state/RuntimeConfig';
 import styles from '@app/features/channel/components/InviteEmbed.module.css';
 import {
@@ -16,18 +16,12 @@ import {GuildBadge} from '@app/features/guild/components/GuildBadge';
 import {GuildIcon} from '@app/features/guild/components/popouts/GuildIcon';
 import GuildCount from '@app/features/guild/state/GuildCount';
 import Guilds from '@app/features/guild/state/Guilds';
-import {
-	JOIN_COMMUNITY_DESCRIPTOR,
-	NO_DESCRIPTION_PROVIDED_DESCRIPTOR,
-} from '@app/features/i18n/utils/CommonMessageDescriptors';
+import {JOIN_COMMUNITY_DESCRIPTOR} from '@app/features/i18n/utils/CommonMessageDescriptors';
+import {formatNumber} from '@app/features/i18n/utils/IntlCache';
 import {isKeyboardActivationKey} from '@app/features/input/utils/KeyboardUtils';
 import * as InviteCommands from '@app/features/invite/commands/InviteCommands';
 import Invites from '@app/features/invite/state/Invites';
-import {
-	isGroupDmInvite,
-	isGuildInvite,
-	isPackInvite as isPackInviteGuard,
-} from '@app/features/invite/types/InviteTypes';
+import {isGroupDmInvite, isGuildInvite} from '@app/features/invite/types/InviteTypes';
 import {getGroupDmInviteCounts} from '@app/features/invite/utils/GroupDmInviteCounts';
 import {
 	GuildInvitePrimaryAction,
@@ -49,22 +43,20 @@ import cardStyles from '@app/features/messaging/components/embeds/embed_card/Emb
 import {useEmbedSkeletonOverride} from '@app/features/messaging/components/embeds/embed_card/useEmbedSkeletonOverride';
 import type {Message} from '@app/features/messaging/models/MessagingMessage';
 import * as RouterUtils from '@app/features/navigation/utils/RouterUtils';
-import {ComponentDispatch} from '@app/features/platform/utils/ComponentBus';
+import {currentInstanceTarget} from '@app/features/platform/transport/InstanceHTTP';
+import {ComponentBus} from '@app/features/platform/utils/ComponentBus';
 import StreamerMode from '@app/features/streamer_mode/state/StreamerMode';
 import {InviteEmbedContextMenu} from '@app/features/ui/action_menu/InviteEmbedContextMenu';
 import {Button} from '@app/features/ui/button/Button';
 import * as ContextMenuCommands from '@app/features/ui/commands/ContextMenuCommands';
 import {Avatar} from '@app/features/ui/components/Avatar';
 import FocusRing from '@app/features/ui/focus_ring/FocusRing';
-import {User} from '@app/features/user/models/User';
 import Users from '@app/features/user/state/Users';
 import * as AvatarUtils from '@app/features/user/utils/AvatarUtils';
 import {getCurrentLocale} from '@app/features/user/utils/LocaleUtils';
-import * as NicknameUtils from '@app/features/user/utils/NicknameUtils';
 import {msg} from '@lingui/core/macro';
 import {Plural, Trans, useLingui} from '@lingui/react/macro';
 import {QuestionIcon} from '@phosphor-icons/react';
-import {formatNumber} from '@pkgs/number_utils/src/NumberFormatting';
 import {observer} from 'mobx-react-lite';
 import type React from 'react';
 import {useEffect, useMemo, useRef, useState} from 'react';
@@ -80,26 +72,6 @@ const ALREADY_JOINED_DESCRIPTOR = msg({
 const JOIN_GROUP_DESCRIPTOR = msg({
 	message: 'Join group',
 	comment: 'Button label on a group DM invite embed that accepts the invite.',
-});
-const EMOJI_PACK_DESCRIPTOR = msg({
-	message: 'Emoji pack',
-	comment: 'Kind label on an emoji pack invite embed.',
-});
-const STICKER_PACK_DESCRIPTOR = msg({
-	message: 'Sticker pack',
-	comment: 'Kind label on a sticker pack invite embed.',
-});
-const INSTALL_EMOJI_PACK_DESCRIPTOR = msg({
-	message: 'Install emoji pack',
-	comment: 'Button label on an emoji pack invite embed that installs the pack.',
-});
-const INSTALL_STICKER_PACK_DESCRIPTOR = msg({
-	message: 'Install sticker pack',
-	comment: 'Button label on a sticker pack invite embed that installs the pack.',
-});
-const ACCEPTING_THIS_INVITE_INSTALLS_THE_PACK_AUTOMATICALLY_DESCRIPTOR = msg({
-	message: 'Accepting this invite installs the pack automatically.',
-	comment: 'Helper text on a pack invite embed explaining that accepting installs the pack.',
 });
 const INVITES_DISABLED_DESCRIPTOR = msg({
 	message: 'Invites disabled',
@@ -182,15 +154,11 @@ const InviteEmbedInner = observer(function InviteEmbedInner({
 	onDelete,
 }: InviteEmbedProps) {
 	const {i18n} = useLingui();
-	const inviteState = Invites.invites.get(code) ?? null;
+	const instanceTarget = useMemo(currentInstanceTarget, []);
+	const inviteState = Invites.getInvite(code, instanceTarget);
 	const shouldForceSkeleton = useEmbedSkeletonOverride();
 	const invite = inviteState?.data ?? null;
-	const isPackInvite = invite != null && isPackInviteGuard(invite);
 	const isGuildInviteType = invite != null && isGuildInvite(invite);
-	const packCreatorRecord = useMemo(() => {
-		if (!isPackInvite || !invite) return null;
-		return new User(invite.pack.creator);
-	}, [invite, isPackInvite]);
 	const guildFromInvite = isGuildInviteType ? invite!.guild : null;
 	const guild = Guilds.getGuild(guildFromInvite?.id ?? '') || guildFromInvite;
 	const embedSplash = guild != null ? ('embedSplash' in guild ? guild.embedSplash : guild.embed_splash) : undefined;
@@ -210,15 +178,15 @@ const InviteEmbedInner = observer(function InviteEmbedInner({
 	}, [code]);
 	useEffect(() => {
 		if (prevLoadingRef.current && !isLoading && currentChannelId) {
-			ComponentDispatch.dispatch('LAYOUT_RESIZED', {channelId: currentChannelId});
+			ComponentBus.dispatch('LAYOUT_RESIZED', {channelId: currentChannelId});
 		}
 		prevLoadingRef.current = isLoading;
 	}, [isLoading, currentChannelId]);
 	useEffect(() => {
 		if (!inviteState) {
-			void InviteCommands.fetchWithCoalescing(code).catch(() => {});
+			void InviteCommands.fetchWithCoalescing(code, instanceTarget).catch(() => {});
 		}
-	}, [code, inviteState]);
+	}, [code, instanceTarget, inviteState]);
 	const memberGuildId = isGuildInviteType && Guilds.getGuild(guildFromInvite?.id ?? '') ? guild!.id : null;
 	useEffect(() => {
 		if (memberGuildId) {
@@ -234,7 +202,7 @@ const InviteEmbedInner = observer(function InviteEmbedInner({
 		const inviter = Users.getUser(invite.inviter?.id ?? '');
 		const groupDMTitle = getGroupDMTitle(invite.channel, i18n._(UNNAMED_GROUP_DESCRIPTOR));
 		const groupDMPath = Routes.dmChannel(invite.channel.id);
-		const handleAcceptInvite = () => InviteCommands.acceptAndTransitionToChannel(invite.code, i18n);
+		const handleAcceptInvite = () => InviteCommands.acceptAndTransitionToChannel(invite.code, i18n, instanceTarget);
 		const handleNavigateToGroup = () => RouterUtils.transitionTo(groupDMPath);
 		const groupDMCounts = getGroupDmInviteCounts({
 			channelId: invite.channel.id,
@@ -302,71 +270,6 @@ const InviteEmbedInner = observer(function InviteEmbedInner({
 				data-flx="channel.invite-embed.embed-card"
 			/>
 		);
-	} else if (isPackInviteGuard(invite)) {
-		const pack = invite.pack;
-		const packCreator = packCreatorRecord ?? new User(pack.creator);
-		const packKindLabel = pack.type === 'emoji' ? i18n._(EMOJI_PACK_DESCRIPTOR) : i18n._(STICKER_PACK_DESCRIPTOR);
-		const packActionLabel =
-			pack.type === 'emoji' ? i18n._(INSTALL_EMOJI_PACK_DESCRIPTOR) : i18n._(INSTALL_STICKER_PACK_DESCRIPTOR);
-		const inviterTag = invite.inviter
-			? NicknameUtils.formatTagForStreamerMode(`${invite.inviter.username}#${invite.inviter.discriminator}`)
-			: null;
-		const handleAcceptInvite = () => InviteCommands.acceptAndTransitionToChannel(invite.code, i18n);
-		content = (
-			<EmbedCard
-				splashURL={null}
-				headerClassName={styles.headerInvite}
-				icon={<Avatar user={packCreator} size={48} className={styles.icon} data-flx="channel.invite-embed.icon--2" />}
-				title={
-					<div
-						className={`${styles.titleContainer} ${styles.packTitleRow}`}
-						data-flx="channel.invite-embed.title-container--2"
-					>
-						<h3
-							className={`${cardStyles.title} ${cardStyles.titlePrimary} ${styles.titleText}`}
-							data-flx="channel.invite-embed.title-text--2"
-						>
-							{pack.name}
-						</h3>
-						<span className={styles.packBadge} data-flx="channel.invite-embed.pack-badge">
-							{packKindLabel}
-						</span>
-					</div>
-				}
-				body={
-					<div className={styles.packBody} data-flx="channel.invite-embed.pack-body">
-						<p className={styles.packDescription} data-flx="channel.invite-embed.pack-description">
-							{pack.description || i18n._(NO_DESCRIPTION_PROVIDED_DESCRIPTOR)}
-						</p>
-						<div className={styles.packMeta} data-flx="channel.invite-embed.pack-meta">
-							<span data-flx="channel.invite-embed.span">
-								<Trans>Created by {NicknameUtils.getDisplayName(packCreator)}</Trans>
-							</span>
-							{inviterTag ? (
-								<span data-flx="channel.invite-embed.span--2">
-									<Trans>Invited by {inviterTag}</Trans>
-								</span>
-							) : null}
-						</div>
-						<p className={styles.packNote} data-flx="channel.invite-embed.pack-note">
-							{i18n._(ACCEPTING_THIS_INVITE_INSTALLS_THE_PACK_AUTOMATICALLY_DESCRIPTOR)}
-						</p>
-					</div>
-				}
-				footer={
-					<Button
-						variant="primary"
-						fitContainer
-						matchSkeletonHeight
-						onClick={handleAcceptInvite}
-						data-flx="channel.invite-embed.button.accept-invite--2"
-					>
-						{packActionLabel}
-					</Button>
-				}
-				data-flx="channel.invite-embed.embed-card--2"
-			/>
-		);
 	} else if (!guild || !isGuildInvite(invite)) {
 		content = <InviteNotFoundError data-flx="channel.invite-embed.invite-not-found-error--2" />;
 	} else {
@@ -378,7 +281,7 @@ const InviteEmbedInner = observer(function InviteEmbedInner({
 		const splashAspectRatio = getGuildEmbedSplashAspectRatio(guild);
 		const renderedPresenceCount = formatInviteCount(presenceCount);
 		const renderedMemberCount = formatInviteCount(memberCount);
-		const handleAcceptInvite = () => InviteCommands.acceptAndTransitionToChannel(invite.code, i18n);
+		const handleAcceptInvite = () => InviteCommands.acceptAndTransitionToChannel(invite.code, i18n, instanceTarget);
 		const guildPath = Routes.guildChannel(guild.id, invite.channel.id);
 		const handleNavigateToGuild = () => RouterUtils.transitionTo(guildPath);
 		const actionType = getGuildInvitePrimaryAction(guildActionState);
@@ -461,7 +364,9 @@ const InviteEmbedInner = observer(function InviteEmbedInner({
 						{actionType === GuildInvitePrimaryAction.InvitesDisabled && (
 							<p className={styles.statText} data-flx="channel.invite-embed.stat-text--4">
 								{guildActionState.isRaidDetected
-									? i18n._(DETECTED_A_POTENTIAL_RAID_SO_NEW_USERS_CAN_DESCRIPTOR, {productName: PRODUCT_NAME})
+									? i18n._(DETECTED_A_POTENTIAL_RAID_SO_NEW_USERS_CAN_DESCRIPTOR, {
+											productName: getActiveInstanceProductName(),
+										})
 									: i18n._(INVITES_ARE_CURRENTLY_PAUSED_FOR_THIS_COMMUNITY_DESCRIPTOR)}
 							</p>
 						)}
@@ -486,7 +391,6 @@ const InviteEmbedInner = observer(function InviteEmbedInner({
 	const handleContextMenu = (event: React.MouseEvent) => {
 		const channelId = invite && (isGuildInvite(invite) || isGroupDmInvite(invite)) ? invite.channel.id : null;
 		const guildForMenu = guild ? {id: guild.id, name: guild.name} : null;
-		const inviteCodeForMenu = guildForMenu && invite ? invite.code : null;
 		if (!message && !guildForMenu && !channelId) return;
 		event.preventDefault();
 		event.stopPropagation();
@@ -497,7 +401,6 @@ const InviteEmbedInner = observer(function InviteEmbedInner({
 				linkUrl={`${RuntimeConfig.inviteEndpoint}/${code}`}
 				guild={guildForMenu}
 				channelId={channelId}
-				inviteCode={inviteCodeForMenu}
 				onDelete={onDelete}
 				onClose={props.onClose}
 				data-flx="channel.invite-embed.handle-context-menu.invite-embed-context-menu"

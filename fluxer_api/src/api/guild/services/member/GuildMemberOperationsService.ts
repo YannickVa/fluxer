@@ -1,8 +1,50 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {requireEmailVerified} from '@app/api/auth/EmailVerificationUtils';
+import type {GuildID, InviteCode, RoleID, UserID} from '@app/api/BrandedTypes';
+import {createChannelID, createRoleID} from '@app/api/BrandedTypes';
+import type {ChannelService} from '@app/api/channel/services/ChannelService';
+import {assertMutableUserId} from '@app/api/constants/Core';
+import type {GuildMemberRow} from '@app/api/database/types/GuildTypes';
+import type {GuildAuditLogService} from '@app/api/guild/GuildAuditLogService';
+import type {GuildAuditLogChange} from '@app/api/guild/GuildAuditLogTypes';
+import {resolveMaxGuildMembersLimit} from '@app/api/guild/GuildMemberLimitUtils';
+import {mapGuildMemberToResponse} from '@app/api/guild/GuildModel';
+import type {GuildRepository} from '@app/api/guild/repositories/GuildRepository';
+import type {GuildMemberAuthService} from '@app/api/guild/services/member/GuildMemberAuthService';
+import type {GuildMemberEventService} from '@app/api/guild/services/member/GuildMemberEventService';
+import type {GuildMemberSearchIndexService} from '@app/api/guild/services/member/GuildMemberSearchIndexService';
+import type {GuildMemberValidationService} from '@app/api/guild/services/member/GuildMemberValidationService';
+import {emitActivity} from '@app/api/infrastructure/activity/ActivityEvents';
+import type {JoinSource} from '@app/api/infrastructure/activity/Contract.generated';
+import {contentModerationService} from '@app/api/infrastructure/ContentModerationService';
+import type {EntityAssetService, PreparedAssetUpload} from '@app/api/infrastructure/EntityAssetService';
+import type {IGatewayService} from '@app/api/infrastructure/IGatewayService';
+import type {UserCacheService} from '@app/api/infrastructure/UserCacheService';
+import {Logger} from '@app/api/Logger';
+import type {LimitConfigService} from '@app/api/limits/LimitConfigService';
+import {resolveLimitSafe} from '@app/api/limits/LimitConfigUtils';
+import {createLimitMatchContext} from '@app/api/limits/LimitMatchContextBuilder';
+import {profileSubstringBlocklistCache} from '@app/api/middleware/ProfileSubstringBlocklistCache';
+import type {RequestCache} from '@app/api/middleware/RequestCacheMiddleware';
+import type {GuildMember} from '@app/api/models/GuildMember';
+import type {User} from '@app/api/models/User';
+import type {UserGuildSettings} from '@app/api/models/UserGuildSettings';
+import type {UserSettings} from '@app/api/models/UserSettings';
+import {assertAccountNotLimited} from '@app/api/user/AccountLimit';
+import type {UserRepository} from '@app/api/user/repositories/UserRepository';
+import {dispatchUserGuildSettingsUpdate} from '@app/api/user/UserGuildSettingsThreadView';
+import {isProfileSubstringExempt} from '@app/api/user/UserHelpers';
+import {mapUserSettingsToResponse} from '@app/api/user/UserMappers';
+import {addGuildToUncategorizedFolder, removeGuildFromUserFolders} from '@app/api/user/utils/GuildFolderUtils';
 import {AuditLogActionType} from '@fluxer/constants/src/AuditLogActionType';
 import {Permissions} from '@fluxer/constants/src/ChannelConstants';
-import {type JoinSourceType, JoinSourceTypes, SystemChannelFlags} from '@fluxer/constants/src/GuildConstants';
+import {
+	GuildFeatures,
+	type JoinSourceType,
+	JoinSourceTypes,
+	SystemChannelFlags,
+} from '@fluxer/constants/src/GuildConstants';
 import {
 	DEFAULT_GUILD_FOLDER_ICON,
 	type MentionReplyPreference,
@@ -23,38 +65,6 @@ import type {GuildMemberResponse} from '@fluxer/schema/src/domains/guild/GuildMe
 import type {GuildMemberUpdateRequest} from '@fluxer/schema/src/domains/guild/GuildRequestSchemas';
 import type {IRateLimitService} from '@pkgs/rate_limit/src/IRateLimitService';
 import {ms} from 'itty-time';
-import {requireEmailVerified} from '../../../auth/EmailVerificationUtils';
-import type {GuildID, InviteCode, RoleID, UserID} from '../../../BrandedTypes';
-import {createChannelID, createRoleID} from '../../../BrandedTypes';
-import type {ChannelService} from '../../../channel/services/ChannelService';
-import type {GuildMemberRow} from '../../../database/types/GuildTypes';
-import {contentModerationService} from '../../../infrastructure/ContentModerationService';
-import type {EntityAssetService, PreparedAssetUpload} from '../../../infrastructure/EntityAssetService';
-import type {IGatewayService} from '../../../infrastructure/IGatewayService';
-import type {UserCacheService} from '../../../infrastructure/UserCacheService';
-import {Logger} from '../../../Logger';
-import type {LimitConfigService} from '../../../limits/LimitConfigService';
-import {resolveLimitSafe} from '../../../limits/LimitConfigUtils';
-import {createLimitMatchContext} from '../../../limits/LimitMatchContextBuilder';
-import {profileSubstringBlocklistCache} from '../../../middleware/ProfileSubstringBlocklistCache';
-import type {RequestCache} from '../../../middleware/RequestCacheMiddleware';
-import type {GuildMember} from '../../../models/GuildMember';
-import type {User} from '../../../models/User';
-import type {UserGuildSettings} from '../../../models/UserGuildSettings';
-import type {UserSettings} from '../../../models/UserSettings';
-import type {IUserRepository} from '../../../user/IUserRepository';
-import {isProfileSubstringExempt} from '../../../user/UserHelpers';
-import {mapUserGuildSettingsToResponse, mapUserSettingsToResponse} from '../../../user/UserMappers';
-import {addGuildToUncategorizedFolder, removeGuildFromUserFolders} from '../../../user/utils/GuildFolderUtils';
-import type {GuildAuditLogService} from '../../GuildAuditLogService';
-import type {GuildAuditLogChange} from '../../GuildAuditLogTypes';
-import {resolveMaxGuildMembersLimit} from '../../GuildMemberLimitUtils';
-import {mapGuildMemberToResponse} from '../../GuildModel';
-import type {IGuildRepositoryAggregate} from '../../repositories/IGuildRepositoryAggregate';
-import type {GuildMemberAuthService} from './GuildMemberAuthService';
-import type {GuildMemberEventService} from './GuildMemberEventService';
-import type {GuildMemberSearchIndexService} from './GuildMemberSearchIndexService';
-import type {GuildMemberValidationService} from './GuildMemberValidationService';
 
 const MEMBERSHIP_METADATA_TTL_SECONDS = 365 * 24 * 60 * 60;
 
@@ -114,14 +124,33 @@ function hasSelfProfileCustomizationUpdate(
 	return EMAIL_VERIFICATION_REQUIRED_SELF_PROFILE_FIELDS.some((field) => data[field] !== undefined);
 }
 
+function joinSourceName(type: JoinSourceType): JoinSource {
+	switch (type) {
+		case JoinSourceTypes.CREATOR:
+			return 'creator';
+		case JoinSourceTypes.INSTANT_INVITE:
+			return 'invite';
+		case JoinSourceTypes.VANITY_URL:
+			return 'vanity';
+		case JoinSourceTypes.BOT_INVITE:
+			return 'bot_invite';
+		case JoinSourceTypes.ADMIN_FORCE_ADD:
+			return 'admin_force_add';
+		case JoinSourceTypes.DISCOVERY:
+			return 'discovery';
+		default:
+			return 'other';
+	}
+}
+
 export class GuildMemberOperationsService {
 	constructor(
-		private readonly guildRepository: IGuildRepositoryAggregate,
+		private readonly guildRepository: GuildRepository,
 		private readonly channelService: ChannelService,
 		private readonly userCacheService: UserCacheService,
 		private readonly gatewayService: IGatewayService,
 		private readonly entityAssetService: EntityAssetService,
-		private readonly userRepository: IUserRepository,
+		private readonly userRepository: UserRepository,
 		private readonly rateLimitService: IRateLimitService,
 		private readonly authService: GuildMemberAuthService,
 		private readonly validationService: GuildMemberValidationService,
@@ -156,6 +185,13 @@ export class GuildMemberOperationsService {
 		connectionId: string | null;
 		auditLogReason?: string | null;
 	}): Promise<void> {
+		if (
+			params.previousChannelId !== null &&
+			params.newChannelId !== null &&
+			params.previousChannelId === params.newChannelId.toString()
+		) {
+			return;
+		}
 		const action = params.newChannelId === null ? AuditLogActionType.MEMBER_DISCONNECT : AuditLogActionType.MEMBER_MOVE;
 		const previousSnapshot = params.previousChannelId !== null ? {channel_id: params.previousChannelId} : null;
 		const nextSnapshot = params.newChannelId !== null ? {channel_id: params.newChannelId.toString()} : null;
@@ -338,10 +374,13 @@ export class GuildMemberOperationsService {
 		try {
 			updatedMember = await this.guildRepository.upsertMember(updatedMemberData);
 		} catch (error) {
-			await this.rollbackPreparedAssets(preparedAssets);
+			Logger.error(
+				{error, guildId, userId: targetId},
+				'Guild member update failed with unknown commit status; retaining uploaded assets',
+			);
 			throw error;
 		}
-		await this.commitPreparedAssets(preparedAssets);
+		await this.entityAssetService.commitAssetChanges([preparedAssets.avatar, preparedAssets.banner]);
 		if (shouldRemoveTemporaryStatus) {
 			await this.gatewayService.removeTemporaryGuild({userId: targetId, guildId});
 		}
@@ -381,6 +420,7 @@ export class GuildMemberOperationsService {
 			sendJoinMessage?: boolean;
 			skipGuildLimitCheck?: boolean;
 			skipBanCheck?: boolean;
+			skipAccountLimitCheck?: boolean;
 			isTemporary?: boolean;
 			joinSourceType?: JoinSourceType;
 			sourceInviteCode?: InviteCode;
@@ -398,6 +438,7 @@ export class GuildMemberOperationsService {
 				sendJoinMessage = true,
 				skipGuildLimitCheck = false,
 				skipBanCheck = false,
+				skipAccountLimitCheck = false,
 				isTemporary = false,
 				joinSourceType = JoinSourceTypes.INSTANT_INVITE,
 				sourceInviteCode = null,
@@ -409,8 +450,12 @@ export class GuildMemberOperationsService {
 			if (!guild) throw new UnknownGuildError();
 			const existingMember = await this.guildRepository.getMember(guildId, userId);
 			if (existingMember) return existingMember;
+			assertMutableUserId(userId);
 			const user = await this.userRepository.findUnique(userId);
 			if (!user) throw new UnknownGuildError();
+			if (!skipAccountLimitCheck) {
+				assertAccountNotLimited(user);
+			}
 			if (!skipBanCheck) {
 				await this.validationService.checkUserBanStatus({userId, guildId});
 			}
@@ -464,6 +509,15 @@ export class GuildMemberOperationsService {
 			if (sendJoinMessage && !(guild.systemChannelFlags & SystemChannelFlags.SUPPRESS_JOIN_NOTIFICATIONS)) {
 				await this.channelService.messages.system.sendJoinSystemMessage({guildId, userId, requestCache});
 			}
+			void emitActivity('guild_joined', userId.toString(), {
+				user_id: userId.toString(),
+				guild_id: guildId.toString(),
+				member_count: guild.memberCount + 1,
+				discoverable: guild.features.has(GuildFeatures.DISCOVERABLE),
+				invite_code: sourceInviteCode,
+				inviter_id: inviterId ? inviterId.toString() : null,
+				join_source: joinSourceName(joinSourceType),
+			});
 			if (user.isBot) {
 				await this.recordGuildAuditLog({
 					guildId,
@@ -659,6 +713,7 @@ export class GuildMemberOperationsService {
 		const {targetId, guildId, targetUser, targetMember, data, updateData, preparedAssets} = params;
 		if (hasSelfProfileCustomizationUpdate(data)) {
 			requireEmailVerified(targetUser, 'profile');
+			assertAccountNotLimited(targetUser);
 		}
 		const ctx = createLimitMatchContext({user: targetUser});
 		const hasGuildProfileCustomization = resolveLimitSafe(
@@ -827,8 +882,13 @@ export class GuildMemberOperationsService {
 			if (userId !== targetId) {
 				await checkTargetMember(targetId);
 			}
-			if (data.mute !== undefined || data.deaf !== undefined) {
+			if (data.mute !== undefined) {
 				if (!(await hasPermission(Permissions.MUTE_MEMBERS))) {
+					throw new MissingPermissionsError();
+				}
+			}
+			if (data.deaf !== undefined) {
+				if (!(await hasPermission(Permissions.DEAFEN_MEMBERS))) {
 					throw new MissingPermissionsError();
 				}
 			}
@@ -914,19 +974,7 @@ export class GuildMemberOperationsService {
 		userId: UserID;
 		settings: UserGuildSettings;
 	}): Promise<void> {
-		const payload = mapUserGuildSettingsToResponse(settings);
-		await this.gatewayService.dispatchPresence({
-			userId,
-			event: 'USER_GUILD_SETTINGS_UPDATE',
-			data: payload,
-		});
-		if (payload.guild_id !== null) {
-			await this.gatewayService.syncPushUserGuildSettings({
-				userId,
-				guildId: settings.guildId,
-				settings: payload,
-			});
-		}
+		await dispatchUserGuildSettingsUpdate(this.gatewayService, userId, settings);
 	}
 
 	private async rollbackPreparedAssets(preparedAssets: PreparedMemberAssets): Promise<void> {
@@ -938,17 +986,6 @@ export class GuildMemberOperationsService {
 			rollbackPromises.push(this.entityAssetService.rollbackAssetUpload(preparedAssets.banner));
 		}
 		await Promise.all(rollbackPromises);
-	}
-
-	private async commitPreparedAssets(preparedAssets: PreparedMemberAssets): Promise<void> {
-		const commitPromises: Array<Promise<void>> = [];
-		if (preparedAssets.avatar) {
-			commitPromises.push(this.entityAssetService.commitAssetChange({prepared: preparedAssets.avatar}));
-		}
-		if (preparedAssets.banner) {
-			commitPromises.push(this.entityAssetService.commitAssetChange({prepared: preparedAssets.banner}));
-		}
-		await Promise.all(commitPromises);
 	}
 
 	private async snapshotMembershipMetadata(member: GuildMember): Promise<void> {

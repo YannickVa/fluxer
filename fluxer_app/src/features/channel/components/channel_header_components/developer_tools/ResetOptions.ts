@@ -4,7 +4,7 @@ import * as DeveloperOptionsCommands from '@app/features/devtools/commands/Devel
 import type {DeveloperOptionsState} from '@app/features/devtools/state/DeveloperOptions';
 import DeveloperOptions from '@app/features/devtools/state/DeveloperOptions';
 
-export const DEFAULT_DEVELOPER_OPTIONS = {
+const DEFAULT_DEVELOPER_OPTIONS = {
 	bypassLoadingSkeleton: false,
 	forceLoadingSkeleton: false,
 	forceFailMessageSends: false,
@@ -12,11 +12,6 @@ export const DEFAULT_DEVELOPER_OPTIONS = {
 	forceRenderPlaceholders: false,
 	forceEmbedSkeletons: false,
 	forceMediaLoading: false,
-	forceUpdateReady: false,
-	forceNativeUpdateReady: false,
-	mockNativeUpdateProgress: null,
-	forceWebUpdateReady: false,
-	mockUpdaterState: 'none',
 	showMyselfTyping: false,
 	slowAttachmentUpload: false,
 	slowMessageLoad: false,
@@ -31,8 +26,6 @@ export const DEFAULT_DEVELOPER_OPTIONS = {
 	selfHostedModeOverride: false,
 	forceShowVanityURLDisclaimer: false,
 	forceShowVoiceConnection: false,
-	showExpressionPacksSettings: false,
-	showProfileTimezoneSettings: false,
 	premiumScenarioOverride: null,
 	premiumTypeOverride: null,
 	premiumLifetimeSequenceOverride: null,
@@ -52,13 +45,6 @@ export const DEFAULT_DEVELOPER_OPTIONS = {
 	forceMatureMedia: false,
 	mockInUK: false,
 	mockGeoBlocked: false,
-	mockRequiredActionsOverlay: false,
-	mockRequiredActionsMode: 'email',
-	mockRequiredActionsSelectedTab: 'email',
-	mockRequiredActionsPhoneStep: 'phone',
-	mockRequiredActionsResending: false,
-	mockRequiredActionsResendOutcome: 'success',
-	mockRequiredActionsReverify: false,
 	forceNoSendMessages: false,
 	forceNoAttachFiles: false,
 	mockSlowmodeActive: false,
@@ -69,7 +55,7 @@ export const DEFAULT_DEVELOPER_OPTIONS = {
 	mockTitlebarPlatformOverride: 'auto',
 	mockAttachmentStates: {},
 	noOpInAppReports: false,
-	gameCaptureInjectionMethod: 'auto',
+	disableTranslationDomGuard: false,
 } satisfies DeveloperOptionsState;
 const PREMIUM_SCENARIO_OVERRIDE_KEYS = new Set<keyof DeveloperOptionsState>([
 	'premiumTypeOverride',

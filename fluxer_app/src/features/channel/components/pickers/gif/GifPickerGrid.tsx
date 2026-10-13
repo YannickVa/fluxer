@@ -16,6 +16,7 @@ import FavoriteGif from '@app/features/expressions/state/FavoriteGif';
 import FavoriteMemes from '@app/features/expressions/state/FavoriteMemes';
 import * as GifSlugUtils from '@app/features/expressions/utils/GifSlugUtils';
 import {FAVORITES_DESCRIPTOR} from '@app/features/i18n/utils/CommonMessageDescriptors';
+import AttachmentUrlRefresher from '@app/features/messaging/state/AttachmentUrlRefresher';
 import QuickSwitcher from '@app/features/search/state/QuickSwitcher';
 import {msg} from '@lingui/core/macro';
 import {useLingui} from '@lingui/react/macro';
@@ -50,13 +51,14 @@ export const GifPickerGrid = observer(
 		onContentSizeChange?: (contentSize: number) => void;
 	}) => {
 		const {i18n} = useLingui();
-		const itemGutter = 8;
-		const columns = computeMasonryColumns(viewportWidth, itemGutter, {minColumns: 2});
+		const tileSpacing = 8;
+		const columns = computeMasonryColumns(viewportWidth, tileSpacing, {minColumns: 2});
 		const favoriteMemes = FavoriteMemes.memes;
 		const favoriteMemesVersion = favoriteMemes.length;
 		const favoriteGifs = FavoriteGif.favoriteGifs;
 		const favoriteGifsVersion = favoriteGifs.length;
 		const useSavedMediaForGifFavorites = FavoriteGif.saveGifFavoritesAsSavedMedia;
+		const attachmentUrlRevision = AttachmentUrlRefresher.revision;
 		const data: Array<GifPickerGridItemData> = useMemo(() => {
 			return buildGifPickerGridData({
 				surface: store.isShowingFavorites ? 'favorites' : store.isShowingFeatured ? 'featured' : 'results',
@@ -88,6 +90,7 @@ export const GifPickerGrid = observer(
 			selectGif,
 			store.featuredFavoritePreviewSeed,
 			i18n.locale,
+			attachmentUrlRevision,
 		]);
 		const itemKeys = useMemo(() => data.filter((item) => item.type !== 'skeleton').map((item) => item.key), [data]);
 		const itemByKey = useMemo(() => new Map(data.map((item) => [item.key, item])), [data]);
@@ -131,7 +134,7 @@ export const GifPickerGrid = observer(
 				data={data}
 				itemKeys={itemKeys}
 				columns={columns}
-				itemGutter={itemGutter}
+				tileSpacing={tileSpacing}
 				viewportWidth={viewportWidth}
 				viewportHeight={viewportHeight}
 				scrollTop={scrollTop}
@@ -141,13 +144,13 @@ export const GifPickerGrid = observer(
 				onSelectItemKey={(key) => {
 					handleSelectByKey(key);
 				}}
-				getItemKey={(item) => item.key}
-				getItemHeight={(item, _index, columnWidth) => {
+				tileKeyOf={(item) => item.key}
+				tileHeightOf={(item, _index, laneWidth) => {
 					if (item.type === 'gif') {
 						const g = item.gif;
-						return columnWidth * (g.height / g.width);
+						return laneWidth * (g.height / g.width);
 					}
-					return columnWidth * (item.height / item.width);
+					return laneWidth * (item.height / item.width);
 				}}
 				extraSections={[
 					{

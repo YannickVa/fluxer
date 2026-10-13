@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {createTestAccount, type TestAccount} from '@app/api/auth/tests/AuthTestUtils';
+import type {ApiTestHarness} from '@app/api/test/ApiTestHarness';
+import {createBuilder} from '@app/api/test/TestRequestBuilder';
 import type {ChannelResponse} from '@fluxer/schema/src/domains/channel/ChannelSchemas';
 import type {GuildMemberResponse} from '@fluxer/schema/src/domains/guild/GuildMemberSchemas';
 import type {GuildUpdateRequest} from '@fluxer/schema/src/domains/guild/GuildRequestSchemas';
 import type {GuildResponse} from '@fluxer/schema/src/domains/guild/GuildResponseSchemas';
 import type {GuildRoleResponse} from '@fluxer/schema/src/domains/guild/GuildRoleSchemas';
 import type {GuildInviteMetadataResponse} from '@fluxer/schema/src/domains/invite/InviteSchemas';
-import {createTestAccount, type TestAccount} from '../../auth/tests/AuthTestUtils';
-import type {ApiTestHarness} from '../../test/ApiTestHarness';
-import {createBuilder} from '../../test/TestRequestBuilder';
 
 export async function createGuild(harness: ApiTestHarness, token: string, name: string): Promise<GuildResponse> {
 	return createBuilder<GuildResponse>(harness, token).post('/guilds').body({name}).execute();
@@ -29,10 +29,6 @@ export async function updateGuild(
 
 export async function leaveGuild(harness: ApiTestHarness, token: string, guildId: string): Promise<void> {
 	await createBuilder(harness, token).delete(`/users/@me/guilds/${guildId}`).expect(204).execute();
-}
-
-export async function getUserGuilds(harness: ApiTestHarness, token: string): Promise<Array<GuildResponse>> {
-	return createBuilder<Array<GuildResponse>>(harness, token).get('/users/@me/guilds').execute();
 }
 
 export async function createChannel(
@@ -103,15 +99,6 @@ export async function updateRole(
 		.patch(`/guilds/${guildId}/roles/${roleId}`)
 		.body(updates)
 		.execute();
-}
-
-export async function deleteRole(
-	harness: ApiTestHarness,
-	token: string,
-	guildId: string,
-	roleId: string,
-): Promise<void> {
-	await createBuilder(harness, token).delete(`/guilds/${guildId}/roles/${roleId}`).expect(204).execute();
 }
 
 export async function updateRolePositions(

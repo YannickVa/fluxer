@@ -2,6 +2,7 @@
 
 import {Routes} from '@app/app/Routes';
 import Accessibility from '@app/features/accessibility/state/Accessibility';
+import {GenericErrorModal} from '@app/features/app/components/alerts/GenericErrorModal';
 import {ChannelItem} from '@app/features/app/components/layout/ChannelItem';
 import channelItemStyles from '@app/features/app/components/layout/ChannelItem.module.css';
 import {ChannelItemContent} from '@app/features/app/components/layout/ChannelItemContent';
@@ -16,18 +17,23 @@ import {NullSpaceDropIndicator} from '@app/features/app/components/layout/NullSp
 import {ScrollIndicatorOverlay} from '@app/features/app/components/layout/ScrollIndicatorOverlay';
 import {type DragItem, DragItemType, type DropResult} from '@app/features/app/components/layout/types/DndTypes';
 import {
+	shouldShowCategoryWhenHidingMutedChannels,
 	shouldShowChannelInCollapsedCategory,
 	shouldShowChannelWhenHidingMutedChannels,
 } from '@app/features/app/components/layout/utils/ChannelListVisibility';
 import {createChannelMoveOperation} from '@app/features/app/components/layout/utils/ChannelMoveOperation';
 import {organizeChannels} from '@app/features/app/components/layout/utils/ChannelOrganization';
-import {getChannelUnreadState} from '@app/features/app/components/layout/utils/ChannelUnreadState';
+import {
+	type ChannelUnreadState,
+	getChannelUnreadState,
+} from '@app/features/app/components/layout/utils/ChannelUnreadState';
 import {VoiceParticipantsList} from '@app/features/app/components/layout/VoiceParticipantsList';
 import {
 	type RememberedSkeletonGuildChannelGroup,
 	type RememberedSkeletonGuildChannelRow,
 	reportSkeletonGuildChannelList,
 } from '@app/features/app/components/skeleton/SkeletonLayoutMemory';
+import type {GuildBannerPresentation} from '@app/features/app/hooks/useGuildBannerPresentation';
 import {useRovingFocusList} from '@app/features/app/hooks/useRovingFocusList';
 import {
 	measureSkeletonTextWidthPx,
@@ -45,6 +51,8 @@ import {useLocation} from '@app/features/platform/components/router/RouterReact'
 import {failureCode} from '@app/features/platform/utils/ResponseInspection';
 import ReadStates from '@app/features/read_state/state/ReadStates';
 import {remFromPx} from '@app/features/theme/layout/RemFromPx';
+import {SidebarThreadList} from '@app/features/threads/components/SidebarThreadList';
+import ThreadGuilds from '@app/features/threads/state/ThreadGuilds';
 import {ChannelListContextMenu} from '@app/features/ui/action_menu/ChannelListContextMenu';
 import * as ContextMenuCommands from '@app/features/ui/commands/ContextMenuCommands';
 import * as DimensionCommands from '@app/features/ui/commands/DimensionCommands';
@@ -67,9 +75,8 @@ import {UsersIcon} from '@phosphor-icons/react';
 import {clsx} from 'clsx';
 import {observer} from 'mobx-react-lite';
 import type {MotionValue} from 'motion';
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
 import {useDragLayer} from 'react-dnd';
-import {GenericErrorModal} from '../alerts/GenericErrorModal';
 
 const CATEGORY_FULL_DESCRIPTOR = msg({
 	message: 'Category full',
@@ -160,11 +167,17 @@ function createRememberedChannelGroups(
 		};
 	});
 }
-export const ChannelListContent = observer(({guild, scrollY}: {guild: Guild; scrollY: MotionValue<number>}) => {
+interface ChannelListContentProps {
+	readonly guild: Guild;
+	readonly scrollY: MotionValue<number>;
+	readonly banner: GuildBannerPresentation;
+}
+export const ChannelListContent = observer(({guild, scrollY, banner}: ChannelListContentProps) => {
+	const threadsActive = ThreadGuilds.isActive(guild.id);
 	const {i18n} = useLingui();
 	const channels = Channels.getGuildChannels(guild.id);
 	const location = useLocation();
-	const userGuildSettings = UserGuildSettings.getSettings(guild.id);
+	const userGuildSettings = UserGuildSettings.getSettingsForScope(guild.id);
 	const isDraggingAnything = useDragLayer((monitor) => {
 		if (!monitor.isDragging()) return false;
 		const itemType = monitor.getItemType();
@@ -176,6 +189,7 @@ export const ChannelListContent = observer(({guild, scrollY}: {guild: Guild; scr
 	});
 	const [activeDragItem, setActiveDragItem] = useState<DragItem | null>(null);
 	const scrollerRef = useRef<ScrollerHandle>(null);
+	const showIntegratedBanner = banner.collapsible;
 	const channelGroupsContainerRef = useRef<HTMLDivElement | null>(null);
 	const stickToBottomRef = useRef(false);
 	const pendingScrollTopRef = useRef<number | null>(null);
@@ -242,7 +256,7 @@ export const ChannelListContent = observer(({guild, scrollY}: {guild: Guild; scr
 		() => [channels.length, ReadStates.version, userGuildSettings, hideMutedChannels, showFadedUnreadOnMutedChannels],
 		[channels.length, ReadStates.version, userGuildSettings, hideMutedChannels, showFadedUnreadOnMutedChannels],
 	);
-	const getChannelScrollContainer = useCallback(() => scrollerRef.current?.getScrollerNode() ?? null, [scrollerRef]);
+	const getChannelScrollContainer = useCallback(() => scrollerRef.current?.getViewportElement() ?? null, [scrollerRef]);
 	useDragAutoScroll({active: isDraggingAnything, getScrollElement: getChannelScrollContainer});
 	const handleChannelDrop = useCallback(
 		(item: DragItem, result: DropResult) => {
@@ -306,21 +320,22 @@ export const ChannelListContent = observer(({guild, scrollY}: {guild: Guild; scr
 	}, [guild.id]);
 	const handleResize = useCallback((_entry: ResizeObserverEntry, _type: 'container' | 'content') => {
 		if (stickToBottomRef.current && scrollerRef.current) {
-			scrollerRef.current.scrollToBottom({animate: false});
+			scrollerRef.current.jumpToEndEdge({animate: false});
 		}
 	}, []);
-	useEffect(() => {
-		const guildDimensions = Dimension.getGuildDimensions(guild.id);
+	useLayoutEffect(() => {
+		const guildDimensions = Dimension.guildDimensionsFor(guild.id);
 		if (guildDimensions.scrollTo) {
 			const element = document.querySelector(`[data-channel-id="${guildDimensions.scrollTo}"]`);
 			if (element && scrollerRef.current) {
-				scrollerRef.current.scrollIntoViewNode({node: element as HTMLElement, shouldScrollToStart: false});
+				scrollerRef.current.revealElement({node: element as HTMLElement, preferStartEdge: false});
 			}
 			DimensionCommands.clearChannelListScrollTo(guild.id);
 		} else if (guildDimensions.scrollTop && guildDimensions.scrollTop > 0 && scrollerRef.current) {
 			scrollerRef.current.scrollTo({to: guildDimensions.scrollTop, animate: false});
 		}
-	}, [guild.id]);
+		scrollY.set(scrollerRef.current?.getViewportElement()?.scrollTop ?? 0);
+	}, [guild.id, scrollY]);
 	const handleContextMenu = useCallback(
 		(event: React.MouseEvent) => {
 			ContextMenuCommands.openFromEvent(event, ({onClose}) => (
@@ -333,11 +348,11 @@ export const ChannelListContent = observer(({guild, scrollY}: {guild: Guild; scr
 		},
 		[guild],
 	);
-	const hasVisibleUnreadInChannel = (channelId: string): boolean => {
+	const getUnreadStateInChannel = (channelId: string): ChannelUnreadState => {
 		const unreadCount = ReadStates.getUnreadCount(channelId);
+		const hasUnread = ReadStates.hasUnread(channelId);
 		const mentionCount = ReadStates.getMentionCount(channelId);
-		const isMuted =
-			UserGuildSettings.isCategoryMuted(guild.id, channelId) || UserGuildSettings.isChannelMuted(guild.id, channelId);
+		const isMuted = UserGuildSettings.isChannelDirectlyMuted(guild.id, channelId);
 		const channel = Channels.getChannel(channelId);
 		const unreadBadgesLevel = channel
 			? UserGuildSettings.resolvedUnreadBadgesLevel({
@@ -347,32 +362,36 @@ export const ChannelListContent = observer(({guild, scrollY}: {guild: Guild; scr
 					type: channel.type,
 				})
 			: null;
-		const unreadState = getChannelUnreadState({
+		return getChannelUnreadState({
+			hasUnread,
 			unreadCount,
 			mentionCount,
 			isMuted,
 			showFadedUnreadOnMutedChannels,
 			unreadBadgesLevel,
 		});
-		return unreadState.hasVisibleUnread;
 	};
 	const resolvedGroups: Array<ResolvedChannelGroup> = [];
 	for (const group of channelGroups) {
 		const isCollapsed = group.category ? (collapsedCategories?.has(group.category.id) ?? false) : false;
 		const isNullSpace = !group.category;
-		const isCategoryMuted = group.category ? UserGuildSettings.isChannelMuted(guild.id, group.category.id) : false;
+		const isCategoryMuted = group.category
+			? UserGuildSettings.isChannelDirectlyMuted(guild.id, group.category.id)
+			: false;
 		let filteredTextChannels: Array<Channel>;
 		let filteredVoiceChannels: Array<Channel>;
 		if (hideMutedChannels) {
 			filteredTextChannels = [];
 			for (const ch of group.textChannels) {
-				const isMuted = UserGuildSettings.isChannelMuted(guild.id, ch.id);
+				const isChannelMuted = UserGuildSettings.isChannelDirectlyMuted(guild.id, ch.id);
+				const isMuted = isCategoryMuted || isChannelMuted;
 				if (
 					shouldShowChannelWhenHidingMutedChannels({
-						isMuted,
+						isCategoryMuted,
+						isChannelMuted,
 						isSelected: ch.id === selectedChannelInGuildId,
 						isConnected: false,
-						hasVisibleUnread: isMuted && hasVisibleUnreadInChannel(ch.id),
+						hasVisibleUnread: isMuted && getUnreadStateInChannel(ch.id).hasVisibleUnread,
 					})
 				) {
 					filteredTextChannels.push(ch);
@@ -380,13 +399,15 @@ export const ChannelListContent = observer(({guild, scrollY}: {guild: Guild; scr
 			}
 			filteredVoiceChannels = [];
 			for (const ch of group.voiceChannels) {
-				const isMuted = UserGuildSettings.isChannelMuted(guild.id, ch.id);
+				const isChannelMuted = UserGuildSettings.isChannelDirectlyMuted(guild.id, ch.id);
+				const isMuted = isCategoryMuted || isChannelMuted;
 				if (
 					shouldShowChannelWhenHidingMutedChannels({
-						isMuted,
+						isCategoryMuted,
+						isChannelMuted,
 						isSelected: ch.id === selectedChannelInGuildId,
 						isConnected: ch.id === connectedChannelId,
-						hasVisibleUnread: isMuted && hasVisibleUnreadInChannel(ch.id),
+						hasVisibleUnread: isMuted && getUnreadStateInChannel(ch.id).hasVisibleUnread,
 					})
 				) {
 					filteredVoiceChannels.push(ch);
@@ -403,11 +424,14 @@ export const ChannelListContent = observer(({guild, scrollY}: {guild: Guild; scr
 			const showTextSelected = selectedChannelInGuildId;
 			const showSet = new Set<string>();
 			for (const ch of filteredTextChannels) {
+				const unreadState = getUnreadStateInChannel(ch.id);
 				if (
 					shouldShowChannelInCollapsedCategory({
 						isCategoryMuted,
 						isSelected: ch.id === showTextSelected,
-						hasVisibleUnread: hasVisibleUnreadInChannel(ch.id),
+						isConnected: false,
+						hasVisibleUnread: unreadState.hasVisibleUnread,
+						hasMentions: unreadState.hasMentions,
 					})
 				) {
 					showSet.add(ch.id);
@@ -434,11 +458,14 @@ export const ChannelListContent = observer(({guild, scrollY}: {guild: Guild; scr
 				}
 			}
 			for (const ch of filteredVoiceChannels) {
+				const unreadState = getUnreadStateInChannel(ch.id);
 				if (
 					shouldShowChannelInCollapsedCategory({
 						isCategoryMuted,
 						isSelected: ch.id === selectedChannelInGuildId,
-						hasVisibleUnread: hasVisibleUnreadInChannel(ch.id),
+						isConnected: ch.id === connectedChannelId,
+						hasVisibleUnread: unreadState.hasVisibleUnread,
+						hasMentions: unreadState.hasMentions,
 					})
 				) {
 					voiceSet.add(ch.id);
@@ -466,8 +493,10 @@ export const ChannelListContent = observer(({guild, scrollY}: {guild: Guild; scr
 		if (
 			hideMutedChannels &&
 			group.category &&
-			filteredTextChannels.length === 0 &&
-			filteredVoiceChannels.length === 0
+			!shouldShowCategoryWhenHidingMutedChannels({
+				hasChannels: group.textChannels.length > 0 || group.voiceChannels.length > 0,
+				hasVisibleChannels: filteredTextChannels.length > 0 || filteredVoiceChannels.length > 0,
+			})
 		) {
 			continue;
 		}
@@ -499,7 +528,7 @@ export const ChannelListContent = observer(({guild, scrollY}: {guild: Guild; scr
 		>
 			<Scroller
 				ref={scrollerRef}
-				className={styles.channelListScroller}
+				className={clsx(styles.channelListScroller, showIntegratedBanner && styles.channelListScrollerOverBanner)}
 				onScroll={handleScroll}
 				onResize={handleResize}
 				key={guild.id}
@@ -513,6 +542,14 @@ export const ChannelListContent = observer(({guild, scrollY}: {guild: Guild; scr
 					ref={channelListNavigationRef}
 					data-flx="app.channel-list-content.navigation-container.context-menu"
 				>
+					{showIntegratedBanner && (
+						<div
+							ref={banner.hoverRef}
+							className={styles.bannerSpacer}
+							style={{height: banner.collapseDistance}}
+							data-flx="app.channel-list-content.banner-spacer"
+						/>
+					)}
 					<GuildDetachedBanner guild={guild} data-flx="app.channel-list-content.guild-detached-banner" />
 					<div className={styles.topDropZone} data-flx="app.channel-list-content.top-drop-zone">
 						<NullSpaceDropIndicator
@@ -591,6 +628,7 @@ export const ChannelListContent = observer(({guild, scrollY}: {guild: Guild; scr
 									/>
 								)}
 								{group.showTextChannels &&
+									!threadsActive &&
 									group.visibleTextChannels.map((ch) => (
 										<ChannelItem
 											key={ch.id}
@@ -604,6 +642,29 @@ export const ChannelListContent = observer(({guild, scrollY}: {guild: Guild; scr
 											isOnMembersRoute={isMembersSelected}
 											data-flx="app.channel-list-content.channel-item--2"
 										/>
+									))}
+								{group.showTextChannels &&
+									threadsActive &&
+									group.visibleTextChannels.map((ch) => (
+										<React.Fragment key={ch.id}>
+											<ChannelItem
+												guild={guild}
+												channel={ch}
+												isDraggingAnything={isDraggingAnything}
+												activeDragItem={activeDragItem}
+												onChannelDrop={handleChannelDrop}
+												onDragStateChange={setActiveDragItem}
+												isSelectedByPath={selectedChannelInGuildId === ch.id}
+												isOnMembersRoute={isMembersSelected}
+												data-flx="app.channel-list-content.channel-item--4"
+											/>
+											<SidebarThreadList
+												guildId={guild.id}
+												parentId={ch.id}
+												onlySelected={group.isCollapsed}
+												data-flx="app.channel-list-content.sidebar-thread-list"
+											/>
+										</React.Fragment>
 									))}
 								{group.showVoiceChannels &&
 									group.visibleVoiceChannels.map((ch) => {

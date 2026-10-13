@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import type {GuildID, RoleID} from '../../BrandedTypes';
-import {deleteOneOrMany, fetchMany, fetchOne} from '../../database/CassandraQueryExecution';
-import {buildPatchFromData, executeVersionedUpdate} from '../../database/CassandraVersionedUpdate';
-import type {GuildRoleRow} from '../../database/types/GuildTypes';
-import {GUILD_ROLE_COLUMNS} from '../../database/types/GuildTypes';
-import {GuildRole} from '../../models/GuildRole';
-import {GuildRoles} from '../../Tables';
-import {IGuildRoleRepository} from './IGuildRoleRepository';
+import type {GuildID, RoleID} from '@app/api/BrandedTypes';
+import {deleteOneOrMany, fetchMany, fetchOne} from '@app/api/database/CassandraQueryExecution';
+import {buildPatchFromData, executeVersionedUpdate} from '@app/api/database/CassandraVersionedUpdate';
+import type {GuildRoleRow} from '@app/api/database/types/GuildTypes';
+import {GUILD_ROLE_COLUMNS} from '@app/api/database/types/GuildTypes';
+import {GuildRole} from '@app/api/models/GuildRole';
+import {GuildRoles} from '@app/api/Tables';
 
 const FETCH_GUILD_ROLE_BY_ID_QUERY = GuildRoles.selectCql({
 	where: [GuildRoles.where.eq('guild_id'), GuildRoles.where.eq('role_id')],
@@ -20,7 +19,7 @@ const FETCH_ROLES_BY_IDS_QUERY = GuildRoles.selectCql({
 	where: [GuildRoles.where.eq('guild_id'), GuildRoles.where.in('role_id', 'role_ids')],
 });
 
-export class GuildRoleRepository extends IGuildRoleRepository {
+export class GuildRoleRepository {
 	async getRole(roleId: RoleID, guildId: GuildID): Promise<GuildRole | null> {
 		const role = await fetchOne<GuildRoleRow>(FETCH_GUILD_ROLE_BY_ID_QUERY, {
 			guild_id: guildId,

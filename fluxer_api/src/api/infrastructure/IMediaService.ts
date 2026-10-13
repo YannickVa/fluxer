@@ -16,21 +16,21 @@ interface MediaProxyMetadataPolicy {
 	nsfw: MediaProxyNsfwMode;
 }
 
-export type MediaProxyMetadataExternalRequest = {
+type MediaProxyMetadataExternalRequest = {
 	type: 'external';
 	url: string;
 	with_base64?: boolean;
 } & MediaProxyMetadataPolicy;
-export type MediaProxyMetadataUploadRequest = {
+type MediaProxyMetadataUploadRequest = {
 	type: 'upload';
 	upload_filename: string;
 	filename?: string;
 } & MediaProxyMetadataPolicy;
-export type MediaProxyMetadataBase64Request = {
+type MediaProxyMetadataBase64Request = {
 	type: 'base64';
 	base64: string;
 } & MediaProxyMetadataPolicy;
-export type MediaProxyMetadataS3Request = {
+type MediaProxyMetadataS3Request = {
 	type: 's3';
 	bucket: string;
 	key: string;
@@ -41,6 +41,10 @@ export type MediaProxyMetadataRequest =
 	| MediaProxyMetadataUploadRequest
 	| MediaProxyMetadataBase64Request
 	| MediaProxyMetadataS3Request;
+
+export interface MediaProxyMetadataOptions {
+	sizeBytes?: number;
+}
 
 export interface MediaProxyMetadataResponse {
 	format: string;
@@ -57,6 +61,10 @@ export interface MediaProxyMetadataResponse {
 	nsfw_probability?: number;
 }
 
+export interface MediaProxySniffResponse {
+	content_type: string | null;
+}
+
 export type MediaProxyFrameRequest =
 	| {
 			type: 'upload';
@@ -68,7 +76,7 @@ export type MediaProxyFrameRequest =
 			key: string;
 	  };
 
-export interface MediaProxyFrameData {
+interface MediaProxyFrameData {
 	timestamp: number;
 	mime_type: string;
 	base64: string;
@@ -79,11 +87,16 @@ export interface MediaProxyFrameResponse {
 }
 
 export abstract class IMediaService {
-	abstract getMetadata(request: MediaProxyMetadataRequest): Promise<MediaProxyMetadataResponse | null>;
+	abstract getMetadata(
+		request: MediaProxyMetadataRequest,
+		options?: MediaProxyMetadataOptions,
+	): Promise<MediaProxyMetadataResponse | null>;
 
 	abstract getExternalMediaProxyURL(url: string): string;
 
 	abstract getThumbnail(uploadFilename: string): Promise<Buffer | null>;
+
+	abstract sniffUpload(uploadFilename: string): Promise<MediaProxySniffResponse | null>;
 
 	abstract extractFrames(request: MediaProxyFrameRequest): Promise<MediaProxyFrameResponse>;
 }

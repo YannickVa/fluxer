@@ -1,22 +1,23 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import crypto from 'node:crypto';
+import {AdminRepository} from '@app/api/admin/AdminRepository';
+import {findLastTestEmail, listTestEmails} from '@app/api/auth/tests/AuthTestUtils';
+import {createApplicationID, createUserID} from '@app/api/BrandedTypes';
+import {Config} from '@app/api/Config';
+import {OAuth2TokenRepository} from '@app/api/oauth/repositories/OAuth2TokenRepository';
+import {
+	createTestPayment,
+	createTestUserWithPremium,
+	sendStripeWebhook,
+	setupSyncStripeWebhookWorker,
+} from '@app/api/stripe/tests/StripeWebhookTestUtils';
+import {type ApiTestHarness, createApiTestHarness} from '@app/api/test/ApiTestHarness';
+import {createStripeApiHandlers} from '@app/api/test/msw/handlers/StripeApiHandlers';
+import {server} from '@app/api/test/msw/server';
+import {UserRepository} from '@app/api/user/repositories/UserRepository';
 import {DeletionReasons} from '@fluxer/constants/src/Core';
 import {UserFlags, UserPremiumTypes} from '@fluxer/constants/src/UserConstants';
 import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, test} from 'vitest';
-import {AdminRepository} from '../../admin/AdminRepository';
-import {createUserID} from '../../BrandedTypes';
-import {Config} from '../../Config';
-import {type ApiTestHarness, createApiTestHarness} from '../../test/ApiTestHarness';
-import {
-	createMockWebhookPayload,
-	createStripeApiHandlers,
-	type StripeWebhookEventData,
-} from '../../test/msw/handlers/StripeApiHandlers';
-import {server} from '../../test/msw/server';
-import {createBuilder} from '../../test/TestRequestBuilder';
-import {UserRepository} from '../../user/repositories/UserRepository';
-import {createTestPayment, createTestUserWithPremium, setupSyncStripeWebhookWorker} from './StripeWebhookTestUtils';
 
 describe('Stripe Webhook Early Fraud Warning', () => {
 	let harness: ApiTestHarness;
@@ -37,25 +38,6 @@ describe('Stripe Webhook Early Fraud Warning', () => {
 	afterEach(() => {
 		server.resetHandlers();
 	});
-	function createWebhookSignature(payload: string, timestamp: number, secret: string): string {
-		const signedPayload = `${timestamp}.${payload}`;
-		const signature = crypto.createHmac('sha256', secret).update(signedPayload).digest('hex');
-		return `t=${timestamp},v1=${signature}`;
-	}
-	async function sendWebhook(eventData: StripeWebhookEventData): Promise<{
-		received: boolean;
-	}> {
-		const {payload, timestamp} = createMockWebhookPayload(eventData);
-		const signature = createWebhookSignature(payload, timestamp, Config.stripe.webhookSecret!);
-		return await createBuilder<{
-			received: boolean;
-		}>(harness, '')
-			.post('/stripe/webhook')
-			.header('content-type', 'application/json')
-			.header('stripe-signature', signature)
-			.body(payload)
-			.execute();
-	}
 	async function createDirectPurchaseUser({
 		customerId,
 		paymentIntentId,
@@ -103,7 +85,24 @@ describe('Stripe Webhook Early Fraud Warning', () => {
 			paymentIntentId,
 			subscriptionId,
 		});
-		await sendWebhook({
+		const accountUserId = createUserID(BigInt(account.userId));
+		const oauthTokens = new OAuth2TokenRepository();
+		const applicationId = createApplicationID(1234567890123456789n);
+		await oauthTokens.createAccessToken({
+			token_: `access-${account.userId}`,
+			application_id: applicationId,
+			user_id: accountUserId,
+			scope: new Set(['identify']),
+			created_at: new Date(),
+		});
+		await oauthTokens.createRefreshToken({
+			token_: `refresh-${account.userId}`,
+			application_id: applicationId,
+			user_id: accountUserId,
+			scope: new Set(['identify']),
+			created_at: new Date(),
+		});
+		await sendStripeWebhook(harness, {
 			type: 'radar.early_fraud_warning.created',
 			data: {
 				object: {
@@ -125,6 +124,8 @@ describe('Stripe Webhook Early Fraud Warning', () => {
 		expect(updatedUser!.deletionReasonCode).toBe(DeletionReasons.BILLING_DISPUTE_OR_ABUSE);
 		expect(updatedUser!.stripeSubscriptionId).toBeNull();
 		expect(updatedUser!.pendingDeletionAt).not.toBeNull();
+		expect(await oauthTokens.getAccessToken(`access-${account.userId}`)).toBeNull();
+		expect(await oauthTokens.listRefreshTokensForUser(accountUserId)).toHaveLength(0);
 		const daysDifference = (updatedUser!.pendingDeletionAt!.getTime() - Date.now()) / (24 * 60 * 60 * 1000);
 		expect(daysDifference).toBeGreaterThan(58);
 		expect(daysDifference).toBeLessThan(62);
@@ -150,6 +151,12 @@ describe('Stripe Webhook Early Fraud Warning', () => {
 		expect(matchingLogs[0]!.auditLogReason).toContain('Stripe early fraud warning');
 		expect(matchingLogs[0]!.metadata.get('days')).toBe('60');
 		expect(matchingLogs[0]!.metadata.get('charge_id')).toBe(chargeId);
+		const email = findLastTestEmail(
+			await listTestEmails(harness, {recipient: account.email}),
+			'scheduled_deletion_notification',
+		);
+		expect(email?.metadata.reason).toBe('Payment fraud');
+		expect(JSON.stringify(email)).not.toContain('made_with_stolen_card');
 	});
 	test('does nothing for non-actionable early fraud warnings', async () => {
 		const chargeId = 'ch_test_efw_noop';
@@ -170,7 +177,7 @@ describe('Stripe Webhook Early Fraud Warning', () => {
 			paymentIntentId,
 			subscriptionId,
 		});
-		await sendWebhook({
+		await sendStripeWebhook(harness, {
 			type: 'radar.early_fraud_warning.created',
 			data: {
 				object: {
@@ -214,7 +221,7 @@ describe('Stripe Webhook Early Fraud Warning', () => {
 			paymentIntentId,
 			subscriptionId,
 		});
-		await sendWebhook({
+		await sendStripeWebhook(harness, {
 			type: 'radar.early_fraud_warning.created',
 			data: {
 				object: {
@@ -233,7 +240,7 @@ describe('Stripe Webhook Early Fraud Warning', () => {
 		const userAfterEarlyWarning = await userRepository.findUnique(createUserID(BigInt(account.userId)));
 		expect(userAfterEarlyWarning?.pendingDeletionAt).not.toBeNull();
 		const firstPendingDeletionAt = userAfterEarlyWarning!.pendingDeletionAt!.toISOString();
-		await sendWebhook({
+		await sendStripeWebhook(harness, {
 			type: 'charge.dispute.created',
 			data: {
 				object: {

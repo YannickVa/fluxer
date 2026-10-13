@@ -9,9 +9,10 @@ import {
 import {Message} from '@app/features/channel/components/ChannelMessage';
 import {Channel} from '@app/features/channel/models/Channel';
 import Channels from '@app/features/channel/state/Channels';
+import {getCachedNumberFormat} from '@app/features/i18n/utils/IntlCache';
 import {Message as MessageModel} from '@app/features/messaging/models/MessagingMessage';
 import {isNewMessageGroup} from '@app/features/messaging/utils/MessageGroupingUtils';
-import type {ComboboxOption} from '@app/features/ui/components/form/FormCombobox';
+import {type ComboboxOption, resolveNearestNumericOption} from '@app/features/ui/components/form/FormCombobox';
 import {Switch} from '@app/features/ui/components/form/FormSwitch';
 import {canResetSliderValue, SliderResetIconButton} from '@app/features/ui/components/slider/SliderResetIconButton';
 import type {RadioOption} from '@app/features/ui/radio_group/RadioGroup';
@@ -103,18 +104,6 @@ const getNearestMessageGroupSpacing = (value: number): number => {
 	return nearest;
 };
 
-const resolveMessageGroupSpacingInput = (
-	inputValue: string,
-	options: ReadonlyArray<ComboboxOption<number>>,
-): number | undefined => {
-	const numericMatch = inputValue.trim().match(/([0-9]+(?:\.[0-9]+)?)/);
-	if (!numericMatch) return undefined;
-	const parsedValue = Number(numericMatch[1]);
-	if (!Number.isFinite(parsedValue)) return undefined;
-	return options.reduce((nearest, option) =>
-		Math.abs(option.value - parsedValue) < Math.abs(nearest.value - parsedValue) ? option : nearest,
-	).value;
-};
 const MessagesPreview: React.FC = observer(() => {
 	const {i18n} = useLingui();
 	const {messageDisplayCompact} = UserSettings;
@@ -239,7 +228,7 @@ export const MessagesTabContent: React.FC = observer(() => {
 		() =>
 			MESSAGE_GROUP_SPACING_OPTIONS.map((value) => ({
 				value,
-				label: i18n._(PIXELS_DESCRIPTOR, {messageGroupSpacing: value}),
+				label: i18n._(PIXELS_DESCRIPTOR, {messageGroupSpacing: getCachedNumberFormat(i18n.locale).format(value)}),
 			})),
 		[i18n.locale],
 	);
@@ -287,7 +276,7 @@ export const MessagesTabContent: React.FC = observer(() => {
 				value={selectedMessageGroupSpacing}
 				options={messageGroupSpacingOptions}
 				onChange={(value) => AccessibilityCommands.update(getMessageGroupSpacingPatch(messageDisplayCompact, value))}
-				autoSelectValueFromInput={resolveMessageGroupSpacingInput}
+				autoSelectValueFromInput={resolveNearestNumericOption}
 				controlWidth="small"
 				menuMinWidth={128}
 				aria-label={i18n._(SPACE_BETWEEN_MESSAGE_GROUPS_DESCRIPTOR)}

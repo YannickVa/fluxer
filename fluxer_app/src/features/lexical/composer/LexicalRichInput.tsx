@@ -12,7 +12,6 @@ import type {MentionSegment} from '@app/features/messaging/utils/TextareaSegment
 import {resolveTypedEmojiToken} from '@app/features/messaging/utils/TypedEmojiShortcodeUtils';
 import {flxElementClassName} from '@app/lib/react';
 import type {I18n} from '@lingui/core';
-
 import type React from 'react';
 import {useCallback, useId, useImperativeHandle, useRef, useState} from 'react';
 
@@ -34,11 +33,13 @@ export interface LexicalRichInputProps {
 	disabled?: boolean;
 	channel?: Channel | null;
 	allowedTriggers?: Array<TriggerType>;
+	allowSpecialMentions?: boolean;
 	markdown?: boolean;
 	markdownParserFlags?: number;
 	singleLine?: boolean;
 	size?: 'chat' | 'form';
 	maxLength?: number;
+	maxWireLength?: number;
 	onExceedMaxLength?: () => void;
 	autocompleteAnchor?: HTMLElement | null;
 	className?: string;
@@ -58,7 +59,7 @@ export interface LexicalRichInputProps {
 	i18n: I18n;
 }
 
-const NOOP = (): void => {};
+const ARROW_UP_UNHANDLED = (): boolean => false;
 const SAFE_CHANNEL_TRIGGERS: Array<TriggerType> = ['emoji', 'mention', 'channel'];
 const SAFE_CONTEXT_FREE_TRIGGERS: Array<TriggerType> = ['emoji'];
 
@@ -69,11 +70,13 @@ export const LexicalRichInput = ({
 	disabled = false,
 	channel = null,
 	allowedTriggers,
+	allowSpecialMentions = true,
 	markdown = true,
 	markdownParserFlags,
 	singleLine = false,
 	size = 'chat',
 	maxLength,
+	maxWireLength = maxLength,
 	onExceedMaxLength,
 	autocompleteAnchor,
 	className,
@@ -126,21 +129,24 @@ export const LexicalRichInput = ({
 		[onChange, previousValueRef, rememberSegmentsForValue, segmentManagerRef],
 	);
 
-	const {autocompleteQuery, autocompleteOptions, autocompleteType, isSlotMenu, onCursorMove, handleSelect} =
-		useLexicalAutocomplete({
-			channel,
-			handleRef,
-			allowedTriggers:
-				allowedTriggers == null
-					? channel == null
-						? SAFE_CONTEXT_FREE_TRIGGERS
-						: SAFE_CHANNEL_TRIGGERS
-					: allowedTriggers,
-			allowMediaOptions: false,
-			maxActualLength: maxLength,
-			onExceedMaxLength,
-			i18n,
-		});
+	const {
+		autocompleteQuery,
+		autocompleteOptions,
+		autocompleteType,
+		isSlotMenu,
+		onCursorMove,
+		handleSelect,
+		specialMentionsAllowed,
+	} = useLexicalAutocomplete({
+		channel,
+		handleRef,
+		allowedTriggers: allowedTriggers ?? (channel == null ? SAFE_CONTEXT_FREE_TRIGGERS : SAFE_CHANNEL_TRIGGERS),
+		allowSpecialMentions,
+		allowMediaOptions: false,
+		maxActualLength: maxLength,
+		onExceedMaxLength,
+		i18n,
+	});
 
 	const insertEmoji = useCallback(
 		(emoji: FlatEmoji) =>
@@ -225,7 +231,9 @@ export const LexicalRichInput = ({
 				initialSegments={initialSegments}
 				markdown={markdown}
 				markdownParserFlags={markdownParserFlags}
+				maxWireLength={maxWireLength}
 				emojiShortcodeResolver={emojiShortcodeResolver}
+				specialMentionsAllowed={specialMentionsAllowed}
 				channelId={channel == null ? undefined : channel.id}
 				guildId={channel == null ? undefined : channel.guildId}
 				submitOnEnter={submitOnEnter ?? singleLine}
@@ -240,7 +248,7 @@ export const LexicalRichInput = ({
 				onChange={emitChange}
 				onCursorMove={onCursorMove}
 				onEnter={onSubmit == null ? undefined : handleEnter}
-				onArrowUp={NOOP}
+				onArrowUp={ARROW_UP_UNHANDLED}
 				onKeyDown={onKeyDown}
 				onFocus={onFocus}
 				onBlur={onBlur}

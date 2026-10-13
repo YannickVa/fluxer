@@ -4,8 +4,6 @@
 
 -typing([eqwalizer]).
 
--include_lib("fluxer_gateway/include/voice_state.hrl").
-
 -export([handle_update_connection/6]).
 
 -export_type([
@@ -181,28 +179,17 @@ normal_update(
 ) ->
     ConnectionId = maps:get(connection_id, Context),
     ExistingVS = maps:get(ConnectionId, VoiceStates, #{}),
-    CurrentVersion = voice_state_utils:voice_state_version(ExistingVS),
-    MutationDecision = guild_voice_mutation:evaluate(
-        maps:get(base_version, Context, undefined), CurrentVersion, valid
-    ),
-    case MutationDecision of
-        {reject, Reason} ->
-            guild_voice_connection_util:rejected_mutation_reply(
-                Context, ExistingVS, State, ChannelIdValue, <<"rejected">>, Reason
-            );
-        apply ->
-            check_permissions(
-                Context,
-                ChannelIdValue,
-                Member,
-                Channel,
-                VoiceStates,
-                State,
-                IsChannelChange,
-                ViewerKeyResult,
-                ExistingVS
-            )
-    end.
+    check_permissions(
+        Context,
+        ChannelIdValue,
+        Member,
+        Channel,
+        VoiceStates,
+        State,
+        IsChannelChange,
+        ViewerKeyResult,
+        ExistingVS
+    ).
 
 -spec check_permissions(
     context(),

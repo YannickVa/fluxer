@@ -99,12 +99,13 @@ export const DiscoveryPage = observer(function DiscoveryPage() {
 		return Math.min(SKELETON_DISCOVERY_MAX_COLUMNS, Math.max(1, columnsThatFit));
 	}, [containerWidth, zoomLevel]);
 	const guilds = Discovery.guilds;
+	const loadedCount = Discovery.loadedCount;
 	const searchActive = Discovery.query.length > 0;
 	const rowCount = columns > 0 ? Math.ceil(guilds.length / columns) : 0;
-	const hasMore = guilds.length < Discovery.total;
+	const hasMore = loadedCount < Discovery.total;
 	const virtualizer = useVirtualizer({
 		count: rowCount,
-		getScrollElement: () => scrollerRef.current?.getScrollerNode() ?? null,
+		getScrollElement: () => scrollerRef.current?.getViewportElement() ?? null,
 		estimateSize: () => SKELETON_DISCOVERY_ESTIMATED_ROW_HEIGHT_PX,
 		overscan: OVERSCAN_ROWS,
 		scrollMargin: gridOffsetTop,
@@ -114,10 +115,10 @@ export const DiscoveryPage = observer(function DiscoveryPage() {
 			return;
 		}
 		void Discovery.search({
-			offset: guilds.length,
+			offset: loadedCount,
 			limit: PAGE_SIZE,
 		});
-	}, [guilds.length, hasMore]);
+	}, [loadedCount, hasMore]);
 	useEffect(() => {
 		const items = virtualizer.getVirtualItems();
 		const lastItem = items[items.length - 1];
@@ -131,7 +132,7 @@ export const DiscoveryPage = observer(function DiscoveryPage() {
 			return;
 		}
 		setContainerWidth(node.getBoundingClientRect().width);
-		setGridOffsetTop(resolveScrollOffsetTop(node, scrollerRef.current?.getScrollerNode() ?? null));
+		setGridOffsetTop(resolveScrollOffsetTop(node, scrollerRef.current?.getViewportElement() ?? null));
 	}, []);
 	useEffect(() => {
 		if (!resultsColumnNode) return;
@@ -149,7 +150,7 @@ export const DiscoveryPage = observer(function DiscoveryPage() {
 	}, [resultsColumnNode, searchActive]);
 	useEffect(() => {
 		if (!resultsColumnNode) return;
-		setGridOffsetTop(resolveScrollOffsetTop(resultsColumnNode, scrollerRef.current?.getScrollerNode() ?? null));
+		setGridOffsetTop(resolveScrollOffsetTop(resultsColumnNode, scrollerRef.current?.getViewportElement() ?? null));
 	}, [resultsColumnNode, searchActive, containerWidth]);
 	const scrollResultsToTop = useCallback(() => {
 		scrollerRef.current?.scrollTo({to: 0});
@@ -185,7 +186,7 @@ export const DiscoveryPage = observer(function DiscoveryPage() {
 		if (searchActive || columns <= 0) {
 			return;
 		}
-		const viewportHeightPx = measureSkeletonHeightPx(scrollerRef.current?.getScrollerNode() ?? null);
+		const viewportHeightPx = measureSkeletonHeightPx(scrollerRef.current?.getViewportElement() ?? null);
 		reportSkeletonDiscoveryGrid(columns, Math.ceil(viewportHeightPx / SKELETON_DISCOVERY_ESTIMATED_ROW_HEIGHT_PX));
 	}, `${searchActive}:${columns}:${containerWidth}`);
 	const virtualRows = virtualizer.getVirtualItems();

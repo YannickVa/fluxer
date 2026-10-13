@@ -2,6 +2,7 @@
 
 import {showDmActionErrorModal} from '@app/features/app/components/alerts/DmActionErrorModal';
 import {ConfirmModal} from '@app/features/app/components/dialogs/ConfirmModal';
+import {UserSettingsModal} from '@app/features/app/components/dialogs/LoadableSettingsModals';
 import {CustomStatusDisplay} from '@app/features/app/components/shared/custom_status_display/CustomStatusDisplay';
 import {useHover} from '@app/features/app/hooks/useHover';
 import RuntimeConfig from '@app/features/app/state/RuntimeConfig';
@@ -32,7 +33,6 @@ import * as PopoutCommands from '@app/features/ui/commands/PopoutCommands';
 import FocusRingScope from '@app/features/ui/focus_ring/FocusRingScope';
 import {Tooltip} from '@app/features/ui/tooltip/Tooltip';
 import * as UserProfileCommands from '@app/features/user/commands/UserProfileCommands';
-import {UserSettingsModal} from '@app/features/user/components/modals/UserSettingsModal';
 import {LimitedProfileNotice} from '@app/features/user/components/popouts/LimitedProfileNotice';
 import {UserProfileBadges} from '@app/features/user/components/popouts/UserProfileBadges';
 import {UserProfileDataWarning} from '@app/features/user/components/popouts/UserProfileDataWarning';
@@ -174,7 +174,9 @@ export const UserProfilePopout: React.FC<UserProfilePopoutProps> = observer(
 		const handleClosePopout = useCallback(() => {
 			requestClose();
 		}, [requestClose]);
-		const displayName = guildMember?.nick ?? NicknameUtils.getNickname(user, guildId);
+		const displayName = guildMember?.nick
+			? NicknameUtils.formatNicknameForStreamerMode(guildMember.nick)
+			: NicknameUtils.getNickname(user, guildId);
 		const handleMessage = async () => {
 			try {
 				requestClose();
@@ -200,12 +202,15 @@ export const UserProfilePopout: React.FC<UserProfilePopoutProps> = observer(
 		};
 		const handleEditProfile = () => {
 			ModalCommands.push(
-				modal(() => (
-					<UserSettingsModal
-						initialTab="my_profile"
-						data-flx="user.user-profile-popout.handle-edit-profile.user-settings-modal"
-					/>
-				)),
+				modal(
+					() => (
+						<UserSettingsModal
+							initialTab="my_profile"
+							data-flx="user.user-profile-popout.handle-edit-profile.user-settings-modal"
+						/>
+					),
+					'user-settings',
+				),
 			);
 			requestClose();
 		};
@@ -413,7 +418,7 @@ export const UserProfilePopout: React.FC<UserProfilePopoutProps> = observer(
 													disabled={true}
 													data-flx="user.user-profile-popout.button"
 												>
-													<Trans>Message</Trans>
+													<Trans context="message-action">Message</Trans>
 												</Button>
 											</div>
 										</Tooltip>
@@ -443,7 +448,7 @@ export const UserProfilePopout: React.FC<UserProfilePopoutProps> = observer(
 										onClick={isBlocked ? handleOpenBlockedDm : handleMessage}
 										data-flx="user.user-profile-popout.button.open-blocked-dm"
 									>
-										{isBlocked ? i18n._(OPEN_DM_DESCRIPTOR) : <Trans>Message</Trans>}
+										{isBlocked ? i18n._(OPEN_DM_DESCRIPTOR) : <Trans context="message-action">Message</Trans>}
 									</Button>
 								)}
 							</ProfileCardFooter>

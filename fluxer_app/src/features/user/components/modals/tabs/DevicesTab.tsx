@@ -8,7 +8,6 @@ import {
 	SettingsTabContent,
 	SettingsTabSection,
 } from '@app/features/app/components/dialogs/shared/SettingsTabLayout';
-import {DESKTOP_PRODUCT_NAME} from '@app/features/app/config/I18nDisplayConstants';
 import {useElementOverflow} from '@app/features/app/hooks/useTextOverflow';
 import * as AuthSessionCommands from '@app/features/auth/commands/AuthSessionCommands';
 import {DeviceRevokeModal} from '@app/features/auth/components/modals/DeviceRevokeModal';
@@ -17,6 +16,7 @@ import AuthSessionState from '@app/features/auth/state/AuthSession';
 import {TRY_AGAIN_DESCRIPTOR, UNKNOWN_DESCRIPTOR} from '@app/features/i18n/utils/CommonMessageDescriptors';
 import {formatTimestamp} from '@app/features/messaging/utils/markdown/DateFormatter';
 import {TimestampStyle} from '@app/features/messaging/utils/markdown/parser/Enums';
+import {currentInstanceTarget, type InstanceHTTPTarget} from '@app/features/platform/transport/InstanceHTTP';
 import {Button} from '@app/features/ui/button/Button';
 import * as ModalCommands from '@app/features/ui/commands/ModalCommands';
 import {modal} from '@app/features/ui/commands/ModalCommands';
@@ -72,10 +72,9 @@ const SIGN_OUT_SELECTED_DEVICES_DESCRIPTOR = msg({
 	comment: 'Danger button in the devices tab. Signs out the currently selected devices.',
 });
 const SELECTED_DEVICES_FOR_LOGOUT_DESCRIPTOR = msg({
-	message: '{deviceCount, plural, one {# device selected for sign out} other {# devices selected for sign out}}',
+	message: '{deviceCount, plural, one {# device selected for sign-out} other {# devices selected for sign-out}}',
 	comment: 'Unsaved-changes banner text in the devices tab. Counts selected devices that will be signed out.',
 });
-const MOBILE_DEVICE_REGEX = /iOS|Android|Windows Phone|BlackBerry|Mobile/i;
 
 const StatusDot = observer(() => (
 	<div aria-hidden={true} className={styles.statusDot} data-flx="user.devices-tab.status-dot.status-dot" />
@@ -127,8 +126,7 @@ const DeviceDetailRow = ({
 const DeviceDetailsModal = observer(({authSession, isCurrent}: {authSession: AuthSession; isCurrent: boolean}) => {
 	const {i18n} = useLingui();
 	const clientOs = authSession.clientOs ?? i18n._(UNKNOWN_DEVICE_DESCRIPTOR);
-	const clientPlatform = authSession.clientPlatform ?? i18n._(UNKNOWN_DESCRIPTOR);
-	const platformLabel = authSession.clientPlatform === DESKTOP_PRODUCT_NAME ? DESKTOP_PRODUCT_NAME : clientPlatform;
+	const platformLabel = authSession.clientPlatform ?? i18n._(UNKNOWN_DESCRIPTOR);
 	return (
 		<Modal.Root size="small" centered data-flx="user.devices-tab.device-details-modal.modal-root">
 			<Modal.Header title={<Trans>Device details</Trans>} data-flx="user.devices-tab.device-details-modal.header" />
@@ -185,6 +183,7 @@ const DeviceDetailsModal = observer(({authSession, isCurrent}: {authSession: Aut
 
 interface AuthSessionProps {
 	authSession: AuthSession;
+	target: InstanceHTTPTarget;
 	isCurrent?: boolean;
 	isSelected?: boolean;
 	onSelect?: SelectionToggleHandler;
@@ -193,17 +192,18 @@ interface AuthSessionProps {
 }
 
 const AuthSessionItem: React.FC<AuthSessionProps> = observer(
-	({authSession, isCurrent = false, isSelected, onSelect, index, selectionMode}) => {
+	({authSession, target, isCurrent = false, isSelected, onSelect, index, selectionMode}) => {
 		const {i18n} = useLingui();
 		const clientOs = authSession.clientOs ?? i18n._(UNKNOWN_DEVICE_DESCRIPTOR);
-		const clientPlatform = authSession.clientPlatform ?? i18n._(UNKNOWN_DESCRIPTOR);
-		const isMobile = MOBILE_DEVICE_REGEX.test(authSession.clientOs ?? '');
+		const platformLabel = authSession.clientPlatform ?? i18n._(UNKNOWN_DESCRIPTOR);
+		const isMobile = authSession.clientDevice === 'mobile';
 		const isSelectionInteractive = Boolean(selectionMode && !isCurrent && onSelect && index !== undefined);
 		const openRevokeModal = () => {
 			ModalCommands.push(
 				modal(() => (
 					<DeviceRevokeModal
 						sessionIdHashes={[authSession.id]}
+						target={target}
 						data-flx="user.devices-tab.auth-session-item.device-revoke-modal"
 					/>
 				)),
@@ -234,7 +234,6 @@ const AuthSessionItem: React.FC<AuthSessionProps> = observer(
 			selected: isSelected,
 			onSelect,
 		});
-		const platformLabel = authSession.clientPlatform === DESKTOP_PRODUCT_NAME ? DESKTOP_PRODUCT_NAME : clientPlatform;
 		const metadataLine = [authSession.clientLocation, isCurrent ? null : formatAuthSessionLastUsed(authSession, i18n)]
 			.filter((value): value is string => Boolean(value))
 			.join(' · ');
@@ -254,9 +253,15 @@ const AuthSessionItem: React.FC<AuthSessionProps> = observer(
 					</div>
 					<div className={styles.authSessionInfo} data-flx="user.devices-tab.auth-session-item.auth-session-info">
 						<span className={styles.authSessionTitle} data-flx="user.devices-tab.auth-session-item.auth-session-title">
-							{clientOs}
-							<StatusDot data-flx="user.devices-tab.auth-session-item.status-dot" />
-							{platformLabel}
+							{authSession.clientBrowser === null ? (
+								platformLabel
+							) : (
+								<>
+									{clientOs}
+									<StatusDot data-flx="user.devices-tab.auth-session-item.status-dot" />
+									{platformLabel}
+								</>
+							)}
 						</span>
 						{metadataLine && (
 							<div
@@ -335,8 +340,9 @@ interface DevicesTabContentProps {
 	presentation?: 'settings' | 'modal';
 }
 
-export const DevicesTabContent: React.FC<DevicesTabContentProps> = observer(({presentation = 'settings'}) => {
+const DevicesTabContent: React.FC<DevicesTabContentProps> = observer(({presentation = 'settings'}) => {
 	const {i18n} = useLingui();
+	const [authSessionTarget] = useState(currentInstanceTarget);
 	const isModalPresentation = presentation === 'modal';
 	const authSessionIdHash = AuthSessionState.authSessionIdHash;
 	const authSessions = AuthSessionState.authSessions;
@@ -358,30 +364,32 @@ export const DevicesTabContent: React.FC<DevicesTabContentProps> = observer(({pr
 		getId: getAuthSessionSelectionId,
 	});
 	useEffect(() => {
-		AuthSessionCommands.fetch();
-	}, []);
+		AuthSessionCommands.fetch(authSessionTarget);
+	}, [authSessionTarget]);
 	const openSelectedDevicesRevokeModal = useCallback(() => {
 		if (selectedDeviceIds.length === 0) return;
 		ModalCommands.push(
 			modal(() => (
 				<DeviceRevokeModal
 					sessionIdHashes={selectedDeviceIds}
+					target={authSessionTarget}
 					data-flx="user.devices-tab.selected-device-revoke-modal"
 				/>
 			)),
 		);
-	}, [selectedDeviceIds]);
+	}, [authSessionTarget, selectedDeviceIds]);
 	const openAllOtherDevicesRevokeModal = useCallback(() => {
 		if (otherDeviceIds.length === 0) return;
 		ModalCommands.push(
 			modal(() => (
 				<DeviceRevokeModal
 					sessionIdHashes={otherDeviceIds}
+					target={authSessionTarget}
 					data-flx="user.devices-tab.all-other-devices-revoke-modal"
 				/>
 			)),
 		);
-	}, [otherDeviceIds]);
+	}, [authSessionTarget, otherDeviceIds]);
 	useEffect(() => {
 		if (isModalPresentation) return;
 		if (selectedDeviceIds.length === 0) {
@@ -416,7 +424,7 @@ export const DevicesTabContent: React.FC<DevicesTabContentProps> = observer(({pr
 				title={i18n._(NETWORK_ERROR_DESCRIPTOR)}
 				description={i18n._(WE_RE_HAVING_TROUBLE_CONNECTING_TO_THE_SPACE_DESCRIPTOR)}
 				buttonText={i18n._(TRY_AGAIN_DESCRIPTOR)}
-				onClick={() => AuthSessionCommands.fetch()}
+				onClick={() => AuthSessionCommands.fetch(authSessionTarget)}
 				data-flx="user.devices-tab.slate.fetch"
 			/>
 		);
@@ -426,7 +434,12 @@ export const DevicesTabContent: React.FC<DevicesTabContentProps> = observer(({pr
 	const devicesContent = (
 		<>
 			<SettingsTabSection title={<Trans>Current device</Trans>} data-flx="user.devices-tab.current-device">
-				<AuthSessionItem authSession={currentSession} isCurrent={true} data-flx="user.devices-tab.auth-session-item" />
+				<AuthSessionItem
+					authSession={currentSession}
+					target={authSessionTarget}
+					isCurrent={true}
+					data-flx="user.devices-tab.auth-session-item"
+				/>
 			</SettingsTabSection>
 			{otherDevices.length > 0 && (
 				<SettingsTabSection
@@ -437,7 +450,7 @@ export const DevicesTabContent: React.FC<DevicesTabContentProps> = observer(({pr
 					<div className={styles.deviceListBody} data-flx="user.devices-tab.device-list-body">
 						<p className={styles.selectionHint} data-flx="user.devices-tab.selection-hint">
 							<Trans>
-								Hold Shift and press X to mark devices for sign out. Press {selectAllShortcutLabel} to select all.
+								Hold Shift and press X to mark devices for sign-out. Press {selectAllShortcutLabel} to select all.
 							</Trans>
 						</p>
 						<div className={styles.devicesGrid} data-flx="user.devices-tab.devices-grid">
@@ -445,6 +458,7 @@ export const DevicesTabContent: React.FC<DevicesTabContentProps> = observer(({pr
 								<AuthSessionItem
 									key={authSession.id}
 									authSession={authSession}
+									target={authSessionTarget}
 									isSelected={selectedDevices.has(authSession.id)}
 									onSelect={toggleDevice}
 									index={index}
@@ -534,7 +548,3 @@ export const LinkedDevicesManagementModal = observer(() => (
 		/>
 	</Modal.Root>
 ));
-
-const DevicesTab: React.FC = observer(() => <DevicesTabContent data-flx="user.devices-tab.devices-tab-content" />);
-
-export default DevicesTab;

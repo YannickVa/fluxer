@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {APP_PROTOCOL, DESKTOP_APP_ORIGIN, DESKTOP_PREBOOT_THEME_CHANNEL} from '@electron/common/Constants';
 import {
 	type DesktopTroubleshootingSettings,
 	type DesktopWindowBehaviorSettings,
-	getDesktopTroubleshootingSettings,
 	getDesktopWindowBehaviorSettings,
 	setDesktopWindowBehaviorSettings,
+	setPrebootTheme,
 } from '@electron/common/DesktopConfig';
 import type {
 	ClipboardWriteFileResult,
@@ -13,43 +14,58 @@ import type {
 	MediaAccessType,
 	TrayPresenceStatus,
 } from '@electron/common/Types';
+import {DesktopBrowserHandoff} from '@electron/main/BrowserHandoff';
 import {hasEnabledBlinkFeature, MIDDLE_CLICK_AUTOSCROLL_BLINK_FEATURE} from '@electron/main/ChromiumRuntime';
+import {setHandoffReturnLinkSink} from '@electron/main/DeepLinks';
+import {getDesktopAppStorage} from '@electron/main/DesktopAppStorage';
+import {createDesktopAppStorageIpcRoutes} from '@electron/main/DesktopAppStorageIpc';
+import {getLaunchDesktopTroubleshootingSettings} from '@electron/main/DesktopDebugInfo';
+import {cleanupDesktopRuntimeConfigHandlers} from '@electron/main/DesktopRuntimeConfigIpc';
 import {
 	applyDesktopWindowBehaviorSettings,
 	desktopTrayChangePendingRestart,
 	hasActiveDesktopTray,
 	updateTrayRuntimeState,
 } from '@electron/main/DesktopTray';
-import {downloadFile} from '@electron/main/FileDownloads';
+import {getDesktopUpdateState, observeDesktopUpdateState, startDesktopUpdate} from '@electron/main/DesktopUpdateGate';
+import {DownloadChecksumError, downloadFile} from '@electron/main/FileDownloads';
+import {getGatewayOriginRegistry} from '@electron/main/GatewayOriginRegistry';
+import {retryBlockedGlobalShortcutHooks} from '@electron/main/GlobalShortcutsIpc';
 import {
 	type LinuxAppearanceSnapshot,
 	type LinuxAppearanceSubscription,
 	readLinuxAppearance,
 	subscribeLinuxAppearance,
 } from '@electron/main/LinuxAppearance';
-import {getTccStatus, registerMacTccIpcHandlers} from '@electron/main/MacTcc';
+import {refreshTccStatus, registerMacTccIpcHandlers} from '@electron/main/MacTcc';
 import {setNativeStrings} from '@electron/main/MainI18n';
 import {getMediaAccessSettingsUrl} from '@electron/main/MediaAccessSettings';
 import {copyRemoteFileToClipboard, parseClipboardWriteFileOptions} from '@electron/main/MediaClipboard';
+import {signalRendererLaunchConfirmed} from '@electron/main/ModuleBootHandoff';
+import {ensureDesktopModule} from '@electron/main/ModuleOnDemand';
+import {
+	createDesktopNativeGatewayTransport,
+	type DesktopNativeGatewayTransport,
+} from '@electron/main/NativeGatewayTransport';
 import {registerNotificationIpcHandlers} from '@electron/main/NotificationsIpc';
 import {openExternalDeduped} from '@electron/main/OpenExternal';
-import {getStatus as getOpenH264Status, setEnabled as setOpenH264Enabled} from '@electron/main/OpenH264Manager';
 import {registerPasskeyHandlers} from '@electron/main/Passkeys';
 import {getAppMetricsSnapshot, getDesktopInfo, getGpuInfo} from '@electron/main/PlatformInfo';
+import {
+	createPrivilegedRendererDocumentOwners,
+	requirePrivilegedRendererDocumentSender,
+} from '@electron/main/PrivilegedRendererDocuments';
+import {getDesktopSelectedInstanceClient} from '@electron/main/SelectedInstanceFetch';
 import {getStreamerModeCaptureAppStatus} from '@electron/main/StreamerModeProcessDetection';
 import {
 	acquireStreamingPriority,
 	getStreamingPriorityDiagnostics,
 	releaseStreamingPriority,
-	resetStreamingPriority,
 } from '@electron/main/StreamingPriority';
 import {setTaskbarProgress, type TaskbarProgressMode} from '@electron/main/TaskbarProgress';
 import {registerThemeLocalFileHandlers} from '@electron/main/ThemeLocalFiles';
 import {
-	popupHelpMenu,
 	relaunchAndExit,
-	reloadMainWindow,
-	resetAppDataAndRestart,
 	setHardwareAccelerationDisabled,
 	setHardwareAccelerationDisabledAndRestart,
 } from '@electron/main/Troubleshooting';
@@ -63,7 +79,6 @@ import {
 import {
 	clearSavedWindowBounds,
 	closeThemeStudioPopoutWindow,
-	desktopFirstClickPassThroughPendingRestart,
 	desktopTransparencyPendingRestart,
 	desktopUseNativeTitleBarPendingRestart,
 	focusThemeStudioPopoutWindow,
@@ -75,12 +90,16 @@ import {
 	setVoicePopoutAlwaysOnTop,
 	showWindow,
 	THEME_STUDIO_POPOUT_KEY,
-	toggleWindowDevTools,
 } from '@electron/main/Window';
 import {flashWindowForAttention, stopFlashingWindow} from '@electron/main/WindowFlash';
 import {setWindowsBadgeOverlay} from '@electron/main/WindowsBadge';
-import {registerWindowsToastIpcHandlers} from '@electron/main/WindowsToast';
+import {
+	DESKTOP_MODULE_CHANNELS,
+	DESKTOP_UPDATE_CHANNELS,
+	DESKTOP_UPDATE_EVENTS,
+} from '@fluxer/desktop_ipc/src/ModuleContract';
 import {app, BrowserWindow, clipboard, dialog, ipcMain, powerMonitor, shell, systemPreferences} from 'electron';
+import log from 'electron-log';
 
 interface TrayRuntimeStateUpdate {
 	voiceConnected?: boolean;
@@ -109,6 +128,9 @@ function normalizeDesktopWindowBehaviorUpdate(value: unknown): Partial<DesktopWi
 	if (typeof value.closeToTray === 'boolean') {
 		update.closeToTray = value.closeToTray;
 	}
+	if (typeof value.startMinimized === 'boolean') {
+		update.startMinimized = value.startMinimized;
+	}
 	if (typeof value.useNativeTitleBar === 'boolean') {
 		update.useNativeTitleBar = value.useNativeTitleBar;
 	}
@@ -124,9 +146,6 @@ function normalizeDesktopWindowBehaviorUpdate(value: unknown): Partial<DesktopWi
 	if (typeof value.middleClickAutoscroll === 'boolean') {
 		update.middleClickAutoscroll = value.middleClickAutoscroll;
 	}
-	if (typeof value.firstClickPassThroughWhenUnfocused === 'boolean') {
-		update.firstClickPassThroughWhenUnfocused = value.firstClickPassThroughWhenUnfocused;
-	}
 	return update;
 }
 
@@ -141,11 +160,41 @@ function getActiveMiddleClickAutoscroll(): boolean {
 export function registerIpcHandlers(): void {
 	registerVoiceDebugEventSinkPopoutIpcHandlers();
 	registerVoiceBackgroundMediaCacheHandlers();
+	ipcMain.handle(DESKTOP_MODULE_CHANNELS.ensure, (event, moduleName: unknown) => {
+		requirePrivilegedRendererDocumentSender(event, DESKTOP_MODULE_CHANNELS.ensure);
+		return ensureDesktopModule(moduleName);
+	});
+	ipcMain.handle(DESKTOP_UPDATE_CHANNELS.state, (event) => {
+		requirePrivilegedRendererDocumentSender(event, DESKTOP_UPDATE_CHANNELS.state);
+		return getDesktopUpdateState();
+	});
+	ipcMain.handle(DESKTOP_UPDATE_CHANNELS.start, (event) => {
+		requirePrivilegedRendererDocumentSender(event, DESKTOP_UPDATE_CHANNELS.start);
+		startDesktopUpdate();
+	});
+	ipcMain.handle(DESKTOP_MODULE_CHANNELS.confirmLaunch, (event) => {
+		requirePrivilegedRendererDocumentSender(event, DESKTOP_MODULE_CHANNELS.confirmLaunch);
+		const mainWindow = getMainWindow();
+		if (
+			mainWindow == null ||
+			mainWindow.isDestroyed() ||
+			event.sender !== mainWindow.webContents ||
+			event.senderFrame?.origin !== DESKTOP_APP_ORIGIN
+		) {
+			return;
+		}
+		signalRendererLaunchConfirmed();
+	});
+	observeDesktopUpdateState((state) => {
+		const mainWindow = getMainWindow();
+		if (mainWindow == null || mainWindow.isDestroyed()) {
+			return;
+		}
+		mainWindow.webContents.send(DESKTOP_UPDATE_EVENTS.stateChanged, state);
+	});
 	ipcMain.handle('get-desktop-info', () => getDesktopInfo());
 	ipcMain.handle('get-gpu-info', () => getGpuInfo());
 	ipcMain.handle('get-app-metrics', () => getAppMetricsSnapshot());
-	ipcMain.handle('get-openh264-status', () => getOpenH264Status());
-	ipcMain.handle('set-openh264-enabled', (_event, enabled: unknown) => setOpenH264Enabled(Boolean(enabled)));
 	ipcMain.handle('streamer-mode:get-capture-app-status', () => getStreamerModeCaptureAppStatus());
 	ipcMain.handle('system-idle-time-ms', (): number => {
 		return Math.max(0, powerMonitor.getSystemIdleTime() * 1000);
@@ -160,10 +209,7 @@ export function registerIpcHandlers(): void {
 		};
 	});
 	ipcMain.handle('desktop-troubleshooting-get', (): DesktopTroubleshootingSettings => {
-		if (process.platform === 'darwin') {
-			return {...getDesktopTroubleshootingSettings(), disableHardwareAcceleration: false};
-		}
-		return getDesktopTroubleshootingSettings();
+		return getLaunchDesktopTroubleshootingSettings();
 	});
 	ipcMain.handle(
 		'desktop-troubleshooting-set-disable-hardware-acceleration',
@@ -180,37 +226,14 @@ export function registerIpcHandlers(): void {
 			} else {
 				setHardwareAccelerationDisabled(disable);
 			}
-			if (process.platform === 'darwin') {
-				return {...getDesktopTroubleshootingSettings(), disableHardwareAcceleration: false};
-			}
-			return getDesktopTroubleshootingSettings();
+			return getLaunchDesktopTroubleshootingSettings();
 		},
 	);
-	ipcMain.handle('desktop-troubleshooting-reload', (): void => {
-		reloadMainWindow();
-	});
-	ipcMain.handle(
-		'desktop-troubleshooting-reset-app-data',
-		async (
-			_event,
-			options?: {
-				confirm?: boolean;
-			},
-		): Promise<void> => {
-			await resetAppDataAndRestart(options);
-		},
-	);
-	ipcMain.handle('desktop-troubleshooting-popup-help-menu', (event): void => {
-		popupHelpMenu(BrowserWindow.fromWebContents(event.sender));
-	});
 	ipcMain.on('streaming-priority-acquire', (event) => {
 		acquireStreamingPriority(event.sender);
 	});
 	ipcMain.on('streaming-priority-release', () => {
 		releaseStreamingPriority();
-	});
-	ipcMain.on('streaming-priority-reset', () => {
-		resetStreamingPriority();
 	});
 	ipcMain.handle('streaming-priority-get-diagnostics', () => getStreamingPriorityDiagnostics());
 	ipcMain.on('tray-runtime-state-update', (event, state: unknown) => {
@@ -253,10 +276,14 @@ export function registerIpcHandlers(): void {
 				: 'normal';
 		setTaskbarProgress(numericFraction, resolvedMode);
 	});
+	ipcMain.on(DESKTOP_PREBOOT_THEME_CHANNEL, (event, theme: unknown) => {
+		if (event.senderFrame?.origin === DESKTOP_APP_ORIGIN && typeof theme === 'string') {
+			setPrebootTheme(theme);
+		}
+	});
 	ipcMain.handle('desktop-window-behavior-pending-restart', (): boolean => {
 		return (
 			desktopTrayChangePendingRestart() ||
-			desktopFirstClickPassThroughPendingRestart() ||
 			desktopUseNativeTitleBarPendingRestart() ||
 			desktopTransparencyPendingRestart()
 		);
@@ -347,13 +374,14 @@ export function registerIpcHandlers(): void {
 		}
 		await openExternalDeduped(url);
 	});
-	ipcMain.handle('clipboard-write-text', (_event, text: string): void => {
-		clipboard.writeText(text);
+	ipcMain.handle('clipboard-write-text', async (_event, text: string): Promise<void> => {
+		await clipboard.writeText(text);
 	});
-	ipcMain.handle('clipboard-read-text', (): string => {
+	ipcMain.handle('clipboard-read-text', (): Promise<string> => {
 		return clipboard.readText();
 	});
-	ipcMain.handle('clipboard-write-file', async (_event, rawOptions: unknown): Promise<ClipboardWriteFileResult> => {
+	ipcMain.handle('clipboard-write-file', async (event, rawOptions: unknown): Promise<ClipboardWriteFileResult> => {
+		requirePrivilegedRendererDocumentSender(event, 'clipboard-write-file');
 		try {
 			return await copyRemoteFileToClipboard(parseClipboardWriteFileOptions(rawOptions));
 		} catch (error) {
@@ -361,28 +389,9 @@ export function registerIpcHandlers(): void {
 		}
 	});
 	ipcMain.handle('clipboard-paste', (event): void => {
+		requirePrivilegedRendererDocumentSender(event, 'clipboard-paste');
 		event.sender.paste();
 	});
-	ipcMain.handle(
-		'app-set-badge',
-		(
-			_event,
-			payload: {
-				count: number;
-				text?: string;
-			},
-		) => {
-			const count = Math.max(0, Math.floor(payload?.count ?? 0));
-			const label = payload?.text ?? String(count);
-			app.setBadgeCount(count);
-			if (process.platform === 'darwin' && app.dock) {
-				app.dock.setBadge(count > 0 ? label : '');
-			}
-			if (process.platform === 'win32') {
-				setWindowsBadgeOverlay(getMainWindow(), count);
-			}
-		},
-	);
 	ipcMain.handle(
 		'download-file',
 		async (
@@ -390,8 +399,10 @@ export function registerIpcHandlers(): void {
 			options: {
 				url: string;
 				defaultPath: string;
+				sha256?: string | null;
 			},
 		): Promise<DownloadFileResult> => {
+			requirePrivilegedRendererDocumentSender(event, 'download-file');
 			const win = BrowserWindow.fromWebContents(event.sender);
 			if (!win) {
 				return {success: false, error: 'No window found'};
@@ -403,20 +414,17 @@ export function registerIpcHandlers(): void {
 				if (result.canceled || !result.filePath) {
 					return {success: false, canceled: true};
 				}
-				await downloadFile(options.url, result.filePath);
+				await downloadFile(options.url, result.filePath, {sha256: options.sha256});
 				return {success: true, path: result.filePath};
 			} catch (error) {
+				if (error instanceof DownloadChecksumError) {
+					return {success: false, checksumMismatch: true, error: error.message};
+				}
 				return {success: false, error: error instanceof Error ? error.message : 'Unknown error'};
 			}
 		},
 	);
-	ipcMain.on('toggle-devtools', (event) => {
-		const win = BrowserWindow.fromWebContents(event.sender);
-		if (win) {
-			toggleWindowDevTools(win);
-		}
-	});
-	ipcMain.handle('check-media-access', (_event, type: MediaAccessType): string => {
+	ipcMain.handle('check-media-access', async (_event, type: MediaAccessType): Promise<string> => {
 		if (process.platform !== 'darwin') {
 			return 'granted';
 		}
@@ -424,7 +432,7 @@ export function registerIpcHandlers(): void {
 			return 'not-determined';
 		}
 		if (type === 'screen') {
-			return getTccStatus('screen-recording');
+			return refreshTccStatus('screen-recording');
 		}
 		return systemPreferences.getMediaAccessStatus(type);
 	});
@@ -436,7 +444,7 @@ export function registerIpcHandlers(): void {
 			return false;
 		}
 		if (type === 'screen') {
-			return getTccStatus('screen-recording') === 'granted';
+			return (await refreshTccStatus('screen-recording')) === 'granted';
 		}
 		return systemPreferences.askForMediaAccess(type);
 	});
@@ -453,8 +461,11 @@ export function registerIpcHandlers(): void {
 		await shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent');
 	});
 	registerNotificationIpcHandlers(getMainWindow);
-	registerWindowsToastIpcHandlers();
-	registerMacTccIpcHandlers();
+	registerMacTccIpcHandlers({
+		onStatus: (surface, status) => {
+			if (surface === 'input-monitoring' && status === 'granted') retryBlockedGlobalShortcutHooks();
+		},
+	});
 	ipcMain.on('set-badge-count', (_event, count: number) => {
 		if (process.platform === 'darwin') {
 			app.setBadgeCount(count);
@@ -464,31 +475,11 @@ export function registerIpcHandlers(): void {
 			app.setBadgeCount(count);
 		}
 	});
-	ipcMain.handle('get-badge-count', (): number => {
-		return app.getBadgeCount();
-	});
-	ipcMain.on('bounce-dock', (event, type: 'critical' | 'informational') => {
-		if (process.platform === 'darwin' && app.dock) {
-			const id = app.dock.bounce(type);
-			event.returnValue = id;
-		} else {
-			event.returnValue = -1;
-		}
-	});
-	ipcMain.on('cancel-bounce-dock', (_event, id: number) => {
-		if (process.platform === 'darwin' && app.dock && id >= 0) {
-			app.dock.cancelBounce(id);
-		}
-	});
 	ipcMain.on('set-zoom-factor', (event, factor: number) => {
 		const win = BrowserWindow.fromWebContents(event.sender);
 		if (win && factor > 0) {
 			win.webContents.setZoomFactor(factor);
 		}
-	});
-	ipcMain.handle('get-zoom-factor', (event): number => {
-		const win = BrowserWindow.fromWebContents(event.sender);
-		return win?.webContents.getZoomFactor() ?? 1;
 	});
 	ipcMain.handle('get-accessibility-support-enabled', (): boolean => app.accessibilitySupportEnabled);
 	app.on('accessibility-support-changed', (_event, accessibilitySupportEnabled) => {
@@ -498,6 +489,7 @@ export function registerIpcHandlers(): void {
 	});
 	registerPasskeyHandlers();
 	registerLinuxAppearanceHandlers();
+	registerBrowserHandoffHandlers();
 }
 
 let linuxAppearanceSubscription: LinuxAppearanceSubscription | null = null;
@@ -523,7 +515,64 @@ function registerLinuxAppearanceHandlers(): void {
 	});
 }
 
+export function registerDesktopAppStorageHandlers(): void {
+	const storage = getDesktopAppStorage();
+	if (storage === null) {
+		return;
+	}
+	for (const [channel, handler] of Object.entries(createDesktopAppStorageIpcRoutes(storage))) {
+		ipcMain.handle(channel, (event, ...args: Array<unknown>) => {
+			requirePrivilegedRendererDocumentSender(event, channel);
+			return handler(...args);
+		});
+	}
+}
+
+let browserHandoff: DesktopBrowserHandoff | null = null;
+
+function registerBrowserHandoffHandlers(): void {
+	if (browserHandoff !== null) {
+		return;
+	}
+	const handoff = new DesktopBrowserHandoff({
+		logger: log,
+		rendererDocumentOwners: createPrivilegedRendererDocumentOwners('BrowserHandoff'),
+		selectedInstanceClient: getDesktopSelectedInstanceClient(),
+		returnUri: () => (app.isDefaultProtocolClient(APP_PROTOCOL) ? `${APP_PROTOCOL}://handoff` : null),
+	});
+	browserHandoff = handoff;
+	setHandoffReturnLinkSink((url) => handoff.acceptReturnLink(url));
+	for (const [channel, handler] of Object.entries(handoff.ipcRoutes())) {
+		ipcMain.handle(channel, handler);
+	}
+}
+
+let nativeGatewayTransport: DesktopNativeGatewayTransport | null = null;
+
+export function registerGatewayTransportHandlers(): void {
+	if (nativeGatewayTransport !== null) {
+		return;
+	}
+	nativeGatewayTransport = createDesktopNativeGatewayTransport({
+		logger: log,
+		originRegistry: getGatewayOriginRegistry(),
+		rendererDocumentOwners: createPrivilegedRendererDocumentOwners('NativeGateway'),
+	});
+	for (const [channel, handler] of Object.entries(nativeGatewayTransport.ipcRoutes())) {
+		ipcMain.handle(channel, handler);
+	}
+}
+
+export function cleanupGatewayTransportHandlers(): void {
+	nativeGatewayTransport?.cleanup();
+	nativeGatewayTransport = null;
+}
+
 export function cleanupIpcHandlers(_options: {quitting?: boolean} = {}): void {
+	cleanupDesktopRuntimeConfigHandlers();
+	browserHandoff?.cleanup();
+	browserHandoff = null;
+	setHandoffReturnLinkSink(null);
 	if (linuxAppearanceSubscription) {
 		try {
 			linuxAppearanceSubscription.close();

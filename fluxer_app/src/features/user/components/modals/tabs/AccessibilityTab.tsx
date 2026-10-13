@@ -9,10 +9,11 @@ import {Message} from '@app/features/channel/components/ChannelMessage';
 import {Channel} from '@app/features/channel/models/Channel';
 import Channels from '@app/features/channel/state/Channels';
 import {SCREEN_READER_DESCRIPTOR, TEXT_TO_SPEECH_DESCRIPTOR} from '@app/features/i18n/utils/CommonMessageDescriptors';
+import {getCachedNumberFormat} from '@app/features/i18n/utils/IntlCache';
 import {Message as MessageModel} from '@app/features/messaging/models/MessagingMessage';
 import {remFromPx} from '@app/features/theme/layout/RemFromPx';
 import {Button} from '@app/features/ui/button/Button';
-import type {ComboboxOption} from '@app/features/ui/components/form/FormCombobox';
+import {type ComboboxOption, resolveNearestNumericOption} from '@app/features/ui/components/form/FormCombobox';
 import {Switch} from '@app/features/ui/components/form/FormSwitch';
 import {MockAvatar} from '@app/features/ui/components/MockAvatar';
 import MobileLayout from '@app/features/ui/state/MobileLayout';
@@ -80,7 +81,7 @@ const SPEECH_PLAYBACK_FAILED_TRY_AGAIN_OR_CHECK_THAT_DESCRIPTOR = msg({
 	comment: 'Error message in the accessibility tab.',
 });
 const HEAR_THE_SAMPLE_LINE_SPOKEN_WITH_YOUR_CHOSEN_DESCRIPTOR = msg({
-	message: 'Hear the sample line spoken with your chosen speed.',
+	message: 'Hear the sample line spoken at your chosen speed.',
 	comment: 'Description text in the accessibility tab.',
 });
 const VISUAL_DESCRIPTOR = msg({
@@ -114,19 +115,7 @@ const getNearestTtsRate = (value: number): number => {
 	return nearest;
 };
 
-const resolveTtsRateInput = (
-	inputValue: string,
-	options: ReadonlyArray<ComboboxOption<number>>,
-): number | undefined => {
-	const numericMatch = inputValue.trim().match(/([0-9]+(?:\.[0-9]+)?)/);
-	if (!numericMatch) return undefined;
-	const parsedValue = Number(numericMatch[1]);
-	if (!Number.isFinite(parsedValue)) return undefined;
-	return options.reduce((nearest, option) =>
-		Math.abs(option.value - parsedValue) < Math.abs(nearest.value - parsedValue) ? option : nearest,
-	).value;
-};
-export const AccessibilityTabPreview = observer(() => {
+const AccessibilityTabPreview = observer(() => {
 	const {i18n} = useLingui();
 	const alwaysUnderlineLinks = Accessibility.alwaysUnderlineLinks;
 	const fakeData = useMemo(() => {
@@ -254,10 +243,10 @@ export const AccessibilityTtsTabContent: React.FC = observer(() => {
 	const {i18n} = useLingui();
 	const ttsRate = Accessibility.ttsRate;
 	const selectedTtsRate = getNearestTtsRate(ttsRate);
-	const ttsRateOptions: ReadonlyArray<ComboboxOption<number>> = useMemo(
-		() => TTS_RATE_OPTIONS.map((value) => ({value, label: `x${value.toFixed(1)}`})),
-		[],
-	);
+	const ttsRateOptions: ReadonlyArray<ComboboxOption<number>> = useMemo(() => {
+		const formatter = getCachedNumberFormat(i18n.locale, {minimumFractionDigits: 1, maximumFractionDigits: 1});
+		return TTS_RATE_OPTIONS.map((value) => ({value, label: `x${formatter.format(value)}`}));
+	}, [i18n.locale]);
 	const [isSpeaking, setIsSpeaking] = useState(false);
 	const previewMessage = i18n._(DOC_I_M_FROM_THE_FUTURE_I_CAME_DESCRIPTOR);
 	const synthesisSupported = TtsUtils.isSupported();
@@ -307,7 +296,7 @@ export const AccessibilityTtsTabContent: React.FC = observer(() => {
 				value={selectedTtsRate}
 				options={ttsRateOptions}
 				onChange={handleRateChange}
-				autoSelectValueFromInput={resolveTtsRateInput}
+				autoSelectValueFromInput={resolveNearestNumericOption}
 				controlWidth="small"
 				dataFlx="user.accessibility-tab.accessibility-tts-tab-content.select.tts-rate"
 				data-flx="user.accessibility-tab.accessibility-tts-tab-content.compact-combobox-row.rate-change"

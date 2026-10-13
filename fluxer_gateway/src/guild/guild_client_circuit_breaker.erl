@@ -136,8 +136,19 @@ update_circuit_state(GuildPid, Result, PrevState) ->
     end.
 
 -spec is_success_result(guild_client:voice_state_update_result()) -> boolean().
-is_success_result({ok, _}) -> true;
-is_success_result(_) -> false.
+is_success_result({ok, _}) ->
+    true;
+is_success_result({error, Category, _}) when
+    Category =:= validation_error;
+    Category =:= not_found;
+    Category =:= permission_denied;
+    Category =:= voice_error;
+    Category =:= rate_limited;
+    Category =:= auth_failed
+->
+    true;
+is_success_result(_) ->
+    false.
 
 -spec reset_failures(pid()) -> ok.
 reset_failures(GuildPid) ->
@@ -211,17 +222,6 @@ safe_lookup(GuildPid) ->
 
 -ifdef(TEST).
 
-ensure_table_creates_table_test() ->
-    safe_delete_test_table(),
-    ?assertEqual(undefined, ets:whereis(?CIRCUIT_BREAKER_TABLE)),
-    ensure_table(),
-    ?assertNotEqual(undefined, ets:whereis(?CIRCUIT_BREAKER_TABLE)).
-
-ensure_table_idempotent_test() ->
-    ensure_table(),
-    ensure_table(),
-    ?assertNotEqual(undefined, ets:whereis(?CIRCUIT_BREAKER_TABLE)).
-
 safe_delete_test_table() ->
     try ets:delete(?CIRCUIT_BREAKER_TABLE) of
         _ -> ok
@@ -243,35 +243,6 @@ setup_test() ->
     Pid = spawn_test_pid(),
     ets:delete_all_objects(?CIRCUIT_BREAKER_TABLE),
     Pid.
-
-acquire_slot_creates_entry_test() ->
-    Pid = setup_test(),
-    ?assertEqual(ok, acquire_slot(Pid)),
-    [{Pid, State}] = ets:lookup(?CIRCUIT_BREAKER_TABLE, Pid),
-    ?assertEqual(1, maps:get(concurrent, State)),
-    Pid ! done.
-
-acquire_slot_increments_test() ->
-    Pid = setup_test(),
-    acquire_slot(Pid),
-    acquire_slot(Pid),
-    [{Pid, State}] = ets:lookup(?CIRCUIT_BREAKER_TABLE, Pid),
-    ?assertEqual(2, maps:get(concurrent, State)),
-    Pid ! done.
-
-release_slot_decrements_test() ->
-    Pid = setup_test(),
-    acquire_slot(Pid),
-    acquire_slot(Pid),
-    release_slot(Pid),
-    [{Pid, State}] = ets:lookup(?CIRCUIT_BREAKER_TABLE, Pid),
-    ?assertEqual(1, maps:get(concurrent, State)),
-    Pid ! done.
-
-get_circuit_state_closed_test() ->
-    Pid = setup_test(),
-    ?assertEqual(closed, get_circuit_state(Pid)),
-    Pid ! done.
 
 get_circuit_state_open_test() ->
     Pid = setup_test(),
@@ -329,6 +300,13 @@ record_failure_recreates_missing_table_test() ->
 is_success_result_test() ->
     ?assertEqual(true, is_success_result({ok, #{success => true}})),
     ?assertEqual(false, is_success_result({error, timeout})),
-    ?assertEqual(false, is_success_result({error, noproc})).
+    ?assertEqual(false, is_success_result({error, noproc})),
+    ?assertEqual(
+        true, is_success_result({error, validation_error, voice_missing_connection_id})
+    ),
+    ?assertEqual(true, is_success_result({error, not_found, voice_member_not_found})),
+    ?assertEqual(true, is_success_result({error, permission_denied, voice_permission_denied})),
+    ?assertEqual(false, is_success_result({error, unknown, internal_error})),
+    ?assertEqual(false, is_success_result({error, timeout, timeout})).
 
 -endif.

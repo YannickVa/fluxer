@@ -17,6 +17,7 @@ import {
 	type VoiceStatsSnapshot,
 } from '@app/features/voice/engine/VoiceStatsStateMachine';
 import {asVoiceConnectionQuality, VoiceConnectionQuality} from '@app/features/voice/engine/VoiceTrackSource';
+import {assertFiniteNumber, assertNonNullObject} from '@app/features/voice/engine/v2/VoiceEngineV2AppAdapterAssertions';
 import {
 	classifyVideoDecoderAcceleration,
 	classifyVideoEncoderAcceleration,
@@ -30,7 +31,6 @@ import type {
 	VoiceEngineV2TrackKind,
 } from '@fluxer/voice_engine_v2';
 import type {Room} from 'livekit-client';
-import {assertFiniteNumber, assertNonNullObject} from './VoiceEngineV2AppAdapterAssertions';
 
 const logger = new Logger('VoiceEngineV2AppStatsHostAdapter');
 
@@ -54,14 +54,20 @@ export interface PerTrackStats {
 	kind: 'audio' | 'video' | 'unknown';
 	ssrc?: number;
 	rid?: string;
+	active?: boolean;
 	mid?: string;
 	trackIdentifier?: string;
 	mediaSourceId?: string;
 	codec?: string;
+	codecSdpFmtpLine?: string;
 	payloadType?: number;
 	bitrateKbps: number;
+	bitrateWindowMs?: number;
 	packetsLost?: number;
 	packetsLossPercent?: number;
+	packetsReceived?: number;
+	bytesReceived?: number;
+	framesReceived?: number;
 	jitterMs?: number;
 	framesPerSecond?: number;
 	sourceFramesPerSecond?: number;
@@ -81,7 +87,6 @@ export interface PerTrackStats {
 	maxPushLatencyMs?: number;
 	adaptiveSendTier?: string;
 	adaptiveSendReason?: string;
-	sourceFrames?: number;
 	framesEncoded?: number;
 	framesDecoded?: number;
 	framesDropped?: number;
@@ -100,6 +105,8 @@ export interface PerTrackStats {
 	nackCount?: number;
 	pliCount?: number;
 	firCount?: number;
+	packetsSent?: number;
+	sourceSamplesDurationMs?: number;
 	retransmittedPacketsSent?: number;
 	retransmittedBytesSent?: number;
 	keyFramesEncoded?: number;
@@ -108,10 +115,14 @@ export interface PerTrackStats {
 	powerEfficientDecoder?: boolean;
 	decoderAcceleration?: VideoAccelerationStatus;
 	totalDecodeTimeMs?: number;
+	packetsDiscarded?: number;
 	jitterBufferDelayMs?: number;
+	jitterBufferTargetDelayMs?: number;
 	jitterBufferEmittedCount?: number;
 	concealedSamples?: number;
 	silentConcealedSamples?: number;
+	insertedSamplesForDeceleration?: number;
+	removedSamplesForAcceleration?: number;
 	totalSamplesReceived?: number;
 }
 
@@ -119,6 +130,9 @@ export interface TransportInfo {
 	candidatePairState?: string;
 	localCandidateType?: string;
 	localProtocol?: string;
+	localRelayProtocol?: string;
+	localCandidateUrlHost?: string;
+	peerConnectionMode?: string;
 	localNetworkType?: string;
 	remoteCandidateType?: string;
 	remoteProtocol?: string;
@@ -154,12 +168,19 @@ type RoomWithEngine = Room & {
 		pcManager?: {
 			publisher?: StatsSource;
 			subscriber?: StatsSource;
+			mode?: string;
 		};
 	};
 };
 
 interface StatsSource {
-	getStats(): Promise<StatsReportMap>;
+	getStats(): Promise<StatsReportMap | undefined>;
+	getTransceivers?(): ReadonlyArray<StatsTransceiver>;
+}
+
+interface StatsTransceiver {
+	mid: string | null;
+	sender?: {track?: {id: string} | null} | null;
 }
 
 interface StatsReportMap {
@@ -183,9 +204,11 @@ interface RTCStatsEntry {
 	availableIncomingBitrate?: number;
 	codecId?: string;
 	mimeType?: string;
+	sdpFmtpLine?: string;
 	payloadType?: number;
 	ssrc?: number;
 	rid?: string;
+	active?: boolean;
 	mid?: string;
 	trackId?: string;
 	trackIdentifier?: string;
@@ -196,6 +219,7 @@ interface RTCStatsEntry {
 	width?: number;
 	height?: number;
 	frames?: number;
+	framesReceived?: number;
 	framesEncoded?: number;
 	framesDecoded?: number;
 	framesDropped?: number;
@@ -214,6 +238,8 @@ interface RTCStatsEntry {
 	remoteCandidateId?: string;
 	candidateType?: string;
 	protocol?: string;
+	relayProtocol?: string;
+	url?: string;
 	networkType?: string;
 	nominated?: boolean;
 	selected?: boolean;
@@ -231,10 +257,15 @@ interface RTCStatsEntry {
 	decoderImplementation?: string;
 	powerEfficientDecoder?: boolean;
 	totalDecodeTime?: number;
+	packetsDiscarded?: number;
+	totalSamplesDuration?: number;
 	jitterBufferDelay?: number;
+	jitterBufferTargetDelay?: number;
 	jitterBufferEmittedCount?: number;
 	concealedSamples?: number;
 	silentConcealedSamples?: number;
+	insertedSamplesForDeceleration?: number;
+	removedSamplesForAcceleration?: number;
 	totalSamplesReceived?: number;
 	dtlsCipher?: string;
 	srtpCipher?: string;
@@ -247,6 +278,11 @@ interface RTCStatsEntry {
 const LATENCY_UPDATE_INTERVAL_MS = 2000;
 const STATS_CLOCK_INTERVAL_MS = 1000;
 const STATS_UPDATE_INTERVAL_MS = 2000;
+
+interface BitrateSample {
+	bitrateKbps: number;
+	windowMs?: number;
+}
 
 function normalizeTrackKind(kind: string | undefined): PerTrackStats['kind'] {
 	if (kind === 'audio' || kind === 'video') return kind;
@@ -264,28 +300,32 @@ function getReportKind(report: RTCStatsEntry, reportsById: Map<string, RTCStatsE
 	return normalizeTrackKind(track?.kind ?? track?.mediaType ?? mediaSource?.kind ?? mediaSource?.mediaType);
 }
 
-function getBitrateKbps(
+function getBitrateSample(
 	reportId: string,
 	currentBytes: number | undefined,
 	now: number,
 	rtpCounters: Map<string, VoiceStatsRtpCounter>,
-): number {
+): BitrateSample {
 	if (typeof currentBytes !== 'number' || !Number.isFinite(currentBytes)) {
-		return 0;
+		return {bitrateKbps: 0};
 	}
 	const previous = rtpCounters.get(reportId);
 	let bitrateKbps = 0;
+	let windowMs: number | undefined;
 	if (previous?.bytes !== undefined) {
 		const dt = (now - previous.timestamp) / 1000;
 		const db = currentBytes - previous.bytes;
-		if (dt > 0 && db >= 0) bitrateKbps = (db * 8) / 1000 / dt;
+		if (dt > 0 && db >= 0) {
+			bitrateKbps = (db * 8) / 1000 / dt;
+			windowMs = Math.round(now - previous.timestamp);
+		}
 	}
 	rtpCounters.set(reportId, {
 		...previous,
 		bytes: currentBytes,
 		timestamp: now,
 	});
-	return bitrateKbps;
+	return {bitrateKbps, windowMs};
 }
 
 function hasUsableLossDeltas(lostDelta: number, receivedDelta: number): boolean {
@@ -342,8 +382,17 @@ function hasUsableJitterBuffer(report: RTCStatsEntry): boolean {
 	return report.jitterBufferEmittedCount > 0;
 }
 
-function buildOutboundTrackExtras(report: RTCStatsEntry): Partial<PerTrackStats> {
+function buildOutboundTrackExtras(
+	report: RTCStatsEntry,
+	mediaSource: RTCStatsEntry | undefined,
+): Partial<PerTrackStats> {
 	return {
+		active: report.active,
+		packetsSent: report.packetsSent,
+		sourceSamplesDurationMs:
+			typeof mediaSource?.totalSamplesDuration === 'number'
+				? Math.round(mediaSource.totalSamplesDuration * 1000)
+				: undefined,
 		retransmittedPacketsSent: report.retransmittedPacketsSent,
 		retransmittedBytesSent: report.retransmittedBytesSent,
 		keyFramesEncoded: report.keyFramesEncoded,
@@ -355,6 +404,9 @@ function buildInboundTrackExtras(
 	decoderAcceleration: VideoAccelerationStatus | undefined,
 ): Partial<PerTrackStats> {
 	return {
+		packetsReceived: report.packetsReceived,
+		bytesReceived: report.bytesReceived,
+		framesReceived: report.framesReceived,
 		keyFramesDecoded: report.keyFramesDecoded,
 		decoderImplementation: report.decoderImplementation,
 		powerEfficientDecoder: report.powerEfficientDecoder,
@@ -364,6 +416,13 @@ function buildInboundTrackExtras(
 		jitterBufferDelayMs: hasUsableJitterBuffer(report)
 			? Math.round((report.jitterBufferDelay! / report.jitterBufferEmittedCount!) * 1000)
 			: undefined,
+		jitterBufferTargetDelayMs:
+			hasUsableJitterBuffer(report) && typeof report.jitterBufferTargetDelay === 'number'
+				? Math.round((report.jitterBufferTargetDelay / report.jitterBufferEmittedCount!) * 1000)
+				: undefined,
+		packetsDiscarded: report.packetsDiscarded,
+		insertedSamplesForDeceleration: report.insertedSamplesForDeceleration,
+		removedSamplesForAcceleration: report.removedSamplesForAcceleration,
 		jitterBufferEmittedCount: report.jitterBufferEmittedCount,
 		concealedSamples: report.concealedSamples,
 		silentConcealedSamples: report.silentConcealedSamples,
@@ -379,11 +438,12 @@ function buildPerTrackStat(args: {
 	now: number;
 	rtpCounters: Map<string, VoiceStatsRtpCounter>;
 	reportsById: Map<string, RTCStatsEntry>;
+	midToSenderTrackId: Map<string, string>;
 }): PerTrackStats {
-	const {report, sourceId, isOutbound, isInbound, now, rtpCounters, reportsById} = args;
+	const {report, sourceId, isOutbound, isInbound, now, rtpCounters, reportsById, midToSenderTrackId} = args;
 	const id = `${sourceId}:${report.type}:${report.id}`;
 	const currentBytes = isOutbound ? report.bytesSent : report.bytesReceived;
-	const bitrateKbps = getBitrateKbps(id, currentBytes, now, rtpCounters);
+	const bitrate = getBitrateSample(id, currentBytes, now, rtpCounters);
 	const codec = report.codecId ? reportsById.get(report.codecId) : undefined;
 	const mediaSource = report.mediaSourceId ? reportsById.get(report.mediaSourceId) : undefined;
 	const packetsLossPercent = isInbound ? getPacketLossPercent(id, report, now, rtpCounters) : undefined;
@@ -402,11 +462,16 @@ function buildPerTrackStat(args: {
 		ssrc: report.ssrc,
 		rid: report.rid,
 		mid: report.mid,
-		trackIdentifier: report.trackIdentifier ?? mediaSource?.trackIdentifier,
+		trackIdentifier:
+			report.trackIdentifier ??
+			mediaSource?.trackIdentifier ??
+			(isOutbound && report.mid ? midToSenderTrackId.get(report.mid) : undefined),
 		mediaSourceId: report.mediaSourceId,
 		codec: codec?.mimeType,
+		codecSdpFmtpLine: codec?.sdpFmtpLine,
 		payloadType: codec?.payloadType,
-		bitrateKbps: Math.round(bitrateKbps),
+		bitrateKbps: Math.round(bitrate.bitrateKbps),
+		bitrateWindowMs: bitrate.windowMs,
 		packetsLost: report.packetsLost,
 		packetsLossPercent: packetsLossPercent !== undefined ? Math.round(packetsLossPercent * 10) / 10 : undefined,
 		jitterMs: typeof report.jitter === 'number' ? Math.round(report.jitter * 1000 * 10) / 10 : undefined,
@@ -416,7 +481,7 @@ function buildPerTrackStat(args: {
 		frameHeight: report.frameHeight,
 		sourceFrameWidth: mediaSource?.frameWidth ?? mediaSource?.width,
 		sourceFrameHeight: mediaSource?.frameHeight ?? mediaSource?.height,
-		sourceFrames: mediaSource?.frames,
+		framesCaptured: mediaSource?.frames,
 		framesEncoded: report.framesEncoded,
 		framesDecoded: report.framesDecoded,
 		framesDropped: report.framesDropped,
@@ -438,14 +503,26 @@ function buildPerTrackStat(args: {
 		nackCount: report.nackCount,
 		pliCount: report.pliCount,
 		firCount: report.firCount,
-		...(isOutbound ? buildOutboundTrackExtras(report) : buildInboundTrackExtras(report, decoderAcceleration)),
+		...(isOutbound
+			? buildOutboundTrackExtras(report, mediaSource)
+			: buildInboundTrackExtras(report, decoderAcceleration)),
 	};
+}
+
+function getCandidateUrlHost(url: string | undefined): string | undefined {
+	if (!url) return undefined;
+	const schemeIndex = url.indexOf(':');
+	const authority = (schemeIndex === -1 ? url : url.slice(schemeIndex + 1)).split('?')[0];
+	const portIndex = authority.lastIndexOf(':');
+	const host = portIndex > 0 ? authority.slice(0, portIndex) : authority;
+	return host || undefined;
 }
 
 function buildTransportInfo(
 	activePair: RTCStatsEntry | null,
 	transportReport: RTCStatsEntry | null,
 	reportsById: Map<string, RTCStatsEntry>,
+	peerConnectionMode: string | undefined,
 ): TransportInfo | null {
 	if (!activePair && !transportReport) return null;
 	const local = activePair?.localCandidateId ? reportsById.get(activePair.localCandidateId) : undefined;
@@ -454,6 +531,9 @@ function buildTransportInfo(
 		candidatePairState: activePair?.state,
 		localCandidateType: local?.candidateType,
 		localProtocol: local?.protocol,
+		localRelayProtocol: local?.relayProtocol,
+		localCandidateUrlHost: getCandidateUrlHost(local?.url),
+		peerConnectionMode,
 		localNetworkType: local?.networkType,
 		remoteCandidateType: remote?.candidateType,
 		remoteProtocol: remote?.protocol,
@@ -479,12 +559,19 @@ async function collectFromStatsSource(
 	now: number,
 	rtpCounters: Map<string, VoiceStatsRtpCounter>,
 	activeCounterIds: Set<string>,
+	peerConnectionMode?: string,
 ): Promise<{
 	tracks: Array<PerTrackStats>;
 	rtt: number;
 	transport: TransportInfo | null;
 }> {
 	const reports = await source.getStats();
+	if (!reports) return {tracks: [], rtt: 0, transport: null};
+	const midToSenderTrackId = new Map<string, string>();
+	for (const transceiver of source.getTransceivers?.() ?? []) {
+		const senderTrackId = transceiver.sender?.track?.id;
+		if (transceiver.mid && senderTrackId) midToSenderTrackId.set(transceiver.mid, senderTrackId);
+	}
 	const reportsById = new Map<string, RTCStatsEntry>();
 	for (const report of reports.values()) {
 		const statsEntry = report as RTCStatsEntry;
@@ -511,13 +598,15 @@ async function collectFromStatsSource(
 		if (!isOutbound && !isInbound) continue;
 		const id = `${sourceId}:${report.type}:${report.id}`;
 		activeCounterIds.add(id);
-		tracks.push(buildPerTrackStat({report, sourceId, isOutbound, isInbound, now, rtpCounters, reportsById}));
+		tracks.push(
+			buildPerTrackStat({report, sourceId, isOutbound, isInbound, now, rtpCounters, reportsById, midToSenderTrackId}),
+		);
 	}
 	if (!activePair && transportReport?.selectedCandidatePairId) {
 		const selectedPair = reportsById.get(transportReport.selectedCandidatePairId);
 		if (selectedPair?.type === 'candidate-pair') activePair = selectedPair;
 	}
-	const transport = buildTransportInfo(activePair, transportReport, reportsById);
+	const transport = buildTransportInfo(activePair, transportReport, reportsById, peerConnectionMode);
 	return {tracks, rtt, transport};
 }
 
@@ -560,6 +649,7 @@ function toVoiceEngineV2OutboundStats(track: PerTrackStats): VoiceEngineV2Outbou
 		...(track.framesDropped !== undefined ? {framesDropped: track.framesDropped} : {}),
 		...(track.framesCoalesced !== undefined ? {framesCoalesced: track.framesCoalesced} : {}),
 		...(track.framesCaptured !== undefined ? {framesCaptured: track.framesCaptured} : {}),
+		...(track.sourceFramesPerSecond !== undefined ? {sourceFps: track.sourceFramesPerSecond} : {}),
 		...(track.captureFailures !== undefined ? {captureFailures: track.captureFailures} : {}),
 		...(track.maxQueueAgeMs !== undefined ? {maxQueueAgeMs: track.maxQueueAgeMs} : {}),
 		...(track.maxPushLatencyMs !== undefined ? {maxPushLatencyMs: track.maxPushLatencyMs} : {}),
@@ -688,11 +778,6 @@ export class VoiceEngineV2AppStatsHostAdapter extends Store {
 	get displayLatency(): number | null {
 		const measured = this.currentLatency;
 		return measured !== null ? measured : this.estimatedLatency;
-	}
-
-	get duration(): number {
-		if (!this.connectionStartTime) return 0;
-		return Math.floor((this.now() - this.connectionStartTime) / 1000);
 	}
 
 	setRoom(room: Room | null): void {
@@ -835,6 +920,7 @@ export class VoiceEngineV2AppStatsHostAdapter extends Store {
 		if (!engine?.pcManager) return;
 		const publisher = engine.pcManager.publisher;
 		const subscriber = engine.pcManager.subscriber;
+		const peerConnectionMode = engine.pcManager.mode;
 		if (!publisher && !subscriber) return;
 		const now = this.now();
 		const tracks: Array<PerTrackStats> = [];
@@ -844,13 +930,27 @@ export class VoiceEngineV2AppStatsHostAdapter extends Store {
 		let publisherTransport: TransportInfo | null = null;
 		let subscriberTransport: TransportInfo | null = null;
 		if (publisher) {
-			const result = await collectFromStatsSource(publisher, 'publisher', now, rtpCounters, activeCounterIds);
+			const result = await collectFromStatsSource(
+				publisher,
+				'publisher',
+				now,
+				rtpCounters,
+				activeCounterIds,
+				peerConnectionMode,
+			);
 			tracks.push(...result.tracks);
 			if (result.rtt > rtt) rtt = result.rtt;
 			publisherTransport = result.transport;
 		}
 		if (subscriber) {
-			const result = await collectFromStatsSource(subscriber, 'subscriber', now, rtpCounters, activeCounterIds);
+			const result = await collectFromStatsSource(
+				subscriber,
+				'subscriber',
+				now,
+				rtpCounters,
+				activeCounterIds,
+				peerConnectionMode,
+			);
 			tracks.push(...result.tracks);
 			if (result.rtt > rtt) rtt = result.rtt;
 			subscriberTransport = result.transport;

@@ -3,7 +3,6 @@
 import assert from 'node:assert/strict';
 import {SoundType} from '@app/features/notification/utils/SoundUtils';
 import * as SoundCommands from '@app/features/ui/commands/SoundCommands';
-import AdaptiveScreenShareEngine from '@app/features/voice/engine/AdaptiveScreenShareEngine';
 import {updateLocalParticipantFromRoom} from '@app/features/voice/engine/VoiceMediaEngineBridge';
 import type {
 	VoiceScreenShareEvent,
@@ -16,16 +15,16 @@ import LocalVoiceState from '@app/features/voice/state/LocalVoiceState';
 import type {ScreenShareContentSource} from '@app/features/voice/utils/CodecCapabilityDetector';
 import type {LocalParticipant, Room, TrackPublishOptions} from 'livekit-client';
 
-export interface ScreenSharePublishPipelineOptions {
+interface ScreenSharePublishPipelineOptions {
 	readonly contentSource: ScreenShareContentSource | undefined;
 	readonly effectivePublishOptions: TrackPublishOptions | undefined;
 }
 
-export type ScreenShareActivationAudioSync =
+type ScreenShareActivationAudioSync =
 	| {readonly kind: 'participant-after-watch'}
 	| {readonly kind: 'self-stream-before-watch'; readonly published: boolean};
 
-export interface ScreenShareActivationRitualSteps {
+interface ScreenShareActivationRitualSteps {
 	readonly acquireStreamingPriority: boolean;
 	readonly enforcePublicationCap: boolean;
 	readonly applyState: ((active: boolean) => void) | null;
@@ -81,7 +80,6 @@ async function runScreenSharePublishPipeline(
 	adapter.applyScreenShareAudioContentHintInternal(participant);
 	adapter.monitorActiveScreenShareEndInternal(room, participant);
 	adapter.startEncoderVerificationInternal(room, participant, pipeline.effectivePublishOptions?.videoCodec);
-	AdaptiveScreenShareEngine.start(room);
 }
 
 export async function runScreenShareActivationRitual(args: ScreenShareActivationRitualArgs): Promise<void> {
@@ -158,11 +156,8 @@ export function settleScreenShareFailure(args: ScreenShareFailureSettleArgs): bo
 	if (!actual) {
 		args.onInactiveAfterSync?.();
 	}
-	if (actual) {
-		if (args.monitorEndOnActive) {
-			adapter.monitorActiveScreenShareEndInternal(room, participant);
-		}
-		AdaptiveScreenShareEngine.start(room);
+	if (actual && args.monitorEndOnActive) {
+		adapter.monitorActiveScreenShareEndInternal(room, participant);
 	}
 	if (args.playSound) {
 		SoundCommands.playSound(actual ? SoundType.ScreenShareStart : SoundType.ScreenShareStop);

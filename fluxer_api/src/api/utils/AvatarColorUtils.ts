@@ -4,6 +4,18 @@ import sharp from 'sharp';
 
 const FALLBACK_AVATAR_COLOR = 0x4641d9;
 
+/** Migration imports must not treat the cosmetic color fallback as image validation. */
+export async function validateCapturedAvatarImage(bytes: Buffer, format: 'png' | 'gif'): Promise<void> {
+	try {
+		const image = sharp(bytes, {animated: true});
+		const metadata = await image.metadata();
+		if (metadata.format !== format || !metadata.width || !metadata.height) throw new Error('invalid image');
+		await image.resize(1, 1).raw().toBuffer();
+	} catch {
+		throw new Error('Avatar gate: captured image cannot be decoded in its declared format.');
+	}
+}
+
 function clamp(value: number, min: number, max: number): number {
 	return Math.min(max, Math.max(min, value));
 }

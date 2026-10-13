@@ -1,19 +1,25 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {resolveDefaultAttachmentDecayConfig} from '@app/api/attachment/AttachmentDecayService';
+import type {ChannelID, GuildID, MessageID, UserID} from '@app/api/BrandedTypes';
+import {createUserID} from '@app/api/BrandedTypes';
+import {Config} from '@app/api/Config';
+import {throwForSvcErrorReply} from '@app/api/infrastructure/SvcErrorReply';
+import {Logger} from '@app/api/Logger';
+import type {Channel} from '@app/api/models/Channel';
+import type {Message} from '@app/api/models/Message';
+import {isJsonRecord, parseJsonRecord, parseJsonWithGuard} from '@app/api/utils/JsonBoundaryUtils';
+import {MessageTypes} from '@fluxer/constants/src/ChannelConstants';
 import type {MessageResponse} from '@fluxer/schema/src/domains/message/MessageResponseSchemas';
 import type {INatsConnectionManager} from '@pkgs/nats/src/INatsConnectionManager';
 import {NatsConnectionManager} from '@pkgs/nats/src/NatsConnectionManager';
-import {StringCodec} from 'nats';
-import type {ChannelID, GuildID, MessageID, UserID} from '../../../BrandedTypes';
-import {createUserID} from '../../../BrandedTypes';
-import {Config} from '../../../Config';
-import {Logger} from '../../../Logger';
-import type {Channel} from '../../../models/Channel';
-import type {Message} from '../../../models/Message';
-import {isJsonRecord, parseJsonWithGuard} from '../../../utils/JsonBoundaryUtils';
+
+const textEncoder = new TextEncoder();
+const textDecoder = new TextDecoder();
 
 const MESSAGE_RESPONSE_SERVICE_SUBJECT = 'svc.messages';
-const MESSAGE_RESPONSE_SERVICE_TIMEOUT_MS = 3000;
+const MESSAGE_RESPONSE_SERVICE_TIMEOUT_MS = 6000;
+export const MESSAGE_BUILD_BATCH_MAX_BYTES = 262_144;
 let messageResponseDataService: MessageResponseDataService | undefined;
 let injectedMessageResponseDataService: MessageResponseDataService | undefined;
 
@@ -21,6 +27,7 @@ export interface MessageResponseAccessContext {
 	sourceGuildId: GuildID | null;
 	messageHistoryCutoff: string | null;
 	canReadMessageHistory: boolean;
+	includeHidden?: boolean;
 }
 
 interface ExtractedMentions {
@@ -42,6 +49,10 @@ type MessageServiceResponse =
 			FoundMentions: Array<ExtractedMentions>;
 	  }
 	| 'NotFound';
+
+async function attachmentDecayEnabled(): Promise<boolean> {
+	return (await resolveDefaultAttachmentDecayConfig()).enabled;
+}
 
 function isMessageResponse(value: unknown): value is MessageResponse {
 	return isJsonRecord(value) && typeof value.id === 'string';
@@ -77,8 +88,6 @@ function isMessageServiceResponse(value: unknown): value is MessageServiceRespon
 }
 
 export class MessageResponseDataService {
-	private readonly codec = StringCodec();
-
 	constructor(private readonly connectionManager: INatsConnectionManager) {}
 
 	async listMessages(params: {
@@ -89,8 +98,10 @@ export class MessageResponseDataService {
 		after?: MessageID;
 		around?: MessageID;
 		access: MessageResponseAccessContext;
+		threadsMask?: boolean;
 	}): Promise<Array<MessageResponse>> {
 		const response = await this.request({
+			...(params.threadsMask ? {threads_mask: true, exclude_types: [MessageTypes.THREAD_CREATED]} : {}),
 			op: 'ListResponses',
 			channel_id: params.channelId.toString(),
 			viewer_user_id: params.userId.toString(),
@@ -103,8 +114,11 @@ export class MessageResponseDataService {
 				? new Date(params.access.messageHistoryCutoff).getTime()
 				: null,
 			can_read_message_history: params.access.canReadMessageHistory,
+			include_hidden: params.access.includeHidden ?? false,
 			media_endpoint: Config.endpoints.media,
 			media_proxy_secret_key: Config.mediaProxy.secretKey,
+			attachment_url_secret_base64: Config.mediaProxy.attachmentUrls.secretsBase64[0],
+			attachment_decay: await attachmentDecayEnabled(),
 			include_reactions: true,
 		});
 		if (typeof response === 'object' && 'FoundApiMany' in response) {
@@ -132,8 +146,10 @@ export class MessageResponseDataService {
 		access: MessageResponseAccessContext;
 		nonce?: string;
 		tts?: boolean;
+		threadsMask?: boolean;
 	}): Promise<MessageResponse | null> {
 		const response = await this.request({
+			...(params.threadsMask ? {threads_mask: true} : {}),
 			op: 'GetResponseById',
 			channel_id: params.channelId.toString(),
 			message_id: params.messageId.toString(),
@@ -143,8 +159,11 @@ export class MessageResponseDataService {
 				? new Date(params.access.messageHistoryCutoff).getTime()
 				: null,
 			can_read_message_history: params.access.canReadMessageHistory,
+			include_hidden: params.access.includeHidden ?? false,
 			media_endpoint: Config.endpoints.media,
 			media_proxy_secret_key: Config.mediaProxy.secretKey,
+			attachment_url_secret_base64: Config.mediaProxy.attachmentUrls.secretsBase64[0],
+			attachment_decay: await attachmentDecayEnabled(),
 			include_reactions: true,
 			nonce: params.nonce,
 			tts: params.tts,
@@ -173,8 +192,11 @@ export class MessageResponseDataService {
 				? new Date(params.access.messageHistoryCutoff).getTime()
 				: null,
 			can_read_message_history: params.access.canReadMessageHistory,
+			include_hidden: params.access.includeHidden ?? false,
 			media_endpoint: Config.endpoints.media,
 			media_proxy_secret_key: Config.mediaProxy.secretKey,
+			attachment_url_secret_base64: Config.mediaProxy.attachmentUrls.secretsBase64[0],
+			attachment_decay: await attachmentDecayEnabled(),
 			include_reactions: params.includeReactions ?? true,
 			nonce: params.nonce,
 			tts: params.tts,
@@ -229,23 +251,30 @@ export class MessageResponseDataService {
 		includeReactions?: boolean;
 	}): Promise<Array<MessageResponse>> {
 		if (params.messages.length === 0) return [];
-		const response = await this.request({
-			op: 'BuildResponses',
-			messages: params.messages.map(serializeMessageForService),
-			viewer_user_id: params.userId.toString(),
-			source_guild_id: params.access.sourceGuildId?.toString(),
-			message_history_cutoff_ms: params.access.messageHistoryCutoff
-				? new Date(params.access.messageHistoryCutoff).getTime()
-				: null,
-			can_read_message_history: params.access.canReadMessageHistory,
-			media_endpoint: Config.endpoints.media,
-			media_proxy_secret_key: Config.mediaProxy.secretKey,
-			include_reactions: params.includeReactions ?? true,
-		});
-		if (typeof response === 'object' && 'FoundApiMany' in response) {
-			return response.FoundApiMany;
+		const responses: Array<MessageResponse> = [];
+		for (const batch of chunkMessagesForService(params.messages)) {
+			const response = await this.request({
+				op: 'BuildResponses',
+				messages: batch,
+				viewer_user_id: params.userId.toString(),
+				source_guild_id: params.access.sourceGuildId?.toString(),
+				message_history_cutoff_ms: params.access.messageHistoryCutoff
+					? new Date(params.access.messageHistoryCutoff).getTime()
+					: null,
+				can_read_message_history: params.access.canReadMessageHistory,
+				include_hidden: params.access.includeHidden ?? false,
+				media_endpoint: Config.endpoints.media,
+				media_proxy_secret_key: Config.mediaProxy.secretKey,
+				attachment_url_secret_base64: Config.mediaProxy.attachmentUrls.secretsBase64[0],
+				attachment_decay: await attachmentDecayEnabled(),
+				include_reactions: params.includeReactions ?? true,
+			});
+			if (typeof response !== 'object' || !('FoundApiMany' in response)) {
+				throw new Error(`[message-response-service] unexpected BuildResponses response: ${JSON.stringify(response)}`);
+			}
+			responses.push(...response.FoundApiMany);
 		}
-		throw new Error(`[message-response-service] unexpected BuildResponses response: ${JSON.stringify(response)}`);
+		return responses;
 	}
 
 	async buildMessagesForChannels(params: {
@@ -254,7 +283,7 @@ export class MessageResponseDataService {
 		channelById: ReadonlyMap<string, Pick<Channel, 'guildId'>>;
 		includeReactions?: boolean;
 	}): Promise<Array<MessageResponse>> {
-		const responses = new Array<MessageResponse>(params.messages.length);
+		const responses = new Array<MessageResponse | undefined>(params.messages.length);
 		const groups = new Map<
 			string,
 			{
@@ -284,12 +313,13 @@ export class MessageResponseDataService {
 					access: group.access,
 					includeReactions: params.includeReactions,
 				});
-				for (const [mappedIndex, entry] of group.entries.entries()) {
-					responses[entry.index] = mapped[mappedIndex];
+				const mappedByMessageId = new Map(mapped.map((response) => [response.id, response] as const));
+				for (const entry of group.entries) {
+					responses[entry.index] = mappedByMessageId.get(entry.message.id.toString());
 				}
 			}),
 		);
-		return responses;
+		return responses.filter((response): response is MessageResponse => response !== undefined);
 	}
 
 	private async request(payload: Record<string, unknown>): Promise<MessageServiceResponse> {
@@ -300,11 +330,13 @@ export class MessageResponseDataService {
 			const connection = this.connectionManager.getConnection();
 			const response = await connection.request(
 				MESSAGE_RESPONSE_SERVICE_SUBJECT,
-				this.codec.encode(JSON.stringify(payload)),
+				textEncoder.encode(JSON.stringify(payload)),
 				{timeout: MESSAGE_RESPONSE_SERVICE_TIMEOUT_MS},
 			);
-			const parsed = parseJsonWithGuard(this.codec.decode(response.data), isMessageServiceResponse);
+			const decoded = textDecoder.decode(response.data);
+			const parsed = parseJsonWithGuard(decoded, isMessageServiceResponse);
 			if (!parsed) {
+				throwForSvcErrorReply('message-response-service', parseJsonRecord(decoded));
 				throw new Error('[message-response-service] invalid response payload');
 			}
 			return parsed;
@@ -335,6 +367,27 @@ function serializeMessageForService(message: Message): Record<string, unknown> {
 	const row = serializeValue(message.toRow()) as Record<string, unknown>;
 	row.pinned = message.pinnedTimestamp != null;
 	return row;
+}
+
+function chunkMessagesForService(messages: Array<Message>): Array<Array<Record<string, unknown>>> {
+	const batches: Array<Array<Record<string, unknown>>> = [];
+	let batch: Array<Record<string, unknown>> = [];
+	let batchBytes = 0;
+	for (const message of messages) {
+		const serialized = serializeMessageForService(message);
+		const bytes = Buffer.byteLength(JSON.stringify(serialized));
+		if (batch.length > 0 && batchBytes + bytes > MESSAGE_BUILD_BATCH_MAX_BYTES) {
+			batches.push(batch);
+			batch = [];
+			batchBytes = 0;
+		}
+		batch.push(serialized);
+		batchBytes += bytes;
+	}
+	if (batch.length > 0) {
+		batches.push(batch);
+	}
+	return batches;
 }
 
 function serializeValue(value: unknown): unknown {

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {mapGuildFeatures} from '@app/api/guild/GuildFeatureUtils';
+import type {Guild} from '@app/api/models/Guild';
+import type {User} from '@app/api/models/User';
 import type {GuildAdminResponse, ListUserGuildsResponse} from '@fluxer/schema/src/domains/admin/AdminGuildSchemas';
-import {mapGuildFeatures} from '../../guild/GuildFeatureUtils';
-import type {Guild} from '../../models/Guild';
-import type {User} from '../../models/User';
 
 function formatOwnerFields(ownerUser: User | null): {
 	owner_username: string | null;
@@ -31,6 +31,9 @@ export function mapGuildToAdminResponse(guild: Guild, ownerUser?: User | null): 
 		banner: guild.bannerHash,
 		member_count: guild.memberCount,
 		nsfw_level: guild.nsfwLevel,
+		nsfw: guild.nsfw,
+		content_warning_level: guild.contentWarningLevel as 0 | 1,
+		content_warning_text: guild.contentWarningText,
 	};
 }
 
@@ -48,6 +51,9 @@ export function mapGuildsToAdminResponse(guilds: Array<Guild>, ownerMap?: Map<st
 				banner: guild.bannerHash,
 				member_count: guild.memberCount,
 				nsfw_level: guild.nsfwLevel,
+				nsfw: guild.nsfw,
+				content_warning_level: guild.contentWarningLevel as 0 | 1,
+				content_warning_text: guild.contentWarningText,
 			};
 		}),
 	};

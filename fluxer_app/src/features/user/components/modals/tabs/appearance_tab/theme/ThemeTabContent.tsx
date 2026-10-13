@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import {THEME_DESCRIPTOR} from '@app/features/i18n/utils/CommonMessageDescriptors';
 import {isKeyboardActivationKey} from '@app/features/input/utils/KeyboardUtils';
 import * as ThemePreferenceCommands from '@app/features/theme/commands/ThemePreferenceCommands';
 import {remFromPx} from '@app/features/theme/layout/RemFromPx';
@@ -9,6 +10,7 @@ import {Button} from '@app/features/ui/button/Button';
 import {Switch} from '@app/features/ui/components/form/FormSwitch';
 import {Tooltip} from '@app/features/ui/tooltip/Tooltip';
 import styles from '@app/features/user/components/modals/tabs/appearance_tab/ThemeTab.module.css';
+import {ThemeButton} from '@app/features/user/components/modals/tabs/appearance_tab/theme/ThemeButton';
 import type {ThemeType} from '@fluxer/constants/src/UserConstants';
 import {ThemeTypes} from '@fluxer/constants/src/UserConstants';
 import {msg} from '@lingui/core/macro';
@@ -17,7 +19,6 @@ import {ArrowsCounterClockwiseIcon, PaintBrushBroadIcon} from '@phosphor-icons/r
 import {observer} from 'mobx-react-lite';
 import type React from 'react';
 import {useCallback, useEffect, useMemo, useRef} from 'react';
-import {ThemeButton} from './ThemeButton';
 
 const DARK_THEME_DESCRIPTOR = msg({
 	message: 'Dark theme',
@@ -62,10 +63,6 @@ const SYSTEM_DARK_THEME_AUTOMATICALLY_SYNC_WITH_YOUR_SYSTEM_DESCRIPTOR = msg({
 const SYSTEM_LIGHT_THEME_AUTOMATICALLY_SYNC_WITH_YOUR_SYSTEM_DESCRIPTOR = msg({
 	message: "System: light theme (automatically sync with your system's dark/light preference)",
 	comment: 'Description text in the theme tab content.',
-});
-const THEME_DESCRIPTOR = msg({
-	message: 'Theme',
-	comment: 'Short label in the theme tab content. Keep it concise.',
 });
 const SYNC_THEME_ACROSS_DEVICES_DESCRIPTOR = msg({
 	message: 'Sync theme across devices',

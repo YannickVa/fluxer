@@ -51,7 +51,7 @@ function repairOneShortcut(shortcutPath: string, repair: WindowsShortcutRepairPa
 		details = shell.readShortcutLink(shortcutPath);
 	} catch (error) {
 		console.warn('[WindowsShortcuts] Failed to inspect shortcut', {shortcutPath, error});
-		return;
+		throw error;
 	}
 	if (
 		!shouldRepairWindowsShortcut(
@@ -77,21 +77,7 @@ function repairOneShortcut(shortcutPath: string, repair: WindowsShortcutRepairPa
 		if (!updated) throw new Error('Electron shell.writeShortcutLink returned false');
 	} catch (error) {
 		console.warn('[WindowsShortcuts] Failed to rewrite shortcut', {shortcutPath, error});
-	}
-}
-
-function migrateRootShortcut(repairPaths: WindowsShortcutRepairPaths): void {
-	try {
-		if (!fs.existsSync(repairPaths.rootShortcut)) return;
-		const authorDir = path.dirname(repairPaths.authorShortcut);
-		fs.mkdirSync(authorDir, {recursive: true});
-		if (fs.existsSync(repairPaths.authorShortcut)) {
-			fs.rmSync(repairPaths.rootShortcut, {force: true});
-		} else {
-			fs.renameSync(repairPaths.rootShortcut, repairPaths.authorShortcut);
-		}
-	} catch (error) {
-		console.warn('[WindowsShortcuts] Failed to migrate root Start-Menu shortcut', error);
+		throw error;
 	}
 }
 
@@ -99,8 +85,7 @@ export async function repairWindowsShortcuts(): Promise<void> {
 	if (process.platform !== 'win32') return;
 	const repairPaths = getWindowsShortcutRepairPaths();
 	if (!repairPaths) return;
-	migrateRootShortcut(repairPaths);
-	const shortcutPaths: Array<string> = [repairPaths.authorShortcut];
+	const shortcutPaths: Array<string> = [repairPaths.rootShortcut, repairPaths.authorShortcut];
 	const desktopDir = process.env.USERPROFILE ? path.join(process.env.USERPROFILE, 'Desktop') : '';
 	if (desktopDir) shortcutPaths.push(path.join(desktopDir, `${DESKTOP_APP_NAME}.lnk`));
 	if (process.env.APPDATA) {
@@ -116,5 +101,13 @@ export async function repairWindowsShortcuts(): Promise<void> {
 			),
 		);
 	}
-	for (const shortcutPath of shortcutPaths) repairOneShortcut(shortcutPath, repairPaths);
+	const failures: Array<unknown> = [];
+	for (const shortcutPath of shortcutPaths) {
+		try {
+			repairOneShortcut(shortcutPath, repairPaths);
+		} catch (error) {
+			failures.push(error);
+		}
+	}
+	if (failures.length > 0) throw new AggregateError(failures, 'Failed to repair Windows shortcuts');
 }

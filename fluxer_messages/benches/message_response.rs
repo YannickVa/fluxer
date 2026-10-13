@@ -120,7 +120,6 @@ fn sample_message(index: u64) -> ApiMessageResponse {
             expired: None,
         }],
         stickers: Vec::new(),
-        nsfw_emojis: None,
         reactions: Some(vec![ApiMessageReactionResponse {
             emoji: ApiReactionEmojiResponse {
                 id: None,
@@ -132,7 +131,7 @@ fn sample_message(index: u64) -> ApiMessageResponse {
         }]),
         message_reference: Some(ApiMessageReferenceResponse {
             channel_id: "123456789".to_owned(),
-            message_id: (900_000 + index).to_string(),
+            message_id: Some((900_000 + index).to_string()),
             guild_id: Some("987654321".to_owned()),
             reference_type: 0,
         }),

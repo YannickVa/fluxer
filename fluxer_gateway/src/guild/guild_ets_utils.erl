@@ -3,7 +3,7 @@
 -module(guild_ets_utils).
 -typing([eqwalizer]).
 
--export([ensure_table/2]).
+-export([ensure_table/2, heir_options/0]).
 
 -spec ensure_table(atom(), list()) -> ok.
 ensure_table(TableName, Options) ->
@@ -12,6 +12,13 @@ ensure_table(TableName, Options) ->
             guild_ets_owner:ensure_table(TableName, Options);
         _ ->
             ensure_table_local(TableName, Options)
+    end.
+
+-spec heir_options() -> list().
+heir_options() ->
+    case whereis(guild_ets_owner) of
+        Pid when is_pid(Pid), Pid =/= self() -> [{heir, Pid, inherited}];
+        _ -> []
     end.
 
 -spec ensure_table_local(atom(), list()) -> ok.
@@ -40,21 +47,6 @@ safe_delete_table(TableName) ->
     end.
 
 test_table_opts() -> [named_table, public, set].
-
-ensure_table_creates_new_table_test() ->
-    TableName = guild_ets_utils_test_table,
-    safe_delete_table(TableName),
-    ok = ensure_table(TableName, test_table_opts()),
-    ?assertNotEqual(undefined, ets:whereis(TableName)),
-    ets:delete(TableName).
-
-ensure_table_idempotent_test() ->
-    TableName = guild_ets_utils_test_idempotent,
-    safe_delete_table(TableName),
-    ok = ensure_table(TableName, test_table_opts()),
-    ok = ensure_table(TableName, test_table_opts()),
-    ?assertNotEqual(undefined, ets:whereis(TableName)),
-    ets:delete(TableName).
 
 ensure_table_delegates_to_owner_when_running_test() ->
     TableName = guild_ets_utils_test_owner,

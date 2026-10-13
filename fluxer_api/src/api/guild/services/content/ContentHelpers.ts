@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import type {EmojiID, GuildID, StickerID, UserID} from '@app/api/BrandedTypes';
+import type {GuildAuditLogService} from '@app/api/guild/GuildAuditLogService';
+import type {GuildAuditLogChange} from '@app/api/guild/GuildAuditLogTypes';
+import type {IGatewayService} from '@app/api/infrastructure/IGatewayService';
+import {Logger} from '@app/api/Logger';
+import type {GuildEmoji} from '@app/api/models/GuildEmoji';
+import type {GuildSticker} from '@app/api/models/GuildSticker';
+import {serializeEmojiForAudit, serializeStickerForAudit} from '@app/api/utils/AuditSerializationUtils';
+import {requirePermission} from '@app/api/utils/PermissionUtils';
 import type {AuditLogActionType} from '@fluxer/constants/src/AuditLogActionType';
 import {Permissions} from '@fluxer/constants/src/ChannelConstants';
-import type {EmojiID, GuildID, StickerID, UserID} from '../../../BrandedTypes';
-import type {IGatewayService} from '../../../infrastructure/IGatewayService';
-import {Logger} from '../../../Logger';
-import type {GuildEmoji} from '../../../models/GuildEmoji';
-import type {GuildSticker} from '../../../models/GuildSticker';
-import {serializeEmojiForAudit, serializeStickerForAudit} from '../../../utils/AuditSerializationUtils';
-import {hasPermission, requirePermission} from '../../../utils/PermissionUtils';
-import type {GuildAuditLogService} from '../../GuildAuditLogService';
-import type {GuildAuditLogChange} from '../../GuildAuditLogTypes';
 
 export class ContentHelpers {
 	constructor(
@@ -43,11 +43,6 @@ export class ContentHelpers {
 			return this.checkCreateExpressionsPermission({userId, guildId});
 		}
 		return this.checkManageExpressionsPermission({userId, guildId});
-	}
-
-	async hasManageExpressionsPermission(params: {userId: UserID; guildId: GuildID}): Promise<boolean> {
-		const {userId, guildId} = params;
-		return hasPermission(this.gatewayService, {guildId, userId, permission: Permissions.MANAGE_EXPRESSIONS});
 	}
 
 	serializeEmojiForAudit(emoji: GuildEmoji): Record<string, unknown> {

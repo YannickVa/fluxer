@@ -10,11 +10,11 @@ type DesktopUpdateEndpointOptions = {
 	downloadPageUrlOverride?: string;
 };
 
-function normalizeHttpsOverride(value: string | undefined, name: string): string | null {
+export function normalizeHttpsOverride(value: string | undefined, name: string): string | null {
 	const normalized = value?.trim().replace(/\/+$/, '');
 	if (!normalized) return null;
 	const parsed = new URL(normalized);
-	if (parsed.protocol !== 'https:') {
+	if (parsed.protocol !== 'https:' || parsed.username || parsed.password || parsed.search || parsed.hash) {
 		throw new Error(`${name} must use HTTPS.`);
 	}
 	return normalized;

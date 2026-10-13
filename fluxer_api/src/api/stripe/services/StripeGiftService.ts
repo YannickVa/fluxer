@@ -1,5 +1,22 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import type {UserID} from '@app/api/BrandedTypes';
+import {createUserID} from '@app/api/BrandedTypes';
+import type {UserRow} from '@app/api/database/types/UserTypes';
+import type {IGatewayService} from '@app/api/infrastructure/IGatewayService';
+import {Logger} from '@app/api/Logger';
+import {getBillingRepository} from '@app/api/middleware/ServiceRegistry';
+import {type GiftCode, mapGiftDurationMonthsToFields} from '@app/api/models/GiftCode';
+import type {User} from '@app/api/models/User';
+import type {StoreEntitlementService} from '@app/api/store_billing/StoreEntitlementService';
+import {getBillingBranding} from '@app/api/stripe/BillingBranding';
+import type {ProductInfo} from '@app/api/stripe/ProductRegistry';
+import type {StripeCheckoutService} from '@app/api/stripe/services/StripeCheckoutService';
+import type {StripePremiumService} from '@app/api/stripe/services/StripePremiumService';
+import type {StripeSubscriptionService} from '@app/api/stripe/services/StripeSubscriptionService';
+import type {UserRepository} from '@app/api/user/repositories/UserRepository';
+import {mapUserToPrivateResponse} from '@app/api/user/UserMappers';
+import * as RandomUtils from '@app/api/utils/RandomUtils';
 import {UserPremiumTypes} from '@fluxer/constants/src/UserConstants';
 import {CannotRedeemPlutoniumWithVisionaryError} from '@fluxer/errors/src/domains/payment/CannotRedeemPlutoniumWithVisionaryError';
 import {GiftCodeAlreadyRedeemedError} from '@fluxer/errors/src/domains/payment/GiftCodeAlreadyRedeemedError';
@@ -11,36 +28,22 @@ import {UnknownUserError} from '@fluxer/errors/src/domains/user/UnknownUserError
 import type {ICacheService} from '@pkgs/cache/src/ICacheService';
 import {seconds} from 'itty-time';
 import type Stripe from 'stripe';
-import type {UserID} from '../../BrandedTypes';
-import {createUserID} from '../../BrandedTypes';
-import type {UserRow} from '../../database/types/UserTypes';
-import type {IGatewayService} from '../../infrastructure/IGatewayService';
-import {Logger} from '../../Logger';
-import {getBillingRepository} from '../../middleware/ServiceRegistry';
-import {type GiftCode, mapGiftDurationMonthsToFields} from '../../models/GiftCode';
-import type {User} from '../../models/User';
-import type {IUserRepository} from '../../user/IUserRepository';
-import {mapUserToPrivateResponse} from '../../user/UserMappers';
-import * as RandomUtils from '../../utils/RandomUtils';
-import type {ProductInfo} from '../ProductRegistry';
-import type {StripeCheckoutService} from './StripeCheckoutService';
-import type {StripePremiumService} from './StripePremiumService';
-import type {StripeSubscriptionService} from './StripeSubscriptionService';
 
 export class StripeGiftService {
 	constructor(
 		private stripe: Stripe | null,
-		private userRepository: IUserRepository,
+		private userRepository: UserRepository,
 		private cacheService: ICacheService,
 		private gatewayService: IGatewayService,
 		private checkoutService: StripeCheckoutService,
 		private premiumService: StripePremiumService,
 		private subscriptionService: StripeSubscriptionService,
+		private storeEntitlementService: StoreEntitlementService | null = null,
 	) {}
 
 	async getGiftCode(code: string): Promise<GiftCode> {
 		const giftCode = await this.userRepository.findGiftCode(code);
-		if (!giftCode) {
+		if (!giftCode || giftCode.revokedAt) {
 			throw new UnknownGiftCodeError();
 		}
 		return giftCode;
@@ -62,7 +65,7 @@ export class StripeGiftService {
 		}
 		try {
 			const giftCode = await this.userRepository.findGiftCode(code);
-			if (!giftCode) {
+			if (!giftCode || giftCode.revokedAt) {
 				Logger.debug({userId, giftCode: code}, 'Gift code not found during redemption');
 				throw new UnknownGiftCodeError();
 			}
@@ -119,7 +122,7 @@ export class StripeGiftService {
 			Logger.debug({userId, giftCode: code}, 'Redeemer passed gift purchase validation');
 			if (user.premiumType === UserPremiumTypes.LIFETIME) {
 				Logger.debug({userId, giftCode: code}, 'Rejecting redemption for lifetime user');
-				throw new CannotRedeemPlutoniumWithVisionaryError();
+				throw new CannotRedeemPlutoniumWithVisionaryError((await getBillingBranding()).premiumName);
 			}
 			await this.userRepository.redeemGiftCode(code, userId);
 			Logger.debug({userId, giftCode: code}, 'Applied gift redemption row update');
@@ -137,23 +140,19 @@ export class StripeGiftService {
 					);
 					await this.cancelStripeSubscriptionImmediately(user);
 				}
-				let stackedOntoStripeSubscription = false;
-				if (premiumType === UserPremiumTypes.SUBSCRIPTION) {
-					stackedOntoStripeSubscription = await this.tryStackSubscriptionGiftOntoStripeSubscription(
-						user,
-						giftCode,
-						code,
-					);
-				}
+				const stackedSubscription =
+					premiumType === UserPremiumTypes.SUBSCRIPTION
+						? await this.tryStackSubscriptionGiftOntoStripeSubscription(user, giftCode, code)
+						: null;
 				Logger.debug(
 					{
 						userId,
 						giftCode: code,
-						stackedOntoStripeSubscription,
+						stackedOntoStripeSubscription: stackedSubscription !== null,
 					},
 					'Gift redemption stacking decision completed',
 				);
-				if (stackedOntoStripeSubscription) {
+				if (stackedSubscription) {
 					Logger.debug(
 						{
 							userId,
@@ -163,13 +162,9 @@ export class StripeGiftService {
 						},
 						'Recording gift extension in gift bucket alongside Stripe trial stacking',
 					);
-					await this.premiumService.extendPremiumByGift(
-						userId,
-						premiumType,
-						giftCode.durationType,
-						giftCode.durationQuantity,
-						true,
-					);
+					if (stackedSubscription.subscription) {
+						await this.premiumService.recordGiftTrialExtension(userId, stackedSubscription.subscription);
+					}
 				} else if (premiumType === UserPremiumTypes.LIFETIME && giftCode.visionarySequenceNumber != null) {
 					const GIFT_CODE_SENTINEL_USER_ID = createUserID(-1n);
 					Logger.debug(
@@ -258,6 +253,7 @@ export class StripeGiftService {
 		const redeemedGracePeriodMs = 7 * 24 * 60 * 60 * 1000;
 		const cutoff = Date.now() - redeemedGracePeriodMs;
 		return gifts
+			.filter((gift) => gift.revokedAt === null)
 			.filter((gift) => gift.redeemedAt === null || gift.redeemedAt.getTime() > cutoff)
 			.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 	}
@@ -364,7 +360,7 @@ export class StripeGiftService {
 		user: User,
 		giftCode: GiftCode,
 		code: string,
-	): Promise<boolean> {
+	): Promise<{subscription: Stripe.Subscription | null} | null> {
 		const hasCurrentSubscriptionState = this.hasCurrentSubscriptionState(user);
 		if (!hasCurrentSubscriptionState || !user.stripeSubscriptionId || !this.stripe) {
 			Logger.debug(
@@ -377,7 +373,7 @@ export class StripeGiftService {
 				},
 				'Skipping Stripe subscription stacking for gift redemption',
 			);
-			return false;
+			return null;
 		}
 		Logger.debug(
 			{
@@ -390,14 +386,14 @@ export class StripeGiftService {
 			'Attempting to stack gift duration onto active Stripe subscription',
 		);
 		try {
-			await this.subscriptionService.extendSubscriptionWithGiftTrialDuration(
+			const subscription = await this.subscriptionService.extendSubscriptionWithGiftTrialDuration(
 				user,
 				giftCode.durationType,
 				giftCode.durationQuantity,
 				code,
 			);
 			Logger.debug({userId: user.id, giftCode: code}, 'Stacked gift duration onto Stripe subscription');
-			return true;
+			return {subscription};
 		} catch (error: unknown) {
 			if (!this.shouldFallbackToPremiumFieldGrant(error)) {
 				Logger.error(
@@ -427,7 +423,7 @@ export class StripeGiftService {
 				},
 				'Falling back to premium-field gift grant after missing or inactive Stripe subscription',
 			);
-			return false;
+			return null;
 		}
 	}
 
@@ -479,6 +475,7 @@ export class StripeGiftService {
 		Logger.debug({userId: user.id, patch}, 'Clearing stale Stripe identity before premium field fallback');
 		const updatedUser = await this.userRepository.patchUpsert(user.id, patch, user.toRow());
 		await this.dispatchUser(updatedUser);
+		await this.storeEntitlementService?.reapplyAfterStripeChange(user.id);
 	}
 
 	private async cancelStripeSubscriptionImmediately(user: User): Promise<void> {

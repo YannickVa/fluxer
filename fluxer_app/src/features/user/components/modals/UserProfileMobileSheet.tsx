@@ -2,6 +2,7 @@
 
 import {showDmActionErrorModal} from '@app/features/app/components/alerts/DmActionErrorModal';
 import {ConfirmModal} from '@app/features/app/components/dialogs/ConfirmModal';
+import {UserSettingsModal} from '@app/features/app/components/dialogs/LoadableSettingsModals';
 import {
 	CustomStatusDisplay,
 	type EmojiPressData,
@@ -12,7 +13,7 @@ import Authentication from '@app/features/auth/state/Authentication';
 import * as PrivateChannelCommands from '@app/features/channel/commands/PrivateChannelCommands';
 import {GifIndicator} from '@app/features/channel/components/embeds/media/GifIndicator';
 import Channels from '@app/features/channel/state/Channels';
-import {EmojiInfoBottomSheet} from '@app/features/emoji/components/bottomsheets/EmojiInfoBottomSheet';
+import {ExpressionInfoBottomSheet} from '@app/features/expressions/components/bottomsheets/ExpressionInfoBottomSheet';
 import {
 	BLOCKED_USER_DM_WARNING_DESCRIPTOR,
 	OPEN_DM_DESCRIPTOR,
@@ -45,7 +46,6 @@ import {NoteEditSheet} from '@app/features/user/components/modals/NoteEditSheet'
 import {UserProfileActionsSheet} from '@app/features/user/components/modals/UserProfileActionsSheet';
 import styles from '@app/features/user/components/modals/UserProfileMobileSheet.module.css';
 import {getContrastingNotchColor} from '@app/features/user/components/modals/UserProfileUtils';
-import {UserSettingsModal} from '@app/features/user/components/modals/UserSettingsModal';
 import {getMutualItemsDescriptor} from '@app/features/user/components/modals/user_profile_modal/MutualItemsDescriptors';
 import {
 	getMutualCommunityDisplayItems,
@@ -74,12 +74,13 @@ import {
 	toProfileDisplayContext,
 } from '@app/features/user/utils/ProfileGuildMembership';
 import {createMockProfile} from '@app/features/user/utils/ProfileUtils';
+import {shouldShowDiscriminator} from '@app/features/user/utils/UserTagUtils';
 import * as CallUtils from '@app/features/voice/utils/CallUtils';
 import {hasActiveDirectCallWithUser} from '@app/features/voice/utils/PrivateCallMenuUtils';
 import {ME} from '@fluxer/constants/src/AppConstants';
 import {Permissions} from '@fluxer/constants/src/ChannelConstants';
 import {
-	MEDIA_PROXY_AVATAR_SIZE_PROFILE,
+	MEDIA_PROXY_AVATAR_SIZE_DEFAULT,
 	MEDIA_PROXY_PROFILE_BANNER_SIZE_MODAL,
 } from '@fluxer/constants/src/MediaProxyAssetSizes';
 import {PublicUserFlags, RelationshipTypes} from '@fluxer/constants/src/UserConstants';
@@ -282,7 +283,7 @@ const UserProfileMobileSheetContent: React.FC<UserProfileMobileSheetContentProps
 		);
 		const shouldAutoplayProfileAnimations = useAutoplayExpandedProfileAnimations();
 		const {avatarUrl, hoverAvatarUrl} = useMemo(
-			() => ProfileDisplayUtils.getProfileAvatarUrls(profileContext, undefined, MEDIA_PROXY_AVATAR_SIZE_PROFILE),
+			() => ProfileDisplayUtils.getProfileAvatarUrls(profileContext, undefined, MEDIA_PROXY_AVATAR_SIZE_DEFAULT),
 			[profileContext],
 		);
 		const {bannerUrl: staticBannerUrl, hoverBannerUrl} = useMemo(
@@ -343,7 +344,7 @@ const UserProfileMobileSheetContent: React.FC<UserProfileMobileSheetContentProps
 			);
 		};
 		const handleSendFriendRequest = () => {
-			RelationshipCommands.sendFriendRequest(user.id);
+			void RelationshipActionUtils.sendFriendRequest(i18n, user.id);
 		};
 		const handleAcceptFriendRequest = () => {
 			RelationshipActionUtils.showAcceptFriendRequestConfirmation(i18n, user);
@@ -359,12 +360,15 @@ const UserProfileMobileSheetContent: React.FC<UserProfileMobileSheetContentProps
 		};
 		const handleEditProfile = () => {
 			ModalCommands.push(
-				modal(() => (
-					<UserSettingsModal
-						initialTab="my_profile"
-						data-flx="user.user-profile-mobile-sheet.handle-edit-profile.user-settings-modal"
-					/>
-				)),
+				modal(
+					() => (
+						<UserSettingsModal
+							initialTab="my_profile"
+							data-flx="user.user-profile-mobile-sheet.handle-edit-profile.user-settings-modal"
+						/>
+					),
+					'user-settings',
+				),
 			);
 		};
 		const handleStartVoiceCall = async () => {
@@ -609,7 +613,7 @@ const UserProfileMobileSheetContent: React.FC<UserProfileMobileSheetContentProps
 													>
 														{displayName}
 													</span>
-													{isDisplayNameUsername && (
+													{isDisplayNameUsername && shouldShowDiscriminator(user) && (
 														<span
 															className={styles.discriminator}
 															data-flx="user.user-profile-mobile-sheet.user-profile-mobile-sheet-content.discriminator"
@@ -627,7 +631,7 @@ const UserProfileMobileSheetContent: React.FC<UserProfileMobileSheetContentProps
 															className={styles.fullTag}
 															data-flx="user.user-profile-mobile-sheet.user-profile-mobile-sheet-content.full-tag"
 														>
-															{NicknameUtils.formatTagForStreamerMode(`${user.username}#${user.discriminator}`)}
+															{NicknameUtils.formatTagForStreamerMode(user.tag)}
 														</span>
 													)}
 													<div
@@ -709,7 +713,11 @@ const UserProfileMobileSheetContent: React.FC<UserProfileMobileSheetContentProps
 																className={styles.actionLabel}
 																data-flx="user.user-profile-mobile-sheet.user-profile-mobile-sheet-content.action-label"
 															>
-																{isBlocked ? i18n._(OPEN_DM_DESCRIPTOR) : <Trans>Message</Trans>}
+																{isBlocked ? (
+																	i18n._(OPEN_DM_DESCRIPTOR)
+																) : (
+																	<Trans context="message-action">Message</Trans>
+																)}
 															</span>
 														</button>
 													)}
@@ -944,13 +952,15 @@ const UserProfileMobileSheetContent: React.FC<UserProfileMobileSheetContentProps
 					onToggleProfileView={() => setShowGlobalProfile(!showGlobalProfile)}
 					guildId={guildId}
 					guildMember={guildMember}
+					showReportUserProfile
 					data-flx="user.user-profile-mobile-sheet.user-profile-mobile-sheet-content.user-profile-actions-sheet"
 				/>
-				<EmojiInfoBottomSheet
+				<ExpressionInfoBottomSheet
+					kind="emoji"
 					isOpen={emojiInfoOpen}
 					onClose={() => setEmojiInfoOpen(false)}
 					emoji={selectedEmoji}
-					data-flx="user.user-profile-mobile-sheet.user-profile-mobile-sheet-content.emoji-info-bottom-sheet"
+					data-flx="user.user-profile-mobile-sheet.user-profile-mobile-sheet-content.expression-info-bottom-sheet"
 				/>
 				{mutualSheetView != null && (
 					<MutualItemsSheet

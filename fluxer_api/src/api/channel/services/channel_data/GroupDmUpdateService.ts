@@ -1,29 +1,31 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import type {ChannelID, UserID} from '@app/api/BrandedTypes';
+import {createMessageID} from '@app/api/BrandedTypes';
+import type {ChannelRepository} from '@app/api/channel/ChannelRepository';
+import type {ChannelUtilsService} from '@app/api/channel/services/channel_data/ChannelUtilsService';
+import type {MessagePersistenceService} from '@app/api/channel/services/message/MessagePersistenceService';
+import type {ChannelRow} from '@app/api/database/types/ChannelTypes';
+import type {AvatarService} from '@app/api/infrastructure/AvatarService';
+import {contentModerationService} from '@app/api/infrastructure/ContentModerationService';
+import type {ISnowflakeService} from '@app/api/infrastructure/ISnowflakeService';
+import type {RequestCache} from '@app/api/middleware/RequestCacheMiddleware';
+import type {Channel} from '@app/api/models/Channel';
+import type {UserRepository} from '@app/api/user/repositories/UserRepository';
+import {canUserAccessNsfwContent} from '@app/api/utils/AgeUtils';
 import {ChannelTypes, MessageTypes} from '@fluxer/constants/src/ChannelConstants';
+import {GroupDmMatureContentIneligibleError} from '@fluxer/errors/src/domains/channel/GroupDmMatureContentIneligibleError';
 import {InvalidChannelTypeError} from '@fluxer/errors/src/domains/channel/InvalidChannelTypeError';
 import {UnknownChannelError} from '@fluxer/errors/src/domains/channel/UnknownChannelError';
 import {MissingAccessError} from '@fluxer/errors/src/domains/core/MissingAccessError';
 import {MissingPermissionsError} from '@fluxer/errors/src/domains/core/MissingPermissionsError';
 import {CannotTransferOwnershipToBotError} from '@fluxer/errors/src/domains/guild/CannotTransferOwnershipToBotError';
 import {UnknownUserError} from '@fluxer/errors/src/domains/user/UnknownUserError';
-import type {ChannelID, UserID} from '../../../BrandedTypes';
-import {createMessageID} from '../../../BrandedTypes';
-import type {ChannelRow} from '../../../database/types/ChannelTypes';
-import type {AvatarService} from '../../../infrastructure/AvatarService';
-import {contentModerationService} from '../../../infrastructure/ContentModerationService';
-import type {ISnowflakeService} from '../../../infrastructure/ISnowflakeService';
-import type {RequestCache} from '../../../middleware/RequestCacheMiddleware';
-import type {Channel} from '../../../models/Channel';
-import type {IUserRepository} from '../../../user/IUserRepository';
-import type {IChannelRepositoryAggregate} from '../../repositories/IChannelRepositoryAggregate';
-import type {MessagePersistenceService} from '../message/MessagePersistenceService';
-import type {ChannelUtilsService} from './ChannelUtilsService';
 
 export class GroupDmUpdateService {
 	constructor(
-		private channelRepository: IChannelRepositoryAggregate,
-		private userRepository: IUserRepository,
+		private channelRepository: ChannelRepository,
+		private userRepository: UserRepository,
 		private avatarService: AvatarService,
 		private snowflakeService: ISnowflakeService,
 		private channelUtilsService: ChannelUtilsService,
@@ -37,6 +39,7 @@ export class GroupDmUpdateService {
 		icon,
 		ownerId,
 		nicks,
+		nsfw,
 		requestCache,
 	}: {
 		userId: UserID;
@@ -45,6 +48,7 @@ export class GroupDmUpdateService {
 		icon?: string | null;
 		ownerId?: UserID;
 		nicks?: Record<string, string | null> | null;
+		nsfw?: boolean;
 		requestCache: RequestCache;
 	}): Promise<Channel> {
 		const channel = await this.channelRepository.channelData.findUnique(channelId);
@@ -112,6 +116,20 @@ export class GroupDmUpdateService {
 				}
 				updates.nicks = updatedNicknames.size > 0 ? (updatedNicknames as Map<string, string>) : null;
 			}
+		}
+		if (nsfw !== undefined && nsfw !== channel.isNsfw) {
+			if (channel.ownerId !== userId) {
+				throw new MissingPermissionsError();
+			}
+			if (nsfw) {
+				const recipients = await Promise.all(
+					Array.from(channel.recipientIds).map((id) => this.userRepository.findUnique(id)),
+				);
+				if (recipients.some((recipient) => !recipient || !canUserAccessNsfwContent(recipient))) {
+					throw new GroupDmMatureContentIneligibleError();
+				}
+			}
+			updates.nsfw = nsfw;
 		}
 		let iconHash: string | null = null;
 		if (icon !== undefined) {

@@ -1,13 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import type {FunctionComponent, SVGProps} from 'react';
-import type {Messages} from '@lingui/core';
 
 declare module '*.css' {}
-
-declare module '*.po' {
-	export const messages: Messages;
-}
 
 declare module '*.svg' {
 	const url: string;
@@ -55,6 +50,21 @@ declare module '*.webp' {
 }
 
 declare module '@pkgs/libfluxcore/libfluxcore_bg.wasm' {
+	const url: string;
+	export default url;
+}
+
+declare module '@pkgs/libfluxwebp/libfluxwebp_bg.wasm' {
+	const url: string;
+	export default url;
+}
+
+declare module '@pkgs/libfluxwebp/libfluxwebp_simd_bg.wasm' {
+	const url: string;
+	export default url;
+}
+
+declare module '*.onnx' {
 	const url: string;
 	export default url;
 }

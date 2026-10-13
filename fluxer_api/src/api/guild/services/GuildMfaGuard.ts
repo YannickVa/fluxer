@@ -1,28 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {Permissions} from '@fluxer/constants/src/ChannelConstants';
+import type {UserID} from '@app/api/BrandedTypes';
+import {ELEVATED_MFA_PERMISSIONS} from '@app/api/guild/services/GuildMfaEnforcement';
+import type {UserRepository} from '@app/api/user/repositories/UserRepository';
 import {GuildMFALevel} from '@fluxer/constants/src/GuildConstants';
 import {MfaNotEnabledError} from '@fluxer/errors/src/domains/auth/MfaNotEnabledError';
 import type {GuildResponse} from '@fluxer/schema/src/domains/guild/GuildResponseSchemas';
-import type {UserID} from '../../BrandedTypes';
-import type {IUserRepository} from '../../user/IUserRepository';
-
-const ELEVATED_MFA_PERMISSIONS =
-	Permissions.KICK_MEMBERS |
-	Permissions.BAN_MEMBERS |
-	Permissions.ADMINISTRATOR |
-	Permissions.MANAGE_CHANNELS |
-	Permissions.MANAGE_GUILD |
-	Permissions.MANAGE_MESSAGES |
-	Permissions.MANAGE_ROLES |
-	Permissions.MANAGE_WEBHOOKS |
-	Permissions.MODERATE_MEMBERS;
 
 export async function hasRequiredGuildMfa(params: {
 	guildData: GuildResponse;
 	userId: UserID;
 	permission: bigint;
-	userRepository: IUserRepository;
+	userRepository: UserRepository;
 }): Promise<boolean> {
 	const {guildData, userId, permission, userRepository} = params;
 	if (guildData.mfa_level !== GuildMFALevel.ELEVATED || (permission & ELEVATED_MFA_PERMISSIONS) === 0n) {
@@ -36,7 +25,7 @@ export async function enforceGuildMfa(params: {
 	guildData: GuildResponse;
 	userId: UserID;
 	permission: bigint;
-	userRepository: IUserRepository;
+	userRepository: UserRepository;
 }): Promise<void> {
 	if (!(await hasRequiredGuildMfa(params))) {
 		throw new MfaNotEnabledError();
@@ -47,7 +36,7 @@ export async function getGuildMfaFilteredPermissions(params: {
 	guildData: GuildResponse;
 	userId: UserID;
 	permissions: bigint;
-	userRepository: IUserRepository;
+	userRepository: UserRepository;
 }): Promise<bigint> {
 	const {permissions, ...guardParams} = params;
 	return (await hasRequiredGuildMfa({...guardParams, permission: permissions}))

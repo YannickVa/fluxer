@@ -6,6 +6,7 @@ import Channels from '@app/features/channel/state/Channels';
 import * as ChannelUtils from '@app/features/channel/utils/ChannelUtils';
 import {
 	DIRECT_MESSAGE_DESCRIPTOR,
+	GROUP_DM_DESCRIPTOR,
 	SEARCH_FRIENDS_DESCRIPTOR,
 	SENT_DESCRIPTOR,
 } from '@app/features/i18n/utils/CommonMessageDescriptors';
@@ -19,17 +20,11 @@ import Users from '@app/features/user/state/Users';
 import * as NicknameUtils from '@app/features/user/utils/NicknameUtils';
 import {ChannelTypes} from '@fluxer/constants/src/ChannelConstants';
 import {RelationshipTypes} from '@fluxer/constants/src/UserConstants';
-import {msg} from '@lingui/core/macro';
 import {Trans, useLingui} from '@lingui/react/macro';
 import {MagnifyingGlassIcon} from '@phosphor-icons/react';
 import {observer} from 'mobx-react-lite';
 import type React from 'react';
 import {useMemo, useRef, useState} from 'react';
-
-const GROUP_DM_DESCRIPTOR = msg({
-	message: 'Group DM',
-	comment: 'Short label in the settings dialog recipient list.',
-});
 
 export interface RecipientItem {
 	id: string;
@@ -138,7 +133,7 @@ export const RecipientList = observer((props: RecipientListProps) => {
 		const query = searchQuery.toLowerCase();
 		return props.recipients.filter((item) => {
 			const username = item.user.username.toLowerCase();
-			const displayName = NicknameUtils.getNickname(item.user).toLowerCase();
+			const displayName = NicknameUtils.getNickname(item.user, null).toLowerCase();
 			const channelName = (item.channelName || '').toLowerCase();
 			return username.includes(query) || displayName.includes(query) || channelName.includes(query);
 		});
@@ -186,7 +181,8 @@ export const RecipientList = observer((props: RecipientListProps) => {
 								const userId = item.type === 'group_dm' ? item.id : item.user.id;
 								const isSending = props.sendingTo.has(userId);
 								const isSent = props.sentTo.has(userId);
-								const displayName = item.type === 'group_dm' ? item.channelName : NicknameUtils.getNickname(item.user);
+								const displayName =
+									item.type === 'group_dm' ? item.channelName : NicknameUtils.getNickname(item.user, null);
 								const secondaryText = (() => {
 									if (item.type === 'dm') return i18n._(DIRECT_MESSAGE_DESCRIPTOR);
 									if (item.type === 'group_dm') return i18n._(GROUP_DM_DESCRIPTOR);
